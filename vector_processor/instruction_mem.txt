@@ -1,0 +1,89 @@
+0d007057    // LMUL = 1 , SEW = 32 , Vta = 1 , Vma = 1 , XO (CSR Vsetvli) 
+02216107    // nf = 000, mew = 0, mop = 00, vm = 1, lumop = 00000, rs1_addr = 2, width = 6, vd = 2
+
+//000170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 000 (8b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//001170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 000 (8b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//002170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 000 (8b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//003170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 000 (8b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//008170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 001 (16b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//009170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 001 (16b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//00A170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 001 (16b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//00B170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 001 (16b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//010170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 010 (32b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//011170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 010 (32b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//012170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 010 (32b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//013170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 010 (32b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//018170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 011 (64b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//019170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 011 (64b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//01A170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 011 (64b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//01B170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 011 (64b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//
+//C0007057    // (CSR-Vsetivli) imm = 0  (vl = 0 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 000 (8b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//C018F0D7    // (CSR-Vsetivli) imm = 17 (vl = 17 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 000 (8b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//C02970D7    // (CSR-Vsetivli) imm = 18 (vl = 18 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 000 (8b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//C039F0D7    // (CSR-Vsetivli) imm = 19 (vl = 19 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 000 (8b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//C08CF0D7    // (CSR-Vsetivli) imm = 25 (vl = 25 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 001 (16b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//C09A70D7    // (CSR-Vsetivli) imm = 20 (vl = 20 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 001 (16b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//C0AAF0D7    // (CSR-Vsetivli) imm = 21 (vl = 21 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 001 (16b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//C0BB70D7    // (CSR-Vsetivli) imm = 22 (vl = 22 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 001 (16b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//C10FF0D7    // (CSR-Vsetivli) imm = 31 (vl = 31 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 010 (32b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//C11BF0D7    // (CSR-Vsetivli) imm = 23 (vl = 23 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 010 (32b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//C12C70D7    // (CSR-Vsetivli) imm = 24 (vl = 24 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 010 (32b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//C13D70D7    // (CSR-Vsetivli) imm = 26 (vl = 26 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 010 (32b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//c18df0d7    // (CSR-Vsetivli) imm = 27 (vl = 27 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 011 (64b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
+//c19e70d7    // (CSR-Vsetivli) imm = 28 (vl = 28 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 011 (64b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 
+//c1aef0d7    // (CSR-Vsetivli) imm = 29 (vl = 29 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 011 (64b), vlmul = 010 (4), vta = 0, vma = 0, vill = 0;
+//c1bf70d7    // (CSR-Vsetivli) imm = 30 (vl = 30 elements updated), rd = 1, zimm[9:0] = ; vtype => vsew = 011 (64b), vlmul = 011 (8), vta = 0, vma = 0, vill = 0;
+//
+//804170d7    // (CSR-Vsetvl) rs2 = 4, rs1 = 2, rd = 1 (vsetvl) -> vl = x[rs1];
+//80407057    // (CSR-Vsetvl) rs2 = 4, rs1 = 0, rd = 0 (vsetvl) -> no update in vl;
+//804071d7    // (CSR-Vsetvl) rs2 = 4, rs1 = 0, rd = 3 (vsetvl) -> vl = vlmax;
+//8040f1d7    // (CSR-Vsetvl) rs2 = 4, rs1 = 1, rd = 3 (vsetvl) -> x[rs1] > VLMAX => vl = VLMAX, x[rd] = vl;
+
+02020107    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 000 (8b), vd = 2;
+02020127    // (vstore (unit stride)     ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 000 (8b) , vs3 = 2;
+
+02025207    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 101 (16b), vd = v4;
+02025227    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 101 (16b), vs3 = v4;
+
+02026407    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 110 (32b), vd = v8; 
+02026427    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 110 (32b), vs3 = v8;
+
+02027807    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 111 (64b), vd = v16;
+02027827    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 111 (64b), vs3 = v16;
+
+0a120107    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 000 (8b), vd = v2;
+0a120127    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
+
+0a125207    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 101 (16b), vd = v4;
+0a125227    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
+
+0a126407    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 110 (32b), vd = v8;
+0a126427    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
+
+0a127807    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 111 (64b), vd = v16;
+0a127827    // (vstore (strided)         )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
+
+06120107    // (vload (indexed-unordered) ) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b), vd = v2;
+06120127    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
+
+06125207    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vd = v4;
+06125227    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
+
+06126407    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vd = v8; 
+06126427    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
+
+06127807    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
+06127827    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
+
+0e120107    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b), vd = v2;
+0e120127    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
+
+0e125207    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vd = v4;
+0e125227    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
+
+0e126407    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vd = v8; 
+0e126427    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
+
+0e127807    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
+0e127827    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
