@@ -2,16 +2,17 @@ module top(
     input  logic               clk,
     input  logic               reset,
     input  logic        [1:0]  sew,
-    input  logic               count_0,
     input  logic               start,
     input  logic signed [31:0] data_in_A1,
     input  logic signed [31:0] data_in_B1,
-    input  logic signed [31:0] data_in_A2,
-    input  logic signed [31:0] data_in_B2,
+    //input  logic signed [31:0] data_in_A2,
+    //input  logic signed [31:0] data_in_B2,
+    output logic               count_0, 
     output logic signed [31:0] product_1,
     output logic signed [31:0] product_2,
-    output logic signed [31:0] product_3,
-    output logic signed [31:0] product_4
+    output logic signed [63:0] product
+    //output logic signed [31:0] product_3,
+    //output logic signed [31:0] product_4
 );
 
     // Multiplier inputs
@@ -31,13 +32,13 @@ module top(
     // ──────────────────────────────────────────────
     // Stage 1: Multiplier input preparation
     // ──────────────────────────────────────────────
-    multiplier_8 dut (
+    multiplier_8 mult (
         .clk(clk),
         .reset(reset),
         .data_in_A1(data_in_A1),
         .data_in_B1(data_in_B1),
-        .data_in_A2(data_in_A2),
-        .data_in_B2(data_in_B2),
+        //.data_in_A2(data_in_A2),
+        //.data_in_B2(data_in_B2),
         .sew(sew),
         .count_0(count_0),
         .mult1_A(mult1_A),
@@ -98,7 +99,7 @@ module top(
     // ──────────────────────────────────────────────
     // Stage 4: Carry-Save Accumulator (gets delayed data)
     // ──────────────────────────────────────────────
-    carry_save_8 accum (
+    carry_save_8 cs (
         .clk(clk),
         .reset(reset),
         .start(start),
@@ -112,9 +113,12 @@ module top(
         .mult_out_7(mult_out_7_delayed),
         .mult_out_8(mult_out_8_delayed),
         .product_1(product_1),
-        .product_2(product_2),
-        .product_3(product_3),
-        .product_4(product_4)
+        .product_2(product_2)
+        //.product_3(product_3),
+        //.product_4(product_4)
     );
+
+    assign product = {product_2, product_1};
+    
 
 endmodule
