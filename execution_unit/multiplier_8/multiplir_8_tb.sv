@@ -5,10 +5,8 @@ module tb_multiplier_8;
     // DUT inputs
     logic clk;
     logic reset;
-    logic [31:0] data_in_A1;
-    logic [31:0] data_in_B1;
-    //logic [31:0] data_in_A2;
-    //logic [31:0] data_in_B2;
+    logic [31:0] data_in_A;
+    logic [31:0] data_in_B;
     logic [1:0] sew;
     logic count_0;
 
@@ -22,10 +20,8 @@ module tb_multiplier_8;
     multiplier_8 dut (
         .clk(clk),
         .reset(reset),
-        .data_in_A1(data_in_A1),
-        .data_in_B1(data_in_B1),
-        //.data_in_A2(data_in_A2),
-        //.data_in_B2(data_in_B2),
+        .data_in_A(data_in_A),
+        .data_in_B(data_in_B),
         .sew(sew),
         .count_0(count_0),
         .mult1_A(mult1_A),
@@ -55,10 +51,8 @@ module tb_multiplier_8;
     // Stimulus
     initial begin
         $display("===== Starting Simulation =====");
-        data_in_A1 = 32'h11223344;   // A0=44, A1=33, A2=22, A3=11
-        data_in_B1 = 32'hAABBCCDD;   // B0=DD, B1=CC, B2=BB, B3=AA
-        //data_in_A2 = 32'h55667788;   // A0=44, A1=33, A2=22, A3=11
-        //data_in_B2 = 32'h9900FF11;   // B0=DD, B1=CC, B2=BB, B3=AA
+        data_in_A = 32'h11223344;   // A0=44, A1=33, A2=22, A3=11
+        data_in_B = 32'hAABBCCDD;   // B0=DD, B1=CC, B2=BB, B3=AA
         reset = 0;
 
         // Case 1: sew=00
@@ -92,5 +86,5 @@ module tb_multiplier_8;
                  mult1_B, mult2_B, mult3_B, mult4_B,
                  mult5_B, mult6_B, mult7_B, mult8_B);
     endtask
-
+ 
 endmodule

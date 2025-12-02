@@ -1,0 +1,187 @@
+m255
+K4
+z2
+!s11f MIXED_VERSIONS
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8
+vcarry_save_8
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+Z2 !s110 1763490572
+!i10b 1
+!s100 YM>kBobm3<4dhM=8[M4n]2
+Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
+If?55<N3JK1nVG2V9EBBcd1
+Z4 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1763479706
+8carry_save.sv
+Fcarry_save.sv
+!i122 19
+L0 1 324
+Z5 OV;L;2020.1;71
+r1
+!s85 0
+31
+Z6 !s108 1763490572.000000
+!s107 top_8_tb.sv|multiplier_8.sv|dada.sv|carry_save.sv|
+Z7 !s90 -work|work|carry_save.sv|dada.sv|multiplier_8.sv|top_8_tb.sv|
+!i113 1
+Z8 o-work work
+Z9 tCvgOpt 0
+vcsa_dadda
+R1
+R2
+!i10b 1
+!s100 bm4VUN9mJcedM9em_KhKY1
+R3
+I:?<HLGhKLkgdVQPYa92040
+R4
+S1
+R0
+Z10 w1759418055
+Z11 8dada.sv
+Z12 Fdada.sv
+!i122 19
+L0 145 7
+R5
+r1
+!s85 0
+31
+R6
+Z13 !s107 top_8_tb.sv|multiplier_8.sv|dada.sv|carry_save.sv|
+R7
+!i113 1
+R8
+R9
+vdadda_8
+R1
+R2
+!i10b 1
+!s100 C2[KO@=Ee;NWoRZ5bfniC0
+R3
+IR2?f<PFk`PEgT>T73b4b52
+R4
+S1
+R0
+R10
+R11
+R12
+!i122 19
+L0 4 139
+R5
+r1
+!s85 0
+31
+R6
+R13
+R7
+!i113 1
+R8
+R9
+vHA
+R1
+R2
+!i10b 1
+!s100 jH?ZPeWe[aMTHL5<G=Io^3
+R3
+I6Ig`^1RfJYC57XC8iP_PP1
+R4
+S1
+R0
+R10
+R11
+R12
+!i122 19
+L0 154 7
+R5
+r1
+!s85 0
+31
+R6
+R13
+R7
+!i113 1
+R8
+R9
+n@h@a
+vmultiplier_8
+R1
+R2
+!i10b 1
+!s100 BMG?LZ85[c^5BYP6T]^^U2
+R3
+IEz^7eCMeJSeQkH4X@mLeR1
+R4
+S1
+R0
+w1763316430
+8multiplier_8.sv
+Fmultiplier_8.sv
+!i122 19
+L0 1 129
+R5
+r1
+!s85 0
+31
+R6
+R13
+R7
+!i113 1
+R8
+R9
+vtb_top
+R1
+R2
+!i10b 1
+!s100 XdLN?;Yg[fE>j160m=M?30
+R3
+IXYK0AEJ:VW?IVX@4CmO4c1
+R4
+S1
+R0
+w1763442975
+8top_8_tb.sv
+Ftop_8_tb.sv
+!i122 19
+L0 1 77
+R5
+r1
+!s85 0
+31
+R6
+R13
+R7
+!i113 1
+R8
+R9
+vtop
+R1
+!s110 1763490421
+!i10b 1
+!s100 SchzTMUOKXj8ILlc8FG_;0
+R3
+IBiS;To<YHg?DRCVfQPTo<1
+R4
+S1
+R0
+w1763442528
+8top_8.sv
+Ftop_8.sv
+!i122 14
+L0 1 124
+R5
+r1
+!s85 0
+31
+!s108 1763490421.000000
+!s107 top_8.sv|multiplier_8.sv|dada.sv|carry_save.sv|
+!s90 -work|work|carry_save.sv|dada.sv|multiplier_8.sv|top_8.sv|
+!i113 1
+R8
+R9

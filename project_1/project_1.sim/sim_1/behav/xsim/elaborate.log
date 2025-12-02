@@ -1,0 +1,73 @@
+Vivado Simulator 2018.2
+Copyright 1986-1999, 2001-2018 Xilinx, Inc. All Rights Reserved.
+Running: /opt/Xilinx/Vivado/2018.2/Vivado/2018.2/bin/unwrapped/lnx64.o/xelab -wto aef67aa96934400cbe819754362c7e17 --incr --debug typical --relax --mt 8 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot dadda_8TB_behav xil_defaultlib.dadda_8TB xil_defaultlib.glbl -log elaborate.log 
+Using 8 slave threads.
+Starting static elaboration
+Completed static elaboration
+Starting simulation data flow analysis
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 4. Module dadda_8 doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 154. Module HA doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" Line 145. Module csa_dadda doesn't have a timescale but at least one module in design has a timescale.
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.HA
+Compiling module xil_defaultlib.csa_dadda
+Compiling module xil_defaultlib.dadda_8
+Compiling module xil_defaultlib.dadda_8TB
+Compiling module xil_defaultlib.glbl
+ERROR: [XSIM 43-3409] Failed to compile generated C file xsim.dir/dadda_8TB_behav/obj/xsim_1.c.
+ERROR: [XSIM 43-3915] Encountered a fatal error. Cannot continue. Exiting... 

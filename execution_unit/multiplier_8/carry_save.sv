@@ -13,8 +13,6 @@ module carry_save_8 (
     input  logic signed [15:0] mult_out_8,  // Partial product for multiplier 8
     output logic signed [31:0] product_1,  // Final result for multiplier 1 (or low 32 bits in 32-bit mode)
     output logic signed [31:0] product_2   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
-    //output logic signed [31:0] product_3,    
-    //output logic signed [31:0] product_4 
 );
 
 // Internal registers
@@ -22,9 +20,7 @@ logic   signed [15:0]   sum16_0, sum16_1, sum16_2, sum16_3, sum16_4, sum16_5, su
 logic   signed [15:0]   sum16_8, sum16_9, sum16_10, sum16_11, sum16_12, sum16_13;
 logic   signed [15:0]   sum32_0, sum32_1, sum32_2, sum32_3, sum32_4, sum32_5, sum32_6, sum32_7; // 17-bit sums (for 32-bit mode)
 logic   signed [15:0]   accum_0, accum_1, accum_2, accum_3;
-//logic   signed [15:0]   accum_4, accum_5, accum_6, accum_7;
 logic   signed [15:0]   next_accum_0, next_accum_1, next_accum_2, next_accum_3 ;
-//logic   signed [15:0]   next_accum_4, next_accum_5, next_accum_6, next_accum_7 ;
 logic   signed [7:0]    PP16_1_1A, PP16_1_1B, PP16_1_2A, PP16_1_2B, PP16_1_3A, PP16_1_3B, PP16_1_4A, PP16_1_4B ;
 logic   signed [7:0]    PP16_2_1A, PP16_2_1B, PP16_2_2A, PP16_2_2B, PP16_2_3A, PP16_2_3B, PP16_2_4A, PP16_2_4B ;
 logic   signed [7:0]    PP32_1A,  PP32_1B, PP32_2A, PP32_2B, PP32_3A, PP32_3B, PP32_4A, PP32_4B, 
@@ -84,10 +80,6 @@ always_comb begin
     next_accum_1 = accum_1;
     next_accum_2 = accum_2;
     next_accum_3 = accum_3;
-    //next_accum_4 = accum_4;
-    //next_accum_5 = accum_5;
-    //next_accum_6 = accum_6;
-    //next_accum_7 = accum_7;
 
     sum16_0 = '0;           sum16_8 = '0;           sum32_0 = '0;                
     sum16_1 = '0;           sum16_9 = '0;           sum32_1 = '0;        
@@ -98,23 +90,19 @@ always_comb begin
     sum16_6 = '0;                                   sum32_6 = '0;    
     sum16_7 = '0;                                   sum32_7 = '0;       
 
-    PP16_1_1A  = '0;        PP16_2_1A  = '0;
-    PP16_1_1B  = '0;        PP16_2_1B  = '0;
-    PP16_1_2A  = '0;        PP16_2_2A  = '0;
-    PP16_1_2B  = '0;        PP16_2_2B  = '0;
-    PP16_1_3A  = '0;        PP16_2_3A  = '0;
-    PP16_1_3B  = '0;        PP16_2_3B  = '0;
-    PP16_1_4A  = '0;        PP16_2_4A  = '0;
-    PP16_1_4B  = '0;        PP16_2_4B  = '0;
+    PP16_1_1A  = '0;        PP16_2_1A  = '0;        PP16_1_1B  = '0;        PP16_2_1B  = '0;
+    PP16_1_2A  = '0;        PP16_2_2A  = '0;        PP16_1_2B  = '0;        PP16_2_2B  = '0;
+    PP16_1_3A  = '0;        PP16_2_3A  = '0;        PP16_1_3B  = '0;        PP16_2_3B  = '0;
+    PP16_1_4A  = '0;        PP16_2_4A  = '0;        PP16_1_4B  = '0;        PP16_2_4B  = '0;
 
-    PP32_1A  = '0;          PP32_1B  = '0;
-    PP32_2A  = '0;          PP32_2B  = '0;
-    PP32_3A  = '0;          PP32_3B  = '0;
-    PP32_4A  = '0;          PP32_4B  = '0;
-    PP32_5A  = '0;          PP32_5B  = '0;
-    PP32_6A  = '0;          PP32_6B  = '0;
-    PP32_7A  = '0;          PP32_7B  = '0;
-    PP32_8A  = '0;          PP32_8B  = '0;
+    PP32_1A   = '0;          PP32_1B   = '0;        PP32_2A   = '0;          PP32_2B   = '0;
+    PP32_3A   = '0;          PP32_3B   = '0;        PP32_4A   = '0;          PP32_4B   = '0;
+    PP32_5A   = '0;          PP32_5B   = '0;        PP32_6A   = '0;          PP32_6B   = '0;
+    PP32_7A   = '0;          PP32_7B   = '0;        PP32_8A   = '0;          PP32_8B   = '0;
+    PP32_9A   = '0;          PP32_9B   = '0;        PP32_10A  = '0;          PP32_10B  = '0;
+    PP32_11A  = '0;          PP32_11B  = '0;        PP32_12A  = '0;          PP32_12B  = '0;
+    PP32_13A  = '0;          PP32_13B  = '0;        PP32_14A  = '0;          PP32_14B  = '0;
+    PP32_15A  = '0;          PP32_15B  = '0;        PP32_16A  = '0;          PP32_16B  = '0;
 
     case (state)
         IDLE: begin
@@ -124,6 +112,7 @@ always_comb begin
                 next_accum_1 = 0;
                 next_accum_2 = 0;
                 next_accum_3 = 0;
+
                 next_state = (sew == 2'b00) ? PP_8 :
                                     (sew == 2'b01) ? PP_16:
                                     (sew == 2'b10) ? PP1_32: IDLE;               
@@ -135,10 +124,6 @@ always_comb begin
             next_accum_1 =  mult_out_2;
             next_accum_2 =  mult_out_3;
             next_accum_3 =  mult_out_4; 
-            //next_accum_4 =  mult_out_5;
-            //next_accum_5 =  mult_out_6;
-            //next_accum_6 =  mult_out_7;
-            //next_accum_7 =  mult_out_8; 
             next_state = IDLE;   
         end
 
@@ -297,20 +282,12 @@ end
         accum_1 <= 0;
         accum_2 <= 0;
         accum_3 <= 0;
-        //accum_4 <= 0;
-        //accum_5 <= 0;
-        //accum_6 <= 0;
-        //accum_7 <= 0;
         state   <= IDLE;
     end else begin
         accum_0 <= next_accum_0;
         accum_1 <= next_accum_1;
         accum_2 <= next_accum_2;
         accum_3 <= next_accum_3;
-        //accum_4 <= next_accum_4;
-        //accum_5 <= next_accum_5;
-        //accum_6 <= next_accum_6;
-        //accum_7 <= next_accum_7;
         state   <= next_state;
     end
 end
@@ -318,7 +295,5 @@ end
 // Final product outputs
 assign product_1 =  {accum_1, accum_0} ;
 assign product_2 =  {accum_3, accum_2} ;
-//assign product_3 =  {accum_5, accum_4} ;
-//assign product_4 =  {accum_7, accum_6} ;
 
-endmodule             
+endmodule
