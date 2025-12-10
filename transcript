@@ -1,0 +1,868 @@
+project open /home/javeria/Documents/Final_Year_Project/rtl/fyp.mpf
+# Loading project fyp
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# vsim work.tb_top 
+# Start time: 12:13:06 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+vsim work.tb_carry_save_8
+# End time: 12:13:21 on Dec 10,2025, Elapsed time: 0:00:15
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 12:13:21 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 0000fffeffff0001
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = fffffffe00000001
+# =====================================================
+# FINAL RESULT: Expected = fffffffe00000001 | FSM = fffffffe_00000001
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 12:14:46 on Dec 10,2025, Elapsed time: 0:01:25
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 12:14:46 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 000071c6aaaa38e4
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = 71c71c70e38e38e4
+# =====================================================
+# FINAL RESULT: Expected = 71c71c70e38e38e4 | FSM = 71c71c70_e38e38e4
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 13:09:16 on Dec 10,2025, Elapsed time: 0:54:30
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 13:09:16 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 000089ab4443ba99
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = 89abcdeefedcba99
+# =====================================================
+# FINAL RESULT: Expected = 89abcdeefedcba99 | FSM = 89abcdee_fedcba99
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 13:12:48 on Dec 10,2025, Elapsed time: 0:03:32
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 13:12:48 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=bbbbbbbb, B1=bbbbbbbb, Product1=1278ff99, Product2=12347654
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 13:13:43 on Dec 10,2025, Elapsed time: 0:00:55
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 13:13:43 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+run
+# Test1 -> A1=bbbbbbbb, B1=bbbbbbbb, Product1=8888ba99, Product2=00001234
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+vsim work.tb_top
+# End time: 13:14:12 on Dec 10,2025, Elapsed time: 0:00:29
+# Errors: 0, Warnings: 1
+# vsim work.tb_top 
+# Start time: 13:14:12 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=bbbbbbbb, B1=bbbbbbbb, Product1=8888ba99, Product2=00001234
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 16:48:52 on Dec 10,2025, Elapsed time: 3:34:40
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 16:48:52 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 000000b4d9369963
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = 06263b1c3f4e9963
+# =====================================================
+# FINAL RESULT: Expected = 06263b1c3f4e9963 | FSM = 06263b1c_3f4e9963
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 16:50:27 on Dec 10,2025, Elapsed time: 0:01:35
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 16:50:27 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 000000ea4e814629
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = 009ca39dc94e4629
+# =====================================================
+# FINAL RESULT: Expected = 009ca39dc94e4629 | FSM = 009ca39d_c94e4629
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 16:51:28 on Dec 10,2025, Elapsed time: 0:01:01
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 16:51:29 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 0000a3d66665c290
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = a3d70a3c28f5c290
+# =====================================================
+# FINAL RESULT: Expected = a3d70a3c28f5c290 | FSM = a3d70a3c_28f5c290
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+vsim work.tb_carry_save_8
+# End time: 16:52:31 on Dec 10,2025, Elapsed time: 0:01:02
+# Errors: 0, Warnings: 1
+# vsim work.tb_carry_save_8 
+# Start time: 16:52:31 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 0000a3d66665c290
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = a3d70a3c28f5c290
+# =====================================================
+# FINAL RESULT: Expected = a3d70a3c28f5c290 | FSM = a3d70a3c_28f5c290
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 16:52:58 on Dec 10,2025, Elapsed time: 0:00:27
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 16:52:58 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 0000df0044436544
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = df012343a9876544
+# =====================================================
+# FINAL RESULT: Expected = df012343a9876544 | FSM = df012343_a9876544
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_carry_save_8
+# End time: 16:55:53 on Dec 10,2025, Elapsed time: 0:02:55
+# Errors: 0, Warnings: 2
+# vsim work.tb_carry_save_8 
+# Start time: 16:55:53 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_carry_save_8
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_carry_save_8/dut/*
+run
+# Cycle 1 | Feeding PPs[0..7] | Expected so far = 0000000000000000
+# Cycle 2 | Feeding PPs[8..15] | Expected so far = 0000000000000000
+# =====================================================
+# FINAL RESULT: Expected = 0000000000000000 | FSM = 00000000_00000000
+# =====================================================
+# TEST PASSED
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv(139)
+#    Time: 95 ps  Iteration: 1  Instance: /tb_carry_save_8
+# 1
+# Break in Module tb_carry_save_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/carry_save_tb.sv line 139
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 16:57:17 on Dec 10,2025, Elapsed time: 0:01:24
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 16:57:17 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=bbbbbbbb, B1=bbbbbbbb, Product1=8888ba99, Product2=00001234
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:01:43 on Dec 10,2025, Elapsed time: 0:04:26
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:01:43 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=ffffffff, B1=ffffffff, Product1=00000001, Product2=00000000
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:03:19 on Dec 10,2025, Elapsed time: 0:01:36
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:03:19 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=00000001, B1=00000001, Product1=00000001, Product2=00000000
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:05:49 on Dec 10,2025, Elapsed time: 0:02:30
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:05:49 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=55555555, B1=55555555, Product1=aaaa8e39, Product2=00001c71
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:09:10 on Dec 10,2025, Elapsed time: 0:03:21
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:09:10 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=ffffffff, B1=ffffffff, Product1=00000001, Product2=00000000
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:10:42 on Dec 10,2025, Elapsed time: 0:01:32
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:10:42 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=55555555, B1=ffffffff, Product1=55555555, Product2=00000000
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:13:47 on Dec 10,2025, Elapsed time: 0:03:05
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:13:47 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=88888888, B1=ffffffff, Product1=77777778, Product2=00000000
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:15:35 on Dec 10,2025, Elapsed time: 0:01:48
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:15:35 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=88888888, B1=ffffffff, Product1=00780078, Product2=00780078
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:18:13 on Dec 10,2025, Elapsed time: 0:02:38
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:18:13 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=88888888, B1=ffffffff, Product1=00780078, Product2=00780078
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:19:27 on Dec 10,2025, Elapsed time: 0:01:14
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:19:27 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=88888888, B1=ffffffff, Product1=0077ef78, Product2=00000000
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_multiplier_8
+# End time: 17:24:17 on Dec 10,2025, Elapsed time: 0:04:50
+# Errors: 0, Warnings: 2
+# vsim work.tb_multiplier_8 
+# Start time: 17:24:17 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_multiplier_8
+# Loading work.multiplier_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_multiplier_8/dut/*
+run
+# ===== Starting Simulation =====
+# 
+# --- Case 1: sew=00, count_0=0 ---
+# A: 88 88 88 88 88 88 88 88
+# B: xx xx xx xx xx xx xx xx
+run
+# 
+# --- Case 2: sew=01, count_0=0 ---
+# A: 78 78 78 78 78 78 78 78
+# B: 01 01 01 01 01 01 01 01
+run
+# 
+# --- Case 3: sew=10, count_0=0 ---
+# A: 78 77 78 77 78 77 78 77
+# B: 01 01 01 01 00 00 00 00
+run
+# 
+# --- Case 4: sew=10, count_0=1 ---
+# A: 78 77 77 77 78 77 77 77
+# B: 01 01 01 01 00 00 00 00
+# ===== Simulation Finished =====
+# ** Note: $stop    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/multiplir_8_tb.sv(90)
+#    Time: 40 ns  Iteration: 0  Instance: /tb_multiplier_8
+# Break in Module tb_multiplier_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/multiplir_8_tb.sv line 90
+run
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_multiplier_8
+# End time: 17:26:12 on Dec 10,2025, Elapsed time: 0:01:55
+# Errors: 0, Warnings: 2
+# vsim work.tb_multiplier_8 
+# Start time: 17:26:12 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_multiplier_8
+# Loading work.multiplier_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_multiplier_8/dut/*
+run
+# ===== Starting Simulation =====
+# 
+# --- Case 1: sew=00, count_0=0 ---
+# A: ff ff ff ff ff ff ff ff
+# B: xx xx xx xx xx xx xx xx
+run
+# 
+# --- Case 2: sew=01, count_0=0 ---
+# A: 01 01 01 01 01 01 01 01
+# B: 01 01 01 01 01 01 01 01
+run
+# 
+# --- Case 3: sew=10, count_0=0 ---
+# A: 01 00 01 00 01 00 01 00
+# B: 01 01 01 01 00 00 00 00
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_multiplier_8
+# End time: 17:36:37 on Dec 10,2025, Elapsed time: 0:10:25
+# Errors: 0, Warnings: 2
+# vsim work.tb_multiplier_8 
+# Start time: 17:36:37 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_multiplier_8
+# Loading work.multiplier_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_multiplier_8/dut/*
+run
+# ===== Starting Simulation =====
+# 
+# --- Case 1: sew=00, count_0=0 ---
+# A: ff ff ff ff ff ff ff ff
+# B: xx xx xx xx xx xx xx xx
+run
+# 
+# --- Case 2: sew=01, count_0=0 ---
+# A: 01 01 01 01 01 01 01 01
+# B: 01 01 01 01 01 01 01 01
+run
+# 
+# --- Case 3: sew=10, count_0=0 ---
+# A: 01 00 01 00 01 00 01 00
+# B: 01 01 00 00 01 01 00 00
+run
+# 
+# --- Case 4: sew=10, count_0=1 ---
+# A: 01 00 00 00 01 00 00 00
+# B: 01 01 01 01 00 00 00 00
+# ===== Simulation Finished =====
+# ** Note: $stop    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/multiplir_8_tb.sv(90)
+#    Time: 40 ns  Iteration: 0  Instance: /tb_multiplier_8
+# Break in Module tb_multiplier_8 at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/multiplir_8_tb.sv line 90
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:38:27 on Dec 10,2025, Elapsed time: 0:01:50
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:38:27 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=88888888, B1=ffffffff, Product1=00007778, Product2=00007778
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:41:21 on Dec 10,2025, Elapsed time: 0:02:54
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:41:21 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=ffffffff, B1=ffffffff, Product1=00000001, Product2=00000001
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
+# Compile of carry_save.sv was successful.
+# Compile of carry_save_tb.sv was successful.
+# Compile of dada.sv was successful.
+# Compile of dadda_tb.sv was successful.
+# Compile of multiplier_8.sv was successful.
+# Compile of multiplir_8_tb.sv was successful.
+# Compile of top_8.sv was successful.
+# Compile of top_8_tb.sv was successful.
+# 8 compiles, 0 failed with no errors.
+vsim work.tb_top
+# End time: 17:44:59 on Dec 10,2025, Elapsed time: 0:03:38
+# Errors: 0, Warnings: 2
+# vsim work.tb_top 
+# Start time: 17:44:59 on Dec 10,2025
+# Loading sv_std.std
+# Loading work.tb_top
+# Loading work.top
+# Loading work.multiplier_8
+# Loading work.dadda_8
+# Loading work.HA
+# Loading work.csa_dadda
+# Loading work.carry_save_8
+# WARNING: No extended dataflow license exists
+add wave -position insertpoint sim:/tb_top/dut/*
+run
+# Test1 -> A1=ffffffff, B1=ffffffff, Product1=00000001, Product2=00000001
+# ** Note: $finish    : /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv(62)
+#    Time: 65 ps  Iteration: 0  Instance: /tb_top
+# 1
+# Break in Module tb_top at /home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/top_8_tb.sv line 62
