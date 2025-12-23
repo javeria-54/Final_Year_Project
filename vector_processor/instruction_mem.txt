@@ -40,50 +40,54 @@
 //804071d7    // (CSR-Vsetvl) rs2 = 4, rs1 = 0, rd = 3 (vsetvl) -> vl = vlmax;
 //8040f1d7    // (CSR-Vsetvl) rs2 = 4, rs1 = 1, rd = 3 (vsetvl) -> x[rs1] > VLMAX => vl = VLMAX, x[rd] = vl;
 
-02020107    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 000 (8b), vd = 2;
-02020127    // (vstore (unit stride)     ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 000 (8b) , vs3 = 2;
+//02020107    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 000 (8b), vd = 2;
+//02020127    // (vstore (unit stride)     ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 000 (8b) , vs3 = 2;
 
-02025207    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 101 (16b), vd = v4;
-02025227    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 101 (16b), vs3 = v4;
+//02025207    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 101 (16b), vd = v4;
+//02025227    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 101 (16b), vs3 = v4;
 
-02026407    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 110 (32b), vd = v8; 
-02026427    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 110 (32b), vs3 = v8;
+//02026407    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 110 (32b), vd = v8; 
+//02026427    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 110 (32b), vs3 = v8;
 
-02027807    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 111 (64b), vd = v16;
-02027827    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 111 (64b), vs3 = v16;
+//02027807    // (vload (unit stride)      ) nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, lumop = 00000 (unit-stride load), rs1 = a4, width = 111 (64b), vd = v16;
+//02027827    // (vstore (unit stride)      )nf = 000, mew = 0, mop = 00 (unit stride)      , vm = 1, sumop = 00000 (unit-stride store), rs1 = a4, width = 111 (64b), vs3 = v16;
 
-0a120107    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 000 (8b), vd = v2;
-0a120127    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
+//0a120107    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 000 (8b), vd = v2;
+//0a120127    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
 
-0a125207    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 101 (16b), vd = v4;
-0a125227    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
+//0a125207    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 101 (16b), vd = v4;
+//0a125227    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
 
-0a126407    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 110 (32b), vd = v8;
-0a126427    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
+//0a126407    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 110 (32b), vd = v8;
+//0a126427    // (vstore (strided)          )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
 
-0a127807    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 111 (64b), vd = v16;
-0a127827    // (vstore (strided)         )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
+//0a127807    // (vload (strided)          ) nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 111 (64b), vd = v16;
+//0a127827    // (vstore (strided)         )nf = 000, mew = 0, mop = 10 (strided)          , vm = 1, rs2 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
 
-06120107    // (vload (indexed-unordered) ) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b), vd = v2;
-06120127    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
+//06120107    // (vload (indexed-unordered) ) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b), vd = v2;//
+//06120127    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
 
-06125207    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vd = v4;
-06125227    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
+//06125207    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vd = v4;
+//06125227    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
 
-06126407    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vd = v8; 
-06126427    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
+//06126407    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vd = v8; 
+//06126427    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
 
-06127807    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
-06127827    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
+//06127807    // (vload (indexed-unordered)) nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
+//06127827    // (vstore (indexed-unordered))nf = 000, mew = 0, mop = 01 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
 
-0e120107    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b), vd = v2;
-0e120127    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;
+//0e120107    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b), vd = v2;
+//0e120127    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 000 (8b) , vs3 = v2;///
 
-0e125207    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vd = v4;
-0e125227    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
+//0e125207    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vd = v4;
+//0e125227    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 101 (16b), vs3 = v4;
 
-0e126407    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vd = v8; 
-0e126427    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
+//0e126407    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vd = v8; 
+//0e126427    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 110 (32b), vs3 = v8;
 
-0e127807    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
-0e127827    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
+//0e127807    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
+//0e127827    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
+
+0204C857   // (vadd.vv) funct6 = 000000  vm     = 1 vs2    = v9  vs1    = v8 funct3 = 00  vd     = v16  opcode = 1010111
+
+

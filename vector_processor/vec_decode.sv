@@ -102,9 +102,9 @@ always_comb begin : vec_decode
                     vec_imm         = '0;
                     vec_mask        = vm;
                     case (vfunc6_vix)
-                            VADD , VSUB , VRSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
-                            VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , VMSGTU , VMSGT ,
-                            VSLL , VSMUL , VSRL , VSRA , VSSRL , VSSRA , VNSRL , VNSRA :
+                            VADD , VSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
+                            VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , 
+                            VSLL , VSRL , VSRA  :
                             is_valid_vix = 1'b1;  // ← Set flag if valid
                         default:
                             is_valid_vix = 1'b0;
@@ -125,9 +125,9 @@ always_comb begin : vec_decode
                     vec_imm         = imm;
                     vec_mask        = vm;
                     case (vfunc6_vix)
-                            VADD , VSUB , VRSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
-                            VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , VMSGTU , VMSGT ,
-                            VSLL , VSMUL , VSRL , VSRA , VSSRL , VSSRA , VNSRL , VNSRA :
+                            VADD , VRSUB ,  VAND , VOR , VXOR,
+                            VADC , VMADC , VMSEQ , VMSNE ,  VMSLEU, VMSLE , VMSGTU , VMSGT ,
+                            VSLL , VSRL , VSRA  :
                             is_valid_vix = 1'b1;  // ← Set flag if valid
                         default:
                             is_valid_vix = 1'b0;
@@ -150,7 +150,7 @@ always_comb begin : vec_decode
                     case (vfunc6_vix)
                             VADD , VSUB , VRSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
                             VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , VMSGTU , VMSGT ,
-                            VSLL , VSMUL , VSRL , VSRA , VSSRL , VSSRA , VNSRL , VNSRA :
+                            VSLL ,  VSRL , VSRA  :
                             is_valid_vix = 1'b1;  // ← Set flag if valid
                         default:
                             is_valid_vix = 1'b0;
@@ -171,7 +171,7 @@ always_comb begin : vec_decode
                     vec_imm         = '0;
                     vec_mask        = vm;
                     case (vfunc6_vx)
-                            VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB :
+                            VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
                             is_valid_vx = 1'b1;  // ← Set flag if valid
                         default:
                             is_valid_vx = 1'b0;
@@ -191,7 +191,7 @@ always_comb begin : vec_decode
                     vec_imm         = '0;
                     vec_mask        = vm;
                     case (vfunc6_vx)
-                            VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB :
+                            VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
                             is_valid_vx = 1'b1;  // ← Set flag if valid
                         default:
                             is_valid_vx = 1'b0;

@@ -32,7 +32,20 @@ module vector_processor_controller (
     output  logic                ld_inst,            // tells about load insruction
     output  logic                st_inst,            // tells about store instruction 
     output  logic                index_str,          // tells about the indexed stride
-    output  logic                index_unordered     // tells about index unordered stride
+    output  logic                index_unordered,     // tells about index unordered stride
+
+    output  logic [2:0]          execution_op,
+    output  logic                signed_mode,
+    output  logic                ctrl,
+    output  logic                mul_low, 
+    output  logic                mul_high,
+    output  logic                add_inst, 
+    output  logic                sub_inst, 
+    output  logic                reverse_sub_inst, 
+    output  logic                shift_left_logical_inst, 
+    output  logic                shift_right_arith_inst, 
+    output  logic                shift_right_logical_inst,
+    output  logic                mul_inst 
 );
 
 v_opcode_e      vopcode;
@@ -40,11 +53,14 @@ v_func3_e       vfunc3;
 logic [1:0]     mop;
 logic [4:0]     rs1_addr;
 logic [4:0]     rd_addr;
+v_func6_vix_e   v_func6_vix;
+v_func6_vx_e    v_func6_vx;
 
 assign vopcode  = v_opcode_e'(vec_inst[6:0]);
-
 // vfunc3 for differentiate between arithematic and configuration instructions
 assign vfunc3   = v_func3_e'(vec_inst[14:12]);
+assign v_func6_vx = v_func6_vx_e'(vec_inst[31:26]);
+assign v_func6_vix = v_func6_vix_e'(vec_inst[31:26]);
 
 // vector load instruction
 assign mop      = vec_inst[27:26];
@@ -53,28 +69,213 @@ assign rs1_addr = vec_inst[19:15];
 assign rd_addr = vec_inst[11:7];
 
 always_comb begin
-    lumop_sel           = 0;
-    csrwr_en            = 0;
-    vl_sel              = 0;
-    rs1rd_de            = 1;
-    vtype_sel           = 0;
-    data_mux1_sel       = 2'b00;
-    data_mux2_sel       = 1'b0;
-    stride_sel          = 1'b0;
-    ld_inst             = 1'b0;
-    st_inst             = 1'b0;
-    index_str           = 1'b0;
-    index_unordered     = 1'b0;
-    offset_vec_en       = 1'b0;
-    sew_eew_sel         = 1'b0;
-    vlmax_evlmax_sel    = 1'b0;
-    emul_vlmul_sel      = 1'b0;
+    lumop_sel                   = 1'b0;
+    csrwr_en                    = 1'b0;
+    vl_sel                      = 1'b0;
+    rs1rd_de                    = 1'b1;
+    vtype_sel                   = 1'b0;
+    data_mux1_sel               = 2'b00;
+    data_mux2_sel               = 1'b0;
+    stride_sel                  = 1'b0;
+    ld_inst                     = 1'b0;
+    st_inst                     = 1'b0;
+    add_inst                    = 1'b0;
+    sub_inst                    = 1'b0;
+    reverse_sub_inst            = 1'b0;
+    mul_inst                    = 1'b0;
+    shift_left_logical_inst     = 1'b0;
+    shift_right_arith_inst      = 1'b0;
+    shift_right_logical_inst    = 1'b0;
+    signed_mode                 = 1'b0;
+    index_str                   = 1'b0;
+    index_unordered             = 1'b0;
+    offset_vec_en               = 1'b0;
+    sew_eew_sel                 = 1'b0;
+    vlmax_evlmax_sel            = 1'b0;
+    emul_vlmul_sel              = 1'b0;
+    vec_reg_wr_en               = 1'b0;
+    mask_operation              = 1'b0;
+    mask_wr_en                  = 1'b0;
+    mul_low                     = 1'b0;
+    mul_high                    = 1'b0;
+    ctrl                        = 1'b0;
     
     case (vopcode)
     V_ARITH: begin
-        case (vfunc3)
-            CONF: 
-            begin
+        case (vfunc3) 
+
+            OPIVV: begin
+                data_mux1_sel = 2'b00;
+                data_mux2_sel = 1'b0;
+                sew_eew_sel     = 1'b1;     // eew selected
+                vlmax_evlmax_sel= 1'b1;     // evlmax selected
+                emul_vlmul_sel  = 1'b1;     // emul selected
+                vec_reg_wr_en   = 1;
+                
+                case (v_func6_vix) 
+                    VADD: begin
+                        add_inst = 1'b1;
+                        ctrl = 1'b0;
+                        execution_op = 3'b000;
+                    end
+                    VSUB: begin
+                        sub_inst = 1'b1;
+                        ctrl = 1'b1;
+                        execution_op = 3'b000;
+                    end
+                    VSLL: begin
+                        shift_left_logical_inst = 1'b1;
+                        execution_op = 3'b001;
+                    end
+                    VSRL: begin
+                        shift_right_logical_inst = 1'b1;
+                        execution_op = 3'b001;
+                    end
+                    VSRA: begin
+                        shift_right_arith_inst = 1'b1;
+                        execution_op = 3'b001;
+                    end
+                    VAND, VOR, VXOR, VMSEQ, VMSNE, VMSLTU, VMSLT, VMSLEU, VMSLE, VMINU, VMIN, VMAXU, VMAX:
+                        execution_op = 3'b010;                   
+                
+                endcase
+            end
+
+            OPIVX: begin
+                data_mux1_sel = 2'b01;
+                data_mux2_sel = 1'b0;
+                sew_eew_sel     = 1'b1;     // eew selected
+                vlmax_evlmax_sel= 1'b1;     // evlmax selected
+                emul_vlmul_sel  = 1'b1;     // emul selected
+                vec_reg_wr_en   = 1;
+                
+                case(v_func6_vix) 
+                    VADD: begin
+                        ctrl = 1'b0;
+                        add_inst = 1'b1;
+                        execution_op = 3'b000;
+                    end
+                    VSUB: begin
+                        ctrl = 1'b1;
+                        sub_inst = 1'b1;
+                        execution_op = 3'b000;
+                    end
+                    VRSUB: begin
+                        ctrl = 1'b1;
+                        reverse_sub_inst = 1'b1;
+                        execution_op = 3'b000;
+                    end
+                    VSLL, VSRL, VSRA: 
+                        execution_op = 3'b001;
+                    VAND, VOR, VXOR, VMSEQ, VMSNE, VMSLTU, VMSLT, VMSLEU, VMSLE, VMSGTU, VMSGT, VMINU, VMIN, VMAXU, VMAX:
+                        execution_op = 3'b010;                   
+                  
+                endcase
+            end
+
+            OPIVI: begin
+                data_mux1_sel = 2'b10;
+                data_mux2_sel = 1'b0;
+                sew_eew_sel     = 1'b1;     // eew selected
+                vlmax_evlmax_sel= 1'b1;     // evlmax selected
+                emul_vlmul_sel  = 1'b1;     // emul selected
+                vec_reg_wr_en   = 1;
+                
+                case(v_func6_vix) 
+                    VADD: begin
+                        ctrl = 1'b0;
+                        add_inst = 1'b1;
+                        execution_op = 3'b000;
+                    end
+                    VRSUB: begin
+                        ctrl = 1'b1;
+                        reverse_sub_inst = 1'b1;
+                        execution_op = 3'b000;
+                    end
+                    VSLL, VSRL, VSRA: 
+                        execution_op = 3'b001;
+                    VAND, VOR, VXOR, VMSLEU, VMSLE, VMSGTU, VMSGT:
+                        execution_op = 3'b010;                   
+                
+                endcase
+            end
+            
+            OPMVV: begin
+                data_mux1_sel = 2'b00;
+                data_mux2_sel = 1'b0;
+                sew_eew_sel     = 1'b1;     // eew selected
+                vlmax_evlmax_sel= 1'b1;     // evlmax selected
+                emul_vlmul_sel  = 1'b1;     // emul selected
+                vec_reg_wr_en   = 1;
+                case(v_func6_vx) 
+
+                    VMUL: begin
+                        mul_inst = 1'b1;
+                        mul_low = 1'b1;
+                        signed_mode = 1'b1;
+                        execution_op = 3'b011;
+                    end
+                    VMULH: begin
+                        mul_inst = 1'b1;
+                        mul_high = 1'b1; 
+                        signed_mode = 1'b1;
+                        execution_op = 3'b011;
+                    end
+                    VMULHU: begin
+                        mul_inst = 1'b1;
+                        mul_high = 1'b1;
+                        signed_mode = 1'b0;
+                        execution_op = 3'b011;
+                    end
+                    VMULHSU: begin
+                        mul_inst = 1'b1;
+                        signed_mode = 1'b1;
+                        mul_high = 1'b1;
+                        execution_op = 3'b011;
+                    end
+                
+                endcase 
+            end
+
+            OPMVX: begin
+                data_mux1_sel = 2'b01;
+                data_mux2_sel = 1'b0;
+                sew_eew_sel     = 1'b1;     // eew selected
+                vlmax_evlmax_sel= 1'b1;     // evlmax selected
+                emul_vlmul_sel  = 1'b1;     // emul selected
+                vec_reg_wr_en   = 1;
+
+                case(v_func6_vx) 
+                    
+                    VMUL: begin
+                        mul_inst = 1'b1;
+                        mul_low = 1'b1;
+                        signed_mode = 1'b1;
+                        execution_op = 3'b011;
+                    end
+                    VMULH: begin
+                        mul_inst = 1'b1;
+                        mul_high = 1'b1; 
+                        signed_mode = 1'b1;
+                        execution_op = 3'b011;
+                    end
+                    VMULHU: begin
+                        mul_inst = 1'b1;
+                        mul_high = 1'b1;
+                        signed_mode = 1'b0;
+                        execution_op = 3'b011;
+                    end
+                    VMULHSU: begin
+                        mul_inst = 1'b1;
+                        signed_mode = 1'b1;
+                        mul_high = 1'b1;
+                        execution_op = 3'b011;
+                    end
+                
+                endcase 
+            end
+
+            CONF: begin
                 csrwr_en = 1;
                 case(vec_inst[31])
                 // VSETVLI
@@ -117,13 +318,13 @@ always_comb begin
                     end
                 endcase
             end
-            default: 
-            begin
+            default: begin
                 csrwr_en  = 0;
                 vl_sel    = 0;
                 vtype_sel = 0;
                 rs1rd_de  = 1;
             end
+        
         endcase
     end
     V_LOAD: begin

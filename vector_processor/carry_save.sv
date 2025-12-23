@@ -11,8 +11,13 @@ module carry_save_8 (
     input  logic signed [15:0] mult_out_6,  // Partial product for multiplier 6
     input  logic signed [15:0] mult_out_7,  // Partial product for multiplier 7
     input  logic signed [15:0] mult_out_8,  // Partial product for multiplier 8
+    input logic                sign_A0, sign_A1, sign_A2, sign_A3,
+    input logic                sign_B0, sign_B1, sign_B2, sign_B3,
     output logic signed [31:0] product_1,  // Final result for multiplier 1 (or low 32 bits in 32-bit mode)
-    output logic signed [31:0] product_2   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
+    output logic signed [31:0] product_2,   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
+    output logic signed [31:0] product_16sew_1, product_16sew_2,
+    output logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4,
+    output logic signed [63:0] product_32sew, product    
 );
 
 // Internal registers
@@ -28,9 +33,11 @@ logic   signed [7:0]    PP32_1A,  PP32_1B, PP32_2A, PP32_2B, PP32_3A, PP32_3B, P
 logic   signed [7:0]    PP32_9A,  PP32_9B, PP32_10A, PP32_10B, PP32_11A, PP32_11B, PP32_12A, PP32_12B, 
                         PP32_13A,  PP32_13B, PP32_14A, PP32_14B, PP32_15A, PP32_15B, PP32_16A, PP32_16B; 
 logic   signed [8:0]    carry_0, carry_1, carry_2, carry_3, carry_4;
-logic   signed [15:0]   sum_accum_0, sum_accum_1, sum_accum_2, sum_accum_3;
+logic   signed [16:0]   sum_accum_0, sum_accum_1, sum_accum_2, sum_accum_3;
 logic   signed [9:0]    result_0, result_1, result_2, result_3;
 logic   signed [9:0]    result_4, result_5, result_6, result_7;
+logic   signed          accum_carry_0, accum_carry_1, accum_carry_2, accum_carry_3;
+
 
 // Combined state definitions
 typedef enum logic [2:0] {
@@ -215,10 +222,10 @@ always_comb begin
             carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], carry_2[8], result_3[9:8]);
             carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);
 
-            next_accum_0 =  {carry_0[7:0], result_0[7:0]};
-            next_accum_1 =  {carry_2[7:0], carry_1[7:0]};
-            next_accum_2 =  {carry_4[7:0], carry_3[7:0]};
-            next_accum_3 =  {15'b0        ,carry_4[8]};
+            {accum_carry_0, next_accum_0} =  {carry_0[7:0], result_0[7:0]};
+            {accum_carry_1, next_accum_1} =  {carry_2[7:0], carry_1[7:0]};
+            {accum_carry_2, next_accum_2} =  {carry_4[7:0], carry_3[7:0]};
+            {accum_carry_3, next_accum_3} =  {15'b0        ,carry_4[8]};
 
             next_state = PP2_32;
 
@@ -261,19 +268,21 @@ always_comb begin
             carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], carry_2[8], result_3[9:8]);
             carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);
 
-            sum_accum_0 = accum_0;
-            sum_accum_1 = accum_1[15:0] + result_0[7:0] + {carry_0[7:0], 8'b0};
-            sum_accum_2 = accum_2[15:0] + carry_1[7:0]  + {carry_2[7:0], 8'b0};
-            sum_accum_3 = accum_3[15:0] + carry_3[7:0]  + {carry_4[7:0], 8'b0};
+            sum_accum_0 = accum_0[15:0] + accum_carry_0; 
+            sum_accum_1 = accum_1[15:0] + result_0[7:0] + {carry_0[7:0], 8'b0} + accum_carry_1 + sum_accum_0[16];
+            sum_accum_2 = accum_2[15:0] + carry_1[7:0]  + {carry_2[7:0], 8'b0} + accum_carry_2 + sum_accum_1[16];
+            sum_accum_3 = accum_3[15:0] + carry_3[7:0]  + {carry_4[7:0], 8'b0} + accum_carry_3 + sum_accum_2[16];
 
-            next_accum_0 = sum_accum_0;
-            next_accum_1 = sum_accum_1;
-            next_accum_2 = sum_accum_2;
-            next_accum_3 = sum_accum_3;
+            next_accum_0 = sum_accum_0[15:0];
+            next_accum_1 = sum_accum_1[15:0];
+            next_accum_2 = sum_accum_2[15:0];
+            next_accum_3 = sum_accum_3[15:0];
 
             next_state = IDLE ;
 
         end 
+        default:
+            next_state = IDLE;
     endcase
 end
     always_ff @(posedge clk or posedge reset) begin
@@ -295,5 +304,54 @@ end
 // Final product outputs
 assign product_1 =  {accum_1, accum_0} ;
 assign product_2 =  {accum_3, accum_2} ;
+
+
+// Compute absolute values based on SEW
+always_comb begin
+        product_8sew_1  = 16'h0;
+        product_8sew_2  = 16'h0;
+        product_8sew_3  = 16'h0;
+        product_8sew_4  = 16'h0;
+        product_16sew_1 = 32'h0;
+        product_16sew_2 = 32'h0;
+        product_32sew   = 64'h0;
+        product         = 0;
+    case (sew)
+        2'b00: begin // 8-bit: individual two's complement
+
+            product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 8'd1) : product_1[15:0];
+            product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 8'd1) : product_1[31:16];
+            product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 8'd1) : product_2[15:0];
+            product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 8'd1) : product_2[31:16];
+            product        = {product_8sew_4, product_8sew_3, product_8sew_2, product_8sew_1};
+
+            end
+        2'b01: begin // 16-bit: two's complement on 16-bit pairs
+
+            product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 8'd1) : product_1;
+            product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 8'd1) : product_2;
+            product = {product_16sew_2, product_16sew_1};
+               
+            end
+        2'b10: begin // 32-bit: two's complement on full 32-bit
+                
+            product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 8'd1) : {product_2, product_1};
+            product = product_32sew;
+
+            end
+       default: begin
+            product_8sew_1  = 16'h0;
+            product_8sew_2  = 16'h0;
+            product_8sew_3  = 16'h0;
+            product_8sew_4  = 16'h0;
+            product_16sew_1 = 32'h0;
+            product_16sew_2 = 32'h0;
+            product_32sew   = 64'h0;
+
+            product = {product_2 , product_1};
+
+            end
+        endcase
+    end
 
 endmodule

@@ -7,6 +7,8 @@ import axi_4_pkg::*;
 `include "vector_processor_defs.svh"
 `include "vec_de_csr_defs.svh"
 `include "axi_4_defs.svh"
+`define ROOT_PATH "/home/javeria/Documents/Final_Year_Project"
+
 
 module vector_processor_tb ();
 
@@ -421,16 +423,14 @@ endtask
     //     end
     // endtask
 
-
-
-
 /*********************************************************** DRIVER TASKS *******************************************************************************/
      // Instruction Memory
+     
     task instruction_fetch(input logic [`XLEN-1:0]address );
     
         begin
             string path;
-            path = {`ROOT_PATH, "/test/instruction_mem.txt"};
+            path = {`ROOT_PATH, "/rtl/vector_processor/instruction_mem.txt"};
             $readmemh(path, inst_mem);
             $display("Next Instruction");
             instruction = inst_mem[address];        // Fetch instruction from memory

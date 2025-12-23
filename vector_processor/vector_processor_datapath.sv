@@ -144,8 +144,6 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 // Outputs of the sew eew mux after the decode and csr
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
 
-logic [511:0] data_1 , data_2;
-
 
 assign inst_done = data_written || csr_done || is_stored || error ;
 assign error     = error_flag || wrong_addr;
@@ -338,22 +336,6 @@ assign error     = error_flag || wrong_addr;
     );
 
              //////////////////////
-            /// EXECUTION UNIT  //
-           //////////////////////
-
-    assign data_mux1_out [511:0] = data_1;
-    assign data_mux2_out [511:0] = data_2;
-
-    execution_unit exe(
-        .clk (clk),
-        .reset(reset),
-        .data_1(data_1),
-        .data_2(data_2),
-        .Ctrl(Ctrl),
-        .result(result)
-    );
-
-             //////////////////////
             //      VLSU        //
            //////////////////////          
 
@@ -420,9 +402,18 @@ assign error     = error_flag || wrong_addr;
     
     );
     
-
-
-
+    vector_execution_unit execution(
+        .clk(clk),
+        .reset(reset),
+        .data_1(data_mux1_out[`XLEN-1:0]),
+        .data_2(data_mux2_out[`XLEN-1:0]), 
+        .Ctrl(ctrl),
+        .result(),
+        .sew(sew),           
+        .start(start),
+        .execution_op(execution_op),
+        .signed_mode(signed_mode)    
+);
 
 endmodule
 

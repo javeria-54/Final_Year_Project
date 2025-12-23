@@ -118,7 +118,7 @@ module adder_subtractor_32bit (
 
 endmodule
 
-module adder_subtractor (
+module vector_adder_subtractor (
     input  logic                          Ctrl,          // 0=Add, 1=Sub
     input  logic                          sew_16_32,     // 1 = 16-bit, 0 = 8-bit
     input  logic                          sew_32,        // 1 = 32-bit
@@ -127,7 +127,7 @@ module adder_subtractor (
     output logic signed [`VLEN-1:0]   Sum
 );
 
-    localparam NUM_SLICES = (`MAX_VLEN / 32);
+    localparam NUM_SLICES = (`VLEN / 32);
 
     genvar i;
     generate
