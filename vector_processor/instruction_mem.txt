@@ -1,5 +1,5 @@
-0d007057    // LMUL = 1 , SEW = 32 , Vta = 1 , Vma = 1 , XO (CSR Vsetvli) 
-02216107    // nf = 000, mew = 0, mop = 00, vm = 1, lumop = 00000, rs1_addr = 2, width = 6, vd = 2
+//0d007057    // LMUL = 1 , SEW = 32 , Vta = 1 , Vma = 1 , XO (CSR Vsetvli) 
+//02216107    // nf = 000, mew = 0, mop = 00, vm = 1, lumop = 00000, rs1_addr = 2, width = 6, vd = 2
 
 //000170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 000 (8b), vlmul = 000 (1), vta = 0, vma = 0, vill = 0;
 //001170D7    // (CSR-Vsetvli) rs1 = 2, rd = 1, zimm[10:0] = ; vtype => vsew = 000 (8b), vlmul = 001 (2), vta = 0, vma = 0, vill = 0; 

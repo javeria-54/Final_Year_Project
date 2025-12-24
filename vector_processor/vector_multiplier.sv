@@ -198,8 +198,6 @@ module multiplier_8 (
 endmodule
 
 
-`default_nettype none
-
 module wallaceTreeMultiplier8Bit (result, a, b);
     output logic [15:0] result;
     input logic [7:0] a;
@@ -320,7 +318,6 @@ module wallaceTreeMultiplier8Bit (result, a, b);
     assign result[15] = result14_c;
 endmodule
 
-`default_nettype none
 
 module nBitCarryLookAheadAdder #(parameter n = 4)(total, A, B);
     output logic [n:0] total;
@@ -921,7 +918,7 @@ module vector_multiplier(
     input  logic signed [`VLEN-1:0] data_in_B,    // 512-bit input B
     input  logic                signed_mode,
     output logic               count_0,
-    output logic signed [`2*VLEN-1:0] product      // 1024-bit result
+    output logic signed [`VLEN*2-1:0] product      // 1024-bit result
 );
 
     // Number of 32-bit processing elements

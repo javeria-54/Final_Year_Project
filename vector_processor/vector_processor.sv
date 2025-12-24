@@ -118,6 +118,19 @@ logic   [`XLEN-1:0]                 inst_reg_rs1_data;               // The scal
 logic   [`XLEN-1:0]                 inst_reg_rs2_data;               // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs2 address
 
 
+logic   [2:0]                       execution_op;
+logic                               signed_mode;
+logic                               ctrl;
+logic                               mul_low;
+logic                               mul_high;
+logic                               add_inst;
+logic                               sub_inst;
+logic                               reverse_sub_inst;
+logic                               shift_left_logical_inst;
+logic                               shift_right_arith_inst;
+logic                               shift_right_logical_inst;
+logic                               mul_inst;
+
 
     //==========================================================================//
     //                      MAIN DATAPTH INSTANTIATION                          //
@@ -226,11 +239,24 @@ logic   [`XLEN-1:0]                 inst_reg_rs2_data;               // The scal
         .offset_vec_en      (offset_vec_en  ),
 
         // vec_control_signals -> vec_lsu
-        .stride_sel         (stride_sel     ),
-        .ld_inst            (ld_inst        ),
-        .st_inst            (st_inst        ),
-        .index_str          (index_str      ),
-        .index_unordered    (index_unordered)
+        .stride_sel             (stride_sel     ),
+        .ld_inst                (ld_inst        ),
+        .st_inst                (st_inst        ),
+        .index_str              (index_str      ),
+        .index_unordered        (index_unordered),
+
+        .execution_op               (execution_op),
+        .signed_mode                (signed_mode),
+        .ctrl                       (ctrl),
+        .mul_low                    (mul_low), 
+        .mul_high                   (mul_high),
+        .add_inst                   (add_inst), 
+        .sub_inst                   (sub_inst), 
+        .reverse_sub_inst           (reverse_sub_inst), 
+        .shift_left_logical_inst    (shift_left_logical_inst), 
+        .shift_right_arith_inst     (shift_right_arith_inst), 
+        .shift_right_logical_inst   (shift_right_logical_inst),
+        .mul_inst                   (mul_inst)
 
     );
 

@@ -144,6 +144,19 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 // Outputs of the sew eew mux after the decode and csr
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
 
+logic                   Ctrl;
+logic   [`VLEN-1:0]     result;
+logic   [1:0]           sew_execution;         
+logic                   start;
+logic   [2:0]           execution_op;
+logic                   signed_mode; 
+logic [`VLEN-1:0]       data_1;
+logic [`VLEN-1:0]       data_2; 
+logic                   count_0;
+logic                   sew_16_32;
+logic                   sew_32;
+logic [`VLEN-1:0]       sum;
+logic [`VLEN*2-1:0]     product;
 
 assign inst_done = data_written || csr_done || is_stored || error ;
 assign error     = error_flag || wrong_addr;
@@ -405,14 +418,20 @@ assign error     = error_flag || wrong_addr;
     vector_execution_unit execution(
         .clk(clk),
         .reset(reset),
-        .data_1(data_mux1_out[`XLEN-1:0]),
-        .data_2(data_mux2_out[`XLEN-1:0]), 
-        .Ctrl(ctrl),
-        .result(),
-        .sew(sew),           
+        .data_1(data_mux1_out[`VLEN-1:0]),
+        .data_2(data_mux2_out[`VLEN-1:0]), 
+        .Ctrl(Ctrl),
+        .result(result),
+        .sew(sew_execution),           
         .start(start),
         .execution_op(execution_op),
-        .signed_mode(signed_mode)    
+        .sew_eew_mux_out(sew_eew_mux_out),
+        .signed_mode(signed_mode),  
+        .count_0(count_0),
+        .sew_16_32(sew_16_32),
+        .sew_32(sew_32),
+        .sum(sum),
+        .product(product)  
 );
 
 endmodule
