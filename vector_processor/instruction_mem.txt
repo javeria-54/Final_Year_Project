@@ -88,6 +88,6 @@
 //0e127807    // (vload (indexed-ordered)  ) nf = 000, mew = 0, mop = 11 (indexed-ordered)  , vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vd = v16;
 //0e127827    // (vstore (indexed-ordered)  )nf = 000, mew = 0, mop = 11 (indexed-unordered), vm = 1, vs1 = a1, rs1 = a4, width = 111 (64b), vs3 = v16;
 
-0204C857   // (vadd.vv) funct6 = 000000  vm     = 1 vs2    = v9  vs1    = v8 funct3 = 00  vd     = v16  opcode = 1010111
+02110857   // (vadd.vv) funct6 = 000000  vm     = 1 vs2    = v9  vs1    = v8 funct3 = 00  vd     = v16  opcode = 1010111
 
 

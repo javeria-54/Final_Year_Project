@@ -101,6 +101,7 @@ always_comb begin : vec_decode
                     vec_read_addr_2 = vs2_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
+                    vec_func6    = func_6; 
                     case (vfunc6_vix)
                             VADD , VSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
                             VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , 
@@ -110,10 +111,8 @@ always_comb begin : vec_decode
                             is_valid_vix = 1'b0;
                     endcase
                      if (is_valid_vix) begin
-                        vec_func6    = func_6;      //  Assign only if valid
                         vec_op_valid = 1'b1;
                     end else begin
-                        vec_func6    = '0;         //  Zero if invalid
                         vec_op_valid = 1'b0;
                     end
                 end
@@ -124,6 +123,7 @@ always_comb begin : vec_decode
                     vec_read_addr_2 = vs2_addr;
                     vec_imm         = imm;
                     vec_mask        = vm;
+                    vec_func6    = func_6; 
                     case (vfunc6_vix)
                             VADD , VRSUB ,  VAND , VOR , VXOR,
                             VADC , VMADC , VMSEQ , VMSNE ,  VMSLEU, VMSLE , VMSGTU , VMSGT ,
@@ -132,11 +132,9 @@ always_comb begin : vec_decode
                         default:
                             is_valid_vix = 1'b0;
                     endcase
-                    if (is_valid_vix) begin
-                        vec_func6    = func_6;      //  Assign only if valid
+                    if (is_valid_vix) begin     
                         vec_op_valid = 1'b1;
                     end else begin
-                        vec_func6    = '0;         //  Zero if invalid
                         vec_op_valid = 1'b0;
                     end
                 end
@@ -147,6 +145,7 @@ always_comb begin : vec_decode
                     vec_read_addr_2 = vs2_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
+                    vec_func6    = func_6; 
                     case (vfunc6_vix)
                             VADD , VSUB , VRSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
                             VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , VMSGTU , VMSGT ,
@@ -156,10 +155,8 @@ always_comb begin : vec_decode
                             is_valid_vix = 1'b0;
                     endcase
                     if (is_valid_vix) begin
-                        vec_func6    = func_6;      //  Assign only if valid
                         vec_op_valid = 1'b1;
                     end else begin
-                        vec_func6    = '0;         //  Zero if invalid
                         vec_op_valid = 1'b0;
                     end
                 end
@@ -170,6 +167,7 @@ always_comb begin : vec_decode
                     vec_read_addr_2 = vs2_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
+                    vec_func6    = func_6;  
                     case (vfunc6_vx)
                             VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
                             is_valid_vx = 1'b1;  // ← Set flag if valid
@@ -177,10 +175,8 @@ always_comb begin : vec_decode
                             is_valid_vx = 1'b0;
                     endcase
                     if (is_valid_vx) begin
-                        vec_func6    = func_6;      //  Assign only if valid
                         vec_op_valid = 1'b1;
                     end else begin
-                        vec_func6    = '0;         //  Zero if invalid
                         vec_op_valid = 1'b0;
                     end
                 end
@@ -190,6 +186,7 @@ always_comb begin : vec_decode
                     vec_read_addr_2 = vs2_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
+                    vec_func6    = func_6; 
                     case (vfunc6_vx)
                             VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
                             is_valid_vx = 1'b1;  // ← Set flag if valid
@@ -197,10 +194,8 @@ always_comb begin : vec_decode
                             is_valid_vx = 1'b0;
                     endcase
                     if (is_valid_vx) begin
-                        vec_func6    = func_6;      //  Assign only if valid
                         vec_op_valid = 1'b1;
                     end else begin
-                        vec_func6    = '0;         //  Zero if invalid
                         vec_op_valid = 1'b0;
                     end
                 end

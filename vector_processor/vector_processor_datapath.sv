@@ -432,6 +432,7 @@ assign error     = error_flag || wrong_addr;
         .sew_32(sew_32),
         .sum(sum),
         .product(product)  
+
 );
 
 endmodule

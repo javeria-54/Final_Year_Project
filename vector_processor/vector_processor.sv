@@ -120,7 +120,7 @@ logic   [`XLEN-1:0]                 inst_reg_rs2_data;               // The scal
 
 logic   [2:0]                       execution_op;
 logic                               signed_mode;
-logic                               ctrl;
+logic                               Ctrl;
 logic                               mul_low;
 logic                               mul_high;
 logic                               add_inst;
@@ -247,7 +247,7 @@ logic                               mul_inst;
 
         .execution_op               (execution_op),
         .signed_mode                (signed_mode),
-        .ctrl                       (ctrl),
+        .Ctrl                       (Ctrl),
         .mul_low                    (mul_low), 
         .mul_high                   (mul_high),
         .add_inst                   (add_inst), 

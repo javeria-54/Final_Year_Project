@@ -36,7 +36,7 @@ module vector_processor_controller (
 
     output  logic [2:0]          execution_op,
     output  logic                signed_mode,
-    output  logic                ctrl,
+    output  logic                Ctrl,
     output  logic                mul_low, 
     output  logic                mul_high,
     output  logic                add_inst, 
@@ -98,7 +98,7 @@ always_comb begin
     mask_wr_en                  = 1'b0;
     mul_low                     = 1'b0;
     mul_high                    = 1'b0;
-    ctrl                        = 1'b0;
+    Ctrl                        = 1'b0;
     
     case (vopcode)
     V_ARITH: begin
@@ -115,12 +115,12 @@ always_comb begin
                 case (v_func6_vix) 
                     VADD: begin
                         add_inst = 1'b1;
-                        ctrl = 1'b0;
+                        Ctrl = 1'b0;
                         execution_op = 3'b000;
                     end
                     VSUB: begin
                         sub_inst = 1'b1;
-                        ctrl = 1'b1;
+                        Ctrl = 1'b1;
                         execution_op = 3'b000;
                     end
                     VSLL: begin
@@ -151,17 +151,17 @@ always_comb begin
                 
                 case(v_func6_vix) 
                     VADD: begin
-                        ctrl = 1'b0;
+                        Ctrl = 1'b0;
                         add_inst = 1'b1;
                         execution_op = 3'b000;
                     end
                     VSUB: begin
-                        ctrl = 1'b1;
+                        Ctrl = 1'b1;
                         sub_inst = 1'b1;
                         execution_op = 3'b000;
                     end
                     VRSUB: begin
-                        ctrl = 1'b1;
+                        Ctrl = 1'b1;
                         reverse_sub_inst = 1'b1;
                         execution_op = 3'b000;
                     end
@@ -183,12 +183,12 @@ always_comb begin
                 
                 case(v_func6_vix) 
                     VADD: begin
-                        ctrl = 1'b0;
+                        Ctrl = 1'b0;
                         add_inst = 1'b1;
                         execution_op = 3'b000;
                     end
                     VRSUB: begin
-                        ctrl = 1'b1;
+                        Ctrl = 1'b1;
                         reverse_sub_inst = 1'b1;
                         execution_op = 3'b000;
                     end
