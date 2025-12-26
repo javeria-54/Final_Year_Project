@@ -1,0 +1,25 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module vector_mask_unit
+INFO: [VRFC 10-2458] undeclared symbol mask_reg, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:59]
+INFO: [VRFC 10-2458] undeclared symbol prestart_check, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:60]
+INFO: [VRFC 10-2458] undeclared symbol body_check, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:61]
+INFO: [VRFC 10-2458] undeclared symbol tail_check, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:62]
+INFO: [VRFC 10-2458] undeclared symbol mask_output_01, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:65]
+INFO: [VRFC 10-2458] undeclared symbol mask_output_02, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:78]
+INFO: [VRFC 10-2458] undeclared symbol mask_output_03, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:91]
+INFO: [VRFC 10-2458] undeclared symbol mask_output_04, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:104]
+INFO: [VRFC 10-2458] undeclared symbol sew_sel, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:117]
+INFO: [VRFC 10-2458] undeclared symbol selected_output, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:128]
+INFO: [VRFC 10-2458] undeclared symbol v0_updated, assumed default net type wire [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:142]
+INFO: [VRFC 10-311] analyzing module comb_mask_operations
+INFO: [VRFC 10-311] analyzing module sew_encoder
+INFO: [VRFC 10-311] analyzing module comb_for_vsew_08
+INFO: [VRFC 10-311] analyzing module comb_for_vsew_16
+INFO: [VRFC 10-311] analyzing module comb_for_vsew_32
+INFO: [VRFC 10-311] analyzing module comb_for_vsew_64
+INFO: [VRFC 10-311] analyzing module mux2x1
+INFO: [VRFC 10-311] analyzing module mux4x1
+INFO: [VRFC 10-311] analyzing module check_generator
+INFO: [VRFC 10-311] analyzing module mux_output
+INFO: [VRFC 10-2263] Analyzing Verilog file "/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vector_processor.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl

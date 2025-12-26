@@ -1,0 +1,58 @@
+Vivado Simulator 2018.2
+Copyright 1986-1999, 2001-2018 Xilinx, Inc. All Rights Reserved.
+Running: /opt/Vivado/Vivado/2018.2/bin/unwrapped/lnx64.o/xelab -wto 9c9713627eed47be926c53aaeb76057e --incr --debug typical --relax --mt 8 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot vector_mask_unit_behav xil_defaultlib.vector_mask_unit xil_defaultlib.glbl -log elaborate.log 
+Using 8 slave threads.
+Starting static elaboration
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port mask_reg [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:59]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port prestart_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:60]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port body_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:61]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port tail_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:62]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_01 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:65]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port mask_reg [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:72]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port prestart_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:73]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port body_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:74]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port tail_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:75]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_02 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:78]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port mask_reg [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:85]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port prestart_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:86]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port body_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:87]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port tail_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:88]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_03 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:91]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port mask_reg [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:98]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port prestart_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:99]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port body_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:100]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port tail_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:101]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_04 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:104]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 2 for port sew_sel [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:117]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_01 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:121]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_02 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:122]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_03 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:123]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port mask_output_04 [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:124]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 2 for port sew_sel [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:126]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port selected_output [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:128]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 4096 for port selected_output [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:132]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port v0_updated [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:142]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port v0_updated [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:148]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port mask_reg [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:150]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port prestart_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:151]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port body_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:152]
+WARNING: [VRFC 10-278] actual bit length 1 differs from formal bit length 512 for port tail_check [/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv:153]
+Completed static elaboration
+Starting simulation data flow analysis
+WARNING: [XSIM 43-4100] "/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vector_processor.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.comb_for_vsew_08_default
+Compiling module xil_defaultlib.comb_for_vsew_16_default
+Compiling module xil_defaultlib.comb_for_vsew_32_default
+Compiling module xil_defaultlib.comb_for_vsew_64_default
+Compiling module xil_defaultlib.comb_mask_operations
+Compiling module xil_defaultlib.sew_encoder
+Compiling module xil_defaultlib.mux4x1
+Compiling module xil_defaultlib.mux_output
+Compiling module xil_defaultlib.mux2x1
+Compiling module xil_defaultlib.check_generator
+Compiling module xil_defaultlib.vector_mask_unit
+Compiling module xil_defaultlib.glbl
+ERROR: [XSIM 43-3409] Failed to compile generated C file xsim.dir/vector_mask_unit_behav/obj/xsim_9.c.
+ERROR: [XSIM 43-3915] Encountered a fatal error. Cannot continue. Exiting... 

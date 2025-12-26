@@ -1,0 +1,6 @@
+0.6
+2018.2
+Jun 14 2018
+20:07:38
+/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vec_mask_unit.sv,1753348164,systemVerilog,,,,check_generator;comb_for_vsew_08;comb_for_vsew_16;comb_for_vsew_32;comb_for_vsew_64;comb_mask_operations;mux2x1;mux4x1;mux_output;sew_encoder;vector_mask_unit,,,../../../../,,,,,
+/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/vector_processor.sim/sim_1/behav/xsim/glbl.v,1529022455,verilog,,,,glbl,,,,,,,,
