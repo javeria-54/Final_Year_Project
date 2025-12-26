@@ -70,7 +70,12 @@ module vector_processor_datapth (
     input   logic                               ld_inst,            // tells that it is load insruction or store one
     input   logic                               st_inst,            // Store instruction
     input   logic                               index_str,          // tells about index stride
-    input   logic                               index_unordered     // tells about index unordered stride
+    input   logic                               index_unordered,     // tells about index unordered stride
+
+    input   logic                               Ctrl,
+    input   logic   [2:0]                       execution_op,
+    input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,
+    input   logic                               signed_mode
 );
 
 
@@ -144,19 +149,17 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 // Outputs of the sew eew mux after the decode and csr
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
 
-logic                   Ctrl;
-logic   [`VLEN-1:0]     result;
+
+logic   [`MAX_VLEN-1:0]     result;
 logic   [1:0]           sew_execution;         
 logic                   start;
-logic   [2:0]           execution_op;
-logic                   signed_mode; 
-logic [`VLEN-1:0]       data_1;
-logic [`VLEN-1:0]       data_2; 
+
 logic                   count_0;
 logic                   sew_16_32;
 logic                   sew_32;
-logic [`VLEN-1:0]       sum;
-logic [`VLEN*2-1:0]     product;
+logic [`MAX_VLEN-1:0]       sum;
+logic [`MAX_VLEN*2-1:0]     product;
+logic [`MAX_VLEN-1:0]   vd_data;
 
 assign inst_done = data_written || csr_done || is_stored || error ;
 assign error     = error_flag || wrong_addr;
@@ -399,7 +402,7 @@ assign error     = error_flag || wrong_addr;
         .burst_wr_valid     (burst_wr_valid             ),
 
         // vec_lsu  -> vec_register_file
-        .vd_data            (vec_wr_data                ), 
+        .vd_data            (vd_data                    ), 
         .is_loaded          (is_loaded                  ),
         .is_stored          (is_stored                  ),
         .error_flag         (error_flag                 )  
@@ -414,20 +417,25 @@ assign error     = error_flag || wrong_addr;
         .mux_out        (vec_wr_en                )     
     
     );
+
+    assign vec_wr_data = execution_inst ? result : vd_data ;
     
-    vector_execution_unit execution(
+    vector_execution_unit EXECUTION_UNIT(
         .clk(clk),
         .reset(reset),
-        .data_1(data_mux1_out[`VLEN-1:0]),
-        .data_2(data_mux2_out[`VLEN-1:0]), 
+        .data_1(data_mux1_out[`MAX_VLEN-1:0]),
+        .data_2(data_mux2_out[`MAX_VLEN-1:0]), 
         .Ctrl(Ctrl),
         .result(result),
         .sew(sew_execution),           
         .start(start),
+        .reverse_sub_inst(reverse_sub_inst),
         .execution_op(execution_op),
         .sew_eew_mux_out(sew_eew_mux_out),
         .signed_mode(signed_mode),  
         .count_0(count_0),
+        .mul_high(mul_high),
+        .mul_low(mul_low),
         .sew_16_32(sew_16_32),
         .sew_32(sew_32),
         .sum(sum),

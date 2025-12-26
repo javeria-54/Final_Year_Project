@@ -400,7 +400,6 @@ endmodule
 module carry_save_8 (
     input  logic               clk,
     input  logic               reset,
-    input  logic               start,
     input  logic        [1:0]  sew,         // 0: 16-bit mode (2x16x16), 1: 32-bit mode (1x32x32)
     input  logic signed [15:0] mult_out_1,  // Partial product for multiplier 1 
     input  logic signed [15:0] mult_out_2,  // Partial product for multiplier 2 
@@ -513,7 +512,7 @@ always_comb begin
     case (state)
         IDLE: begin
             //next_done = 0;
-            if (start) begin
+            if (!reset) begin
                 next_accum_0 = 0;
                 next_accum_1 = 0;
                 next_accum_2 = 0;
@@ -759,7 +758,6 @@ module multiplier_top(
     input  logic                clk,
     input  logic                reset,
     input  logic        [1:0]   sew,
-    input  logic                start,
     input  logic signed [31:0]  data_in_A,
     input  logic signed [31:0]  data_in_B,
     input logic                 signed_mode,
@@ -871,7 +869,6 @@ module multiplier_top(
     carry_save_8 cs (
         .clk(clk),
         .reset(reset),
-        .start(start),
         .sew(sew),
         .mult_out_1(mult_out_1_delayed),
         .mult_out_2(mult_out_2_delayed),
@@ -913,16 +910,15 @@ module vector_multiplier(
     input  logic               clk,
     input  logic               reset,
     input  logic        [1:0]  sew,           // 00=8-bit, 01=16-bit, 10=32-bit
-    input  logic               start,
-    input  logic signed [`VLEN-1:0] data_in_A,    // 512-bit input A
-    input  logic signed [`VLEN-1:0] data_in_B,    // 512-bit input B
+    input  logic signed [`MAX_VLEN-1:0] data_in_A,    // 512-bit input A
+    input  logic signed [`MAX_VLEN-1:0] data_in_B,    // 512-bit input B
     input  logic                signed_mode,
     output logic               count_0,
-    output logic signed [`VLEN*2-1:0] product      // 1024-bit result
+    output logic signed [`MAX_VLEN*2-1:0] product      // 1024-bit result
 );
 
     // Number of 32-bit processing elements
-    localparam NUM_PES = (`VLEN / 32); 
+    localparam NUM_PES = (`MAX_VLEN / 32); 
     
     logic [NUM_PES-1:0] pe_count_0;
     logic signed [31:0] pe_product_1 [NUM_PES-1:0];
@@ -938,7 +934,6 @@ module vector_multiplier(
                 .clk(clk),
                 .reset(reset),
                 .sew(sew),
-                .start(start),
                 .signed_mode(signed_mode),
                 .data_in_A(data_in_A[BASE +: 32]),  
                 .data_in_B(data_in_B[BASE +: 32]),

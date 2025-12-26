@@ -2,9 +2,6 @@
 //Description   : This the   register file of the vector processor
 // Date         : 20 Sep, 2024.
 
-
-
-
 `include "vec_regfile_defs.svh"
 
 module vec_regfile (

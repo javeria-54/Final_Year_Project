@@ -43,6 +43,8 @@ module vec_regfile_tb(
     logic [VECTOR_LENGTH-1:0] vector_length;
     logic wrong_addr;
     logic data_written;
+    logic [3:0] emul;
+    logic offset_vec_en;
 
     // Vector Register File instantiation
     vec_regfile uut (
@@ -59,11 +61,13 @@ module vec_regfile_tb(
         .dst_data(dst_data),
         .vector_length(vector_length),
         .wrong_addr(wrong_addr),
+        .emul(emul),
+        .offset_vec_en(offset_vec_en),
         .mask_operation(mask_operation),
         .v0_mask_data(v0_mask_data),
         .mask_wr_en(mask_wr_en),
         .data_written(data_written)
-    );
+    );    
 
     // Testbench Variables
     integer i;

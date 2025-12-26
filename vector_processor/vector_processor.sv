@@ -20,7 +20,7 @@ module vector_processor(
     input   logic                           scalar_pro_ready,       // tells that scaler processor is ready to take output
 
 
-    // Outputs from vector processor --> scaler processor
+    // Outputs from vector processor --> scaler processor 
     output  logic                           is_vec,                 // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                           error,                  // error has occure due to invalid configurations
     
@@ -201,8 +201,15 @@ logic                               mul_inst;
         .ld_inst            (ld_inst             ),
         .st_inst            (st_inst             ),
         .index_str          (index_str           ), 
-        .index_unordered    (index_unordered     )
+        .index_unordered    (index_unordered     ),
         
+        .Ctrl               (Ctrl),
+        .execution_op       (execution_op),
+        .mul_high(mul_high),
+        .mul_low(mul_low),
+        .execution_inst(execution_inst),
+        .reverse_sub_inst(reverse_sub_inst),
+        .signed_mode        (signed_mode)
     );
 
 
@@ -256,6 +263,7 @@ logic                               mul_inst;
         .shift_left_logical_inst    (shift_left_logical_inst), 
         .shift_right_arith_inst     (shift_right_arith_inst), 
         .shift_right_logical_inst   (shift_right_logical_inst),
+        .execution_inst (execution_inst),
         .mul_inst                   (mul_inst)
 
     );

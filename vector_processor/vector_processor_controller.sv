@@ -45,6 +45,7 @@ module vector_processor_controller (
     output  logic                shift_left_logical_inst, 
     output  logic                shift_right_arith_inst, 
     output  logic                shift_right_logical_inst,
+    output  logic                execution_inst,
     output  logic                mul_inst 
 );
 
@@ -99,17 +100,19 @@ always_comb begin
     mul_low                     = 1'b0;
     mul_high                    = 1'b0;
     Ctrl                        = 1'b0;
+    execution_inst              = 1'b0;
     
     case (vopcode)
     V_ARITH: begin
+        execution_inst = 1'b1;
         case (vfunc3) 
 
             OPIVV: begin
                 data_mux1_sel = 2'b00;
                 data_mux2_sel = 1'b0;
-                sew_eew_sel     = 1'b1;     // eew selected
-                vlmax_evlmax_sel= 1'b1;     // evlmax selected
-                emul_vlmul_sel  = 1'b1;     // emul selected
+                sew_eew_sel     = 1'b0;     // eew selected
+                vlmax_evlmax_sel= 1'b0;     // evlmax selected
+                emul_vlmul_sel  = 1'b0;     // emul selected
                 vec_reg_wr_en   = 1;
                 
                 case (v_func6_vix) 
@@ -144,9 +147,9 @@ always_comb begin
             OPIVX: begin
                 data_mux1_sel = 2'b01;
                 data_mux2_sel = 1'b0;
-                sew_eew_sel     = 1'b1;     // eew selected
-                vlmax_evlmax_sel= 1'b1;     // evlmax selected
-                emul_vlmul_sel  = 1'b1;     // emul selected
+                sew_eew_sel     = 1'b0;     // eew selected
+                vlmax_evlmax_sel= 1'b0;     // evlmax selected
+                emul_vlmul_sel  = 1'b0;     // emul selected
                 vec_reg_wr_en   = 1;
                 
                 case(v_func6_vix) 
@@ -176,9 +179,9 @@ always_comb begin
             OPIVI: begin
                 data_mux1_sel = 2'b10;
                 data_mux2_sel = 1'b0;
-                sew_eew_sel     = 1'b1;     // eew selected
-                vlmax_evlmax_sel= 1'b1;     // evlmax selected
-                emul_vlmul_sel  = 1'b1;     // emul selected
+                sew_eew_sel     = 1'b0;     // eew selected
+                vlmax_evlmax_sel= 1'b0;     // evlmax selected
+                emul_vlmul_sel  = 1'b0;     // emul selected
                 vec_reg_wr_en   = 1;
                 
                 case(v_func6_vix) 
@@ -203,9 +206,9 @@ always_comb begin
             OPMVV: begin
                 data_mux1_sel = 2'b00;
                 data_mux2_sel = 1'b0;
-                sew_eew_sel     = 1'b1;     // eew selected
-                vlmax_evlmax_sel= 1'b1;     // evlmax selected
-                emul_vlmul_sel  = 1'b1;     // emul selected
+                sew_eew_sel     = 1'b0;     // eew selected
+                vlmax_evlmax_sel= 1'b0;     // evlmax selected
+                emul_vlmul_sel  = 1'b0;     // emul selected
                 vec_reg_wr_en   = 1;
                 case(v_func6_vx) 
 
@@ -240,9 +243,9 @@ always_comb begin
             OPMVX: begin
                 data_mux1_sel = 2'b01;
                 data_mux2_sel = 1'b0;
-                sew_eew_sel     = 1'b1;     // eew selected
-                vlmax_evlmax_sel= 1'b1;     // evlmax selected
-                emul_vlmul_sel  = 1'b1;     // emul selected
+                sew_eew_sel     = 1'b0;     // eew selected
+                vlmax_evlmax_sel= 1'b0;     // evlmax selected
+                emul_vlmul_sel  = 1'b0;     // emul selected
                 vec_reg_wr_en   = 1;
 
                 case(v_func6_vx) 
