@@ -195,21 +195,6 @@ module multiplier_8 (
 
 endmodule
 
-////////////////////////////////////////////////////////////////////////
-//
-// Copyright (C) 2020 Akilesh Kannan <akileshkannan@gmail.com>
-//
-// File: wallaceTreeMultiplier8Bit.v
-// Modified: 2020-07-15
-// Description: 8-bit Wallace Tree Multiplier
-//              Unsigned multiplication
-//
-// License: MIT
-//
-////////////////////////////////////////////////////////////////////////
-
-
-
 module wallaceTreeMultiplier8Bit (result, a, b);
     output logic [15:0] result;
     input logic [7:0] a;
@@ -330,12 +315,6 @@ module wallaceTreeMultiplier8Bit (result, a, b);
     assign result[15] = result14_c;
 endmodule
 
-////////////////////////////////////////////////////////////////////////
-//
-// Half Adder Module
-//
-////////////////////////////////////////////////////////////////////////
-
 module HA (carry, sum, A, B);
     output logic carry;
     output logic sum;
@@ -346,12 +325,6 @@ module HA (carry, sum, A, B);
     outSum s(sum, A, B);
     outCarry c(carry, A, B);
 endmodule
-
-////////////////////////////////////////////////////////////////////////
-//
-// Full Adder Module
-//
-////////////////////////////////////////////////////////////////////////
 
 module FA (Cout, sum, A, B, Cin);
     output logic Cout;
@@ -371,12 +344,6 @@ module FA (Cout, sum, A, B, Cin);
     assign temp_carry2 = Cin & temp_sum;
     assign Cout = temp_carry1 | temp_carry2;
 endmodule
-
-////////////////////////////////////////////////////////////////////////
-//
-// Primitive Modules for Sum and Carry
-//
-////////////////////////////////////////////////////////////////////////
 
 module outSum (sum, A, B);
     output logic sum;
@@ -877,8 +844,6 @@ always_comb begin
             end
         endcase
     end
-
-
 
 endmodule
 

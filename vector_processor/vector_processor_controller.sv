@@ -35,18 +35,40 @@ module vector_processor_controller (
     output  logic                index_unordered,     // tells about index unordered stride
 
     output  logic [2:0]          execution_op,
+    output  logic                execution_inst,
     output  logic                signed_mode,
     output  logic                Ctrl,
     output  logic                mul_low, 
     output  logic                mul_high,
-    output  logic                add_inst, 
-    output  logic                sub_inst, 
-    output  logic                reverse_sub_inst, 
-    output  logic                shift_left_logical_inst, 
-    output  logic                shift_right_arith_inst, 
-    output  logic                shift_right_logical_inst,
-    output  logic                execution_inst,
-    output  logic                mul_inst 
+
+    output  logic                add_inst, sub_inst, reverse_sub_inst, 
+
+    output  logic                mul_inst,
+
+    output  logic                shift_left_logical_inst, shift_right_arith_inst,shift_right_logical_inst, 
+
+    output  logic                equal_inst, not_equal_inst, les_or_equal_unsigned_inst, less_or_equal_signed_inst, 
+                                 less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst, 
+
+    output  logic                mul_add_dest_inst, mul_sub_dest_inst, mul_add_source_inst, mul_sub_source_inst,   
+
+    output  logic                mask_and_inst, mask_nand_inst, mask_and_not_inst, mask_xor_inst, mask_or_inst, mask_nor_inst,
+                                 mask_or_not_inst , mask_xnor_inst, 
+
+    output  logic                red_sum_inst, red_max_unsigned_inst, red_max_signed_inst,
+                                 red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst,
+    
+    output  logic                signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst, 
+                                
+    output  logic                move_inst, 
+
+    output  logic                wid_add_signed_inst, wid_add_unsigned_inst, wid_sub_signed_inst, wid_sub_unsigned_inst, 
+
+    output  logic                add_carry_inst_inst, sub_borrow_inst, add_carry_masked_inst, sub_borrow_masked_inst, 
+
+    output  logic                sat_add_signed_inst, sat_add_unsigned_inst, sat_sub_signed_inst, sat_sub_unsigned_inst,
+
+    output  logic                and_inst, or_inst, xor_inst                                                                
 );
 
 v_opcode_e      vopcode;
@@ -75,9 +97,21 @@ always_comb begin
     vl_sel                      = 1'b0;
     rs1rd_de                    = 1'b1;
     vtype_sel                   = 1'b0;
+    stride_sel                  = 1'b0;
+    vec_reg_wr_en               = 1'b0;
+    mask_operation              = 1'b0;
+    mask_wr_en                  = 1'b0;
+    index_str                   = 1'b0;
+    index_unordered             = 1'b0;
+    offset_vec_en               = 1'b0;
+
     data_mux1_sel               = 2'b00;
     data_mux2_sel               = 1'b0;
-    stride_sel                  = 1'b0;
+    
+    sew_eew_sel                 = 1'b0;
+    vlmax_evlmax_sel            = 1'b0;
+    emul_vlmul_sel              = 1'b0;
+
     ld_inst                     = 1'b0;
     st_inst                     = 1'b0;
     add_inst                    = 1'b0;
@@ -86,17 +120,65 @@ always_comb begin
     mul_inst                    = 1'b0;
     shift_left_logical_inst     = 1'b0;
     shift_right_arith_inst      = 1'b0;
-    shift_right_logical_inst    = 1'b0;
+    shift_right_logical_inst    = 1'b00; 
+    add_inst                    = 1'b00;
+    sub_inst                    = 1'b00;
+    reverse_sub_inst            = 1'b00;
+    shift_left_logical_inst     = 1'b00;
+    shift_right_arith_inst      = 1'b00;
+    shift_right_logical_inst    = 1'b00;
+    execution_inst              = 1'b00;
+    mul_inst                    = 1'b00;
+    equal_inst                  = 1'b00;
+    not_equal_inst              = 1'b00;
+    less_or_equal_unsigned_inst = 1'b00; 
+    less_or_equal_signed_inst   = 1'b00;
+    less_unsinged_inst          = 1'b00; 
+    greater_unsigned_inst       = 1'b00;
+    less_signed_inst            = 1'b00;
+    greater_signed_inst         = 1'b00;
+    mul_add_dest_inst           = 1'b00;
+    mul_sub_dest_inst           = 1'b00;
+    mul_add_source_inst         = 1'b00;
+    mul_sub_source_inst         = 1'b00;
+    mask_and_inst               = 1'b00;
+    mask_nand_inst              = 1'b00;
+    mask_and_not_inst           = 1'b00;
+    mask_xor_inst               = 1'b00; 
+    mask_or_inst                = 1'b00; 
+    mask_nor_inst               = 1'b00;
+    mask_or_not_inst            = 1'b00;
+    mask_xnor_inst              = 1'b00;
+    red_sum_inst                = 1'b00;
+    red_max_unsigned_inst       = 1'b00;
+    red_max_signed_inst         = 1'b00;
+    red_min_signed_inst         = 1'b00;
+    red_min_unsigned_inst       = 1'b00;
+    red_and_inst                = 1'b00;
+    red_or_inst                 = 1'b00;
+    red_xor_inst                = 1'b00;
+    signed_min_inst             = 1'b00;
+    unsigned_min_inst           = 1'b00;
+    signed_max_inst             = 1'b00;
+    unsigned_max_inst           = 1'b00;
+    move_inst                   = 1'b00;
+    wid_add_signed_inst         = 1'b00;
+    wid_add_unsigned_inst       = 1'b00;
+    wid_sub_signed_inst         = 1'b00;
+    wid_sub_unsigned_inst       = 1'b00;
+    add_carry_inst_inst         = 1'b00;
+    sub_borrow_inst             = 1'b00;
+    add_carry_masked_inst       = 1'b00;
+    sub_borrow_masked_inst      = 1'b00;
+    sat_add_signed_inst         = 1'b00;
+    sat_add_unsigned_inst       = 1'b00;
+    at_sub_signed_inst          = 1'b00;
+    sat_sub_unsigned_inst       = 1'b00;
+    and_inst                    = 1'b00;
+    or_inst                     = 1'b00;
+    xor_inst                    = 1'b00;
+ 
     signed_mode                 = 1'b0;
-    index_str                   = 1'b0;
-    index_unordered             = 1'b0;
-    offset_vec_en               = 1'b0;
-    sew_eew_sel                 = 1'b0;
-    vlmax_evlmax_sel            = 1'b0;
-    emul_vlmul_sel              = 1'b0;
-    vec_reg_wr_en               = 1'b0;
-    mask_operation              = 1'b0;
-    mask_wr_en                  = 1'b0;
     mul_low                     = 1'b0;
     mul_high                    = 1'b0;
     Ctrl                        = 1'b0;

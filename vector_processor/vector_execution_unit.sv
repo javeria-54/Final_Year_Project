@@ -24,7 +24,7 @@ module vector_execution_unit(
     
     // Internal signals
     logic add_en, shift_en, mult_en;
-    logic [`MAX_VLEN-1:0] adder_data_1, adder_data_2;
+    logic [`MAX_VLEN-1:0] adder_data_1, adder_data_2, temporary_A;
     logic [`MAX_VLEN-1:0] mult_data_1, mult_data_2;
 
     // SEW decoding
@@ -85,7 +85,40 @@ module vector_execution_unit(
     assign shift_data_1  = shift_en ? data_1 : `MAX_VLEN'b0;
     assign shift_data_2  = shift_en ? data_2 : `MAX_VLEN'b0;
 
-    // Adder instance
+    always_comb begin
+        if (reset) begin
+            result = '0;
+        end else begin
+            if (add_en) begin
+                result = sum;
+            end 
+            else if (mult_en && mul_low) begin
+                result = product[2047:0];
+            end 
+            else if (mult_en && mul_high) begin
+                result = product[4096:2048];
+            end 
+            else begin 
+                result = '0;
+            end
+        end
+    end
+
+    always_comb begin
+        if (!reset) begin
+            temporary_A = 0;
+        end
+        else if(reverse_sub_inst) begin
+            temporary_A = adder_data_1;
+            adder_data_1 = adder_data_2;
+            adder_data_2 = temporary_A;    
+        end
+        else begin
+            temporary_A = 0;
+        end
+    end
+
+        // Adder instance
     vector_adder_subtractor adder_inst (
         .Ctrl           (Ctrl),         
         .sew_16_32      (sew_16_32),     
@@ -106,24 +139,5 @@ module vector_execution_unit(
         .count_0        (count_0),
         .product        (product)
     );
-
-    always_comb begin
-        if (reset) begin
-            result = '0;
-        end else begin
-            if (add_en) begin
-                result = sum;
-            end 
-            else if (mult_en && mul_low) begin
-                result = product[2047:0];
-            end 
-            else if (mult_en && mul_high) begin
-                result = product[4096:2048];
-            end 
-            else begin 
-                result = '0;
-            end
-        end
-    end
 
 endmodule
