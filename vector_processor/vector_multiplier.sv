@@ -1,5 +1,3 @@
-`include "vector_processor_defs.svh"
-
 module multiplier_8 (
     input logic         clk,
     input logic         reset,
@@ -197,6 +195,20 @@ module multiplier_8 (
 
 endmodule
 
+////////////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2020 Akilesh Kannan <akileshkannan@gmail.com>
+//
+// File: wallaceTreeMultiplier8Bit.v
+// Modified: 2020-07-15
+// Description: 8-bit Wallace Tree Multiplier
+//              Unsigned multiplication
+//
+// License: MIT
+//
+////////////////////////////////////////////////////////////////////////
+
+
 
 module wallaceTreeMultiplier8Bit (result, a, b);
     output logic [15:0] result;
@@ -318,36 +330,11 @@ module wallaceTreeMultiplier8Bit (result, a, b);
     assign result[15] = result14_c;
 endmodule
 
-
-module nBitCarryLookAheadAdder #(parameter n = 4)(total, A, B);
-    output logic [n:0] total;
-    input logic [n-1:0] A;
-    input logic [n-1:0] B;
-
-    logic[n-1:0] gi, pi, sum;
-    logic[n:0] ci;
-
-    assign ci[0] = 1'b0;
-
-    genvar i;
-    generate
-        for(i = 0;i < n;i = i+1) begin: giAndpi
-            assign gi[i] = A[i]&B[i];
-            assign pi[i] = A[i]^B[i];
-            assign ci[i+1] = gi[i]|(pi[i]&ci[i]);
-        end
-    endgenerate
-
-    genvar j;
-    generate
-        for(j = 0;j < n;j = j+1) begin: calculation
-            FA adder(.Cout(), .sum(sum[j]), .A(A[j]), .B(B[j]), .Cin(ci[j]));
-        end
-    endgenerate
-
-    assign total = {ci[n], sum[n-1:0]};
-endmodule
-
+////////////////////////////////////////////////////////////////////////
+//
+// Half Adder Module
+//
+////////////////////////////////////////////////////////////////////////
 
 module HA (carry, sum, A, B);
     output logic carry;
@@ -360,6 +347,11 @@ module HA (carry, sum, A, B);
     outCarry c(carry, A, B);
 endmodule
 
+////////////////////////////////////////////////////////////////////////
+//
+// Full Adder Module
+//
+////////////////////////////////////////////////////////////////////////
 
 module FA (Cout, sum, A, B, Cin);
     output logic Cout;
@@ -380,6 +372,11 @@ module FA (Cout, sum, A, B, Cin);
     assign Cout = temp_carry1 | temp_carry2;
 endmodule
 
+////////////////////////////////////////////////////////////////////////
+//
+// Primitive Modules for Sum and Carry
+//
+////////////////////////////////////////////////////////////////////////
 
 module outSum (sum, A, B);
     output logic sum;
@@ -400,6 +397,7 @@ endmodule
 module carry_save_8 (
     input  logic               clk,
     input  logic               reset,
+    input  logic               start,
     input  logic        [1:0]  sew,         // 0: 16-bit mode (2x16x16), 1: 32-bit mode (1x32x32)
     input  logic signed [15:0] mult_out_1,  // Partial product for multiplier 1 
     input  logic signed [15:0] mult_out_2,  // Partial product for multiplier 2 
@@ -409,13 +407,8 @@ module carry_save_8 (
     input  logic signed [15:0] mult_out_6,  // Partial product for multiplier 6
     input  logic signed [15:0] mult_out_7,  // Partial product for multiplier 7
     input  logic signed [15:0] mult_out_8,  // Partial product for multiplier 8
-    input logic                sign_A0, sign_A1, sign_A2, sign_A3,
-    input logic                sign_B0, sign_B1, sign_B2, sign_B3,
     output logic signed [31:0] product_1,  // Final result for multiplier 1 (or low 32 bits in 32-bit mode)
-    output logic signed [31:0] product_2,   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
-    output logic signed [31:0] product_16sew_1, product_16sew_2,
-    output logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4,
-    output logic signed [63:0] product_32sew, product    
+    output logic signed [31:0] product_2   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
 );
 
 // Internal registers
@@ -435,7 +428,6 @@ logic   signed [16:0]   sum_accum_0, sum_accum_1, sum_accum_2, sum_accum_3;
 logic   signed [9:0]    result_0, result_1, result_2, result_3;
 logic   signed [9:0]    result_4, result_5, result_6, result_7;
 logic   signed          accum_carry_0, accum_carry_1, accum_carry_2, accum_carry_3;
-
 
 // Combined state definitions
 typedef enum logic [2:0] {
@@ -512,7 +504,7 @@ always_comb begin
     case (state)
         IDLE: begin
             //next_done = 0;
-            if (!reset) begin
+            if (start) begin
                 next_accum_0 = 0;
                 next_accum_1 = 0;
                 next_accum_2 = 0;
@@ -679,8 +671,6 @@ always_comb begin
             next_state = IDLE ;
 
         end 
-        default:
-            next_state = IDLE;
     endcase
 end
     always_ff @(posedge clk or posedge reset) begin
@@ -702,6 +692,142 @@ end
 // Final product outputs
 assign product_1 =  {accum_1, accum_0} ;
 assign product_2 =  {accum_3, accum_2} ;
+
+
+endmodule
+
+
+module top(
+    input  logic               clk,
+    input  logic               reset,
+    input  logic        [1:0]  sew,
+    input  logic               start,
+    input  logic               signed_mode,
+    input  logic signed [31:0] data_in_A,
+    input  logic signed [31:0] data_in_B,
+    output logic               count_0, 
+    output logic signed [31:0] product_1,
+    output logic signed [31:0] product_2,
+    output logic signed [63:0] product
+);
+
+    // Multiplier inputs
+    logic signed [7:0] mult1_A, mult2_A, mult3_A, mult4_A;
+    logic signed [7:0] mult5_A, mult6_A, mult7_A, mult8_A;
+    logic signed [7:0] mult1_B, mult2_B, mult3_B, mult4_B;
+    logic signed [7:0] mult5_B, mult6_B, mult7_B, mult8_B;
+
+    // Raw Dadda outputs
+    logic signed [15:0] mult_out_1, mult_out_2, mult_out_3, mult_out_4;
+    logic signed [15:0] mult_out_5, mult_out_6, mult_out_7, mult_out_8;
+
+    //  1-cycle delayed (stalled) outputs
+    logic signed [15:0] mult_out_1_delayed, mult_out_2_delayed, mult_out_3_delayed, mult_out_4_delayed;
+    logic signed [15:0] mult_out_5_delayed, mult_out_6_delayed, mult_out_7_delayed, mult_out_8_delayed;
+
+    // Sign outputs for result adjustment
+    logic sign_A0, sign_A1, sign_A2, sign_A3;
+    logic sign_B0, sign_B1, sign_B2, sign_B3;
+
+    logic signed [31:0] product_16sew_1, product_16sew_2;
+    logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4;
+    logic signed [63:0] product_32sew;
+
+    // ──────────────────────────────────────────────
+    // Stage 1: Multiplier input preparation
+    // ──────────────────────────────────────────────
+    multiplier_8 mult (
+        .clk(clk),
+        .reset(reset),
+        .data_in_A(data_in_A),
+        .data_in_B(data_in_B),
+        .sew(sew),
+        .signed_mode(signed_mode),
+        
+        .count_0(count_0),
+        .mult1_A(mult1_A),
+        .mult2_A(mult2_A), 
+        .mult3_A(mult3_A), 
+        .mult4_A(mult4_A),
+        .mult5_A(mult5_A), 
+        .mult6_A(mult6_A), 
+        .mult7_A(mult7_A), 
+        .mult8_A(mult8_A),
+        .mult1_B(mult1_B), 
+        .mult2_B(mult2_B), 
+        .mult3_B(mult3_B), 
+        .mult4_B(mult4_B),
+        .mult5_B(mult5_B), 
+        .mult6_B(mult6_B), 
+        .mult7_B(mult7_B), 
+        .mult8_B(mult8_B),
+
+        .sign_A0(sign_A0),
+        .sign_A1(sign_A1),
+        .sign_A2(sign_A2),
+        .sign_A3(sign_A3),
+        .sign_B0(sign_B0),
+        .sign_B1(sign_B1),
+        .sign_B2(sign_B2),
+        .sign_B3(sign_B3)
+    );
+
+    // ──────────────────────────────────────────────
+    // Stage 2: Dadda Multipliers (8 of them)
+    // ──────────────────────────────────────────────
+    wallaceTreeMultiplier8Bit dadda_1 (.a(mult1_A), .b(mult1_B), .result(mult_out_1));
+    wallaceTreeMultiplier8Bit dadda_2 (.a(mult2_A), .b(mult2_B), .result(mult_out_2));
+    wallaceTreeMultiplier8Bit dadda_3 (.a(mult3_A), .b(mult3_B), .result(mult_out_3));
+    wallaceTreeMultiplier8Bit dadda_4 (.a(mult4_A), .b(mult4_B), .result(mult_out_4));
+    wallaceTreeMultiplier8Bit dadda_5 (.a(mult5_A), .b(mult5_B), .result(mult_out_5));
+    wallaceTreeMultiplier8Bit dadda_6 (.a(mult6_A), .b(mult6_B), .result(mult_out_6));
+    wallaceTreeMultiplier8Bit dadda_7 (.a(mult7_A), .b(mult7_B), .result(mult_out_7));
+    wallaceTreeMultiplier8Bit dadda_8 (.a(mult8_A), .b(mult8_B), .result(mult_out_8));
+
+    // ──────────────────────────────────────────────
+    //  Stage 3: 1-cycle delay (stall registers)
+    // ──────────────────────────────────────────────
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset) begin
+            mult_out_1_delayed <= 0;
+            mult_out_2_delayed <= 0;
+            mult_out_3_delayed <= 0;
+            mult_out_4_delayed <= 0;
+            mult_out_5_delayed <= 0;
+            mult_out_6_delayed <= 0;
+            mult_out_7_delayed <= 0;
+            mult_out_8_delayed <= 0;
+        end else begin
+            mult_out_1_delayed <= mult_out_1;
+            mult_out_2_delayed <= mult_out_2;
+            mult_out_3_delayed <= mult_out_3;
+            mult_out_4_delayed <= mult_out_4;
+            mult_out_5_delayed <= mult_out_5;
+            mult_out_6_delayed <= mult_out_6;
+            mult_out_7_delayed <= mult_out_7;
+            mult_out_8_delayed <= mult_out_8;
+        end
+    end
+
+    // ──────────────────────────────────────────────
+    // Stage 4: Carry-Save Accumulator (gets delayed data)
+    // ──────────────────────────────────────────────
+    carry_save_8 cs (
+        .clk(clk),
+        .reset(reset),
+        .start(start),
+        .sew(sew),
+        .mult_out_1(mult_out_1_delayed),
+        .mult_out_2(mult_out_2_delayed),
+        .mult_out_3(mult_out_3_delayed),
+        .mult_out_4(mult_out_4_delayed),
+        .mult_out_5(mult_out_5_delayed),
+        .mult_out_6(mult_out_6_delayed),
+        .mult_out_7(mult_out_7_delayed),
+        .mult_out_8(mult_out_8_delayed),
+        .product_1(product_1),
+        .product_2(product_2)
+    );
 
 
 // Compute absolute values based on SEW
@@ -752,190 +878,49 @@ always_comb begin
         endcase
     end
 
-endmodule
-
-module multiplier_top(
-    input  logic                clk,
-    input  logic                reset,
-    input  logic        [1:0]   sew,
-    input  logic signed [31:0]  data_in_A,
-    input  logic signed [31:0]  data_in_B,
-    input logic                 signed_mode,
-    output logic                count_0, 
-    output logic signed [31:0]  product_1,
-    output logic signed [31:0]  product_2,
-    output logic signed [63:0]  product
-);
-
-    // Multiplier inputs
-    logic signed [7:0] mult1_A, mult2_A, mult3_A, mult4_A;
-    logic signed [7:0] mult5_A, mult6_A, mult7_A, mult8_A;
-    logic signed [7:0] mult1_B, mult2_B, mult3_B, mult4_B;
-    logic signed [7:0] mult5_B, mult6_B, mult7_B, mult8_B;
-
-    // Raw Dadda outputs
-    logic signed [15:0] mult_out_1, mult_out_2, mult_out_3, mult_out_4;
-    logic signed [15:0] mult_out_5, mult_out_6, mult_out_7, mult_out_8;
-
-    //  1-cycle delayed (stalled) outputs
-    logic signed [15:0] mult_out_1_delayed, mult_out_2_delayed, mult_out_3_delayed, mult_out_4_delayed;
-    logic signed [15:0] mult_out_5_delayed, mult_out_6_delayed, mult_out_7_delayed, mult_out_8_delayed;
-
-    // Sign outputs for result adjustment
-    logic sign_A0, sign_A1, sign_A2, sign_A3;
-    logic sign_B0, sign_B1, sign_B2, sign_B3;
-
-    logic signed [31:0] product_16sew_1, product_16sew_2;
-    logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4;
-    logic signed [63:0] product_32sew;
-
-    // ──────────────────────────────────────────────
-    // Stage 1: Multiplier input preparation
-    // ──────────────────────────────────────────────
-    multiplier_8 mult (
-        .clk(clk),
-        .reset(reset),
-        .data_in_A(data_in_A),
-        .data_in_B(data_in_B),
-        .sew(sew),
-        .count_0(count_0),
-        .signed_mode(signed_mode),
-        .mult1_A(mult1_A),
-        .mult2_A(mult2_A), 
-        .mult3_A(mult3_A), 
-        .mult4_A(mult4_A),
-        .mult5_A(mult5_A), 
-        .mult6_A(mult6_A), 
-        .mult7_A(mult7_A), 
-        .mult8_A(mult8_A),
-        .mult1_B(mult1_B), 
-        .mult2_B(mult2_B), 
-        .mult3_B(mult3_B), 
-        .mult4_B(mult4_B),
-        .mult5_B(mult5_B), 
-        .mult6_B(mult6_B), 
-        .mult7_B(mult7_B), 
-        .mult8_B(mult8_B),
-        .sign_A0(sign_A0),
-        .sign_A1(sign_A1),
-        .sign_A2(sign_A2),
-        .sign_A3(sign_A3),
-        .sign_B0(sign_B0),
-        .sign_B1(sign_B1),
-        .sign_B2(sign_B2),
-        .sign_B3(sign_B3)
-    );
-
-    // ──────────────────────────────────────────────
-    // Stage 2: Dadda Multipliers (8 of them)
-    // ──────────────────────────────────────────────
-    wallaceTreeMultiplier8Bit wallace_1 (.a(mult1_A), .b(mult1_B), .result(mult_out_1));
-    wallaceTreeMultiplier8Bit wallace_2 (.a(mult2_A), .b(mult2_B), .result(mult_out_2));
-    wallaceTreeMultiplier8Bit wallace_3 (.a(mult3_A), .b(mult3_B), .result(mult_out_3));
-    wallaceTreeMultiplier8Bit wallace_4 (.a(mult4_A), .b(mult4_B), .result(mult_out_4));
-    wallaceTreeMultiplier8Bit wallace_5 (.a(mult5_A), .b(mult5_B), .result(mult_out_5));
-    wallaceTreeMultiplier8Bit wallace_6 (.a(mult6_A), .b(mult6_B), .result(mult_out_6));
-    wallaceTreeMultiplier8Bit wallace_7 (.a(mult7_A), .b(mult7_B), .result(mult_out_7));
-    wallaceTreeMultiplier8Bit wallace_8 (.a(mult8_A), .b(mult8_B), .result(mult_out_8));
-
-    // ──────────────────────────────────────────────
-    //  Stage 3: 1-cycle delay (stall registers)
-    // ──────────────────────────────────────────────
-    always_ff @(posedge clk or posedge reset) begin
-        if (reset) begin
-            mult_out_1_delayed <= 0;
-            mult_out_2_delayed <= 0;
-            mult_out_3_delayed <= 0;
-            mult_out_4_delayed <= 0;
-            mult_out_5_delayed <= 0;
-            mult_out_6_delayed <= 0;
-            mult_out_7_delayed <= 0;
-            mult_out_8_delayed <= 0;
-        end else begin
-            mult_out_1_delayed <= mult_out_1;
-            mult_out_2_delayed <= mult_out_2;
-            mult_out_3_delayed <= mult_out_3;
-            mult_out_4_delayed <= mult_out_4;
-            mult_out_5_delayed <= mult_out_5;
-            mult_out_6_delayed <= mult_out_6;
-            mult_out_7_delayed <= mult_out_7;
-            mult_out_8_delayed <= mult_out_8;
-        end
-    end
-
-    // ──────────────────────────────────────────────
-    // Stage 4: Carry-Save Accumulator (gets delayed data)
-    // ──────────────────────────────────────────────
-    carry_save_8 cs (
-        .clk(clk),
-        .reset(reset),
-        .sew(sew),
-        .mult_out_1(mult_out_1_delayed),
-        .mult_out_2(mult_out_2_delayed),
-        .mult_out_3(mult_out_3_delayed),
-        .mult_out_4(mult_out_4_delayed),
-        .mult_out_5(mult_out_5_delayed),
-        .mult_out_6(mult_out_6_delayed),
-        .mult_out_7(mult_out_7_delayed),
-        .mult_out_8(mult_out_8_delayed),
-        .sign_A0(sign_A0),
-        .sign_A1(sign_A1),
-        .sign_A2(sign_A2),
-        .sign_A3(sign_A3),
-        .sign_B0(sign_B0),
-        .sign_B1(sign_B1),
-        .sign_B2(sign_B2),
-        .sign_B3(sign_B3),
-        .product_1(product_1),
-        .product_2(product_2),
-        .product_8sew_1(product_8sew_1),
-        .product_8sew_2(product_8sew_2),
-        .product_8sew_3(product_8sew_3),
-        .product_8sew_4(product_8sew_4),
-        .product_16sew_1(product_16sew_1),
-        .product_16sew_2(product_16sew_2),
-        .product_32sew(product_32sew),
-        .product(product)
-    );
 
 
 endmodule
+
 
 // ============================================================================
 // 512-bit Vector Multiplier with Configurable SEW (OOP-based Design)
 // ============================================================================
 
 // Top-level wrapper for 512-bit inputs
-module vector_multiplier(
+module top_512(
     input  logic               clk,
     input  logic               reset,
     input  logic        [1:0]  sew,           // 00=8-bit, 01=16-bit, 10=32-bit
-    input  logic signed [`MAX_VLEN-1:0] data_in_A,    // 512-bit input A
-    input  logic signed [`MAX_VLEN-1:0] data_in_B,    // 512-bit input B
+    input  logic signed [511:0] data_in_A,    // 512-bit input A
+    input  logic signed [511:0] data_in_B,    // 512-bit input B
     input  logic                signed_mode,
     output logic               count_0,
-    output logic signed [`MAX_VLEN*2-1:0] product      // 1024-bit result
+    output logic signed [1023:0] product      // 1024-bit result
 );
 
     // Number of 32-bit processing elements
-    localparam NUM_PES = (`MAX_VLEN / 32); 
+    localparam NUM_PES = 16;  // 512 / 32 = 16 PEs
     
+    // Per-PE signals
     logic [NUM_PES-1:0] pe_count_0;
     logic signed [31:0] pe_product_1 [NUM_PES-1:0];
     logic signed [31:0] pe_product_2 [NUM_PES-1:0];
     logic signed [63:0] pe_product [NUM_PES-1:0];
     
+    // Generate 16 processing elements
     genvar i;
     generate
         for (i = 0; i < NUM_PES; i++) begin : gen_processing_elements
+            // Extract 32-bit slices for each PE
             localparam BASE = i * 32;
             
-            multiplier_top u_top_pe (
+            top u_top_pe (
                 .clk(clk),
                 .reset(reset),
                 .sew(sew),
                 .signed_mode(signed_mode),
-                .data_in_A(data_in_A[BASE +: 32]),  
+                .data_in_A(data_in_A[BASE +: 32]),  // Extract 32 bits
                 .data_in_B(data_in_B[BASE +: 32]),
                 .count_0(pe_count_0[i]),
                 .product_1(pe_product_1[i]),
@@ -945,6 +930,7 @@ module vector_multiplier(
         end
     endgenerate
     
+    // Aggregate outputs based on SEW
     always_comb begin
         count_0 = &pe_count_0;  // AND all count_0 signals
         
@@ -979,4 +965,3 @@ module vector_multiplier(
     end
 
 endmodule
-
