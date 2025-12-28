@@ -148,10 +148,10 @@ module multiplier_8 (
     // Multiplier A inputs (using absolute values)
     assign mult1_A = A0_abs;
     assign mult2_A = A1_abs;
-    assign mult3_A = A2_abs;
-    assign mult4_A = A3_abs;
-    assign mult5_A = A0_abs;
-    assign mult6_A = A1_abs;
+    assign mult3_A = (sew == 2'b01 ) ? A0_abs : A2_abs ;
+    assign mult4_A = (sew == 2'b01 ) ? A1_abs : A3_abs ;
+    assign mult5_A = (sew == 2'b01 ) ? A2_abs : A0_abs ;
+    assign mult6_A = (sew == 2'b01 ) ? A3_abs : A1_abs ;
     assign mult7_A = A2_abs;
     assign mult8_A = A3_abs;
 

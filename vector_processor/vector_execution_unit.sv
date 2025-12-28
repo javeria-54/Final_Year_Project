@@ -78,12 +78,15 @@ module vector_execution_unit(
         end
     end 
 
-    assign adder_data_1 = add_en ? data_1 : `MAX_VLEN'b0;
-    assign adder_data_2 = add_en ? data_2 : `MAX_VLEN'b0;
-    assign mult_data_1  = mult_en ? data_1 : `MAX_VLEN'b0;
-    assign mult_data_2  = mult_en ? data_2 : `MAX_VLEN'b0;
-    assign shift_data_1  = shift_en ? data_1 : `MAX_VLEN'b0;
-    assign shift_data_2  = shift_en ? data_2 : `MAX_VLEN'b0;
+    assign  adder_data_1    = add_en            ? data_1 : `MAX_VLEN'b0;
+    assign  adder_data_2    = add_en            ? data_2 : `MAX_VLEN'b0;
+    assign  mult_data_1     = mult_en           ? data_1 : `MAX_VLEN'b0;
+    assign  mult_data_2     = mult_en           ? data_2 : `MAX_VLEN'b0;
+    assign  shift_data_1    = shift_en          ? data_1 : `MAX_VLEN'b0;
+    assign  shift_data_2    = shift_en          ? data_2 : `MAX_VLEN'b0;
+    assign  adder_data_1    = reverse_sub_inst  ? data_2 : `MAX_VLEN'b0;
+    assign  adder_data_2    = reverse_sub_inst  ? data_1 :  `MAX_VLEN'b0;
+
 
     always_comb begin
         if (reset) begin
@@ -101,20 +104,6 @@ module vector_execution_unit(
             else begin 
                 result = '0;
             end
-        end
-    end
-
-    always_comb begin
-        if (!reset) begin
-            temporary_A = 0;
-        end
-        else if(reverse_sub_inst) begin
-            temporary_A = adder_data_1;
-            adder_data_1 = adder_data_2;
-            adder_data_2 = temporary_A;    
-        end
-        else begin
-            temporary_A = 0;
         end
     end
 
