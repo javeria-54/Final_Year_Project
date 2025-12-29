@@ -124,6 +124,4 @@ typedef struct packed {
     logic [6:0] opcode;
 } varith_type_t;
 
-
-
 `endif
