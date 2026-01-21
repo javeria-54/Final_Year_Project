@@ -443,6 +443,12 @@ always_comb begin
     PP32_13A  = '0;          PP32_13B  = '0;        PP32_14A  = '0;          PP32_14B  = '0;
     PP32_15A  = '0;          PP32_15B  = '0;        PP32_16A  = '0;          PP32_16B  = '0;
 
+    carry_0 = '0;           carry_1 = '0;           carry_2 = '0;           carry_3 = '0;       carry_4 = '0;
+    sum_accum_0 = '0;       sum_accum_1 = '0;       sum_accum_2 = '0;       sum_accum_3 = '0;
+    result_0 = '0;          result_1 = '0;          result_2 = '0;          result_3 = '0;
+    result_4 = '0;          result_5 = '0;          result_6 = '0;          result_7 = '0;
+    accum_carry_0 = '0;     accum_carry_1 = '0;     accum_carry_2 = '0;     accum_carry_3 = '0;
+
     case (state)
         IDLE: begin
             //next_done = 0;
@@ -685,8 +691,6 @@ module top(
     logic sign_A0, sign_A1, sign_A2, sign_A3;
     logic sign_B0, sign_B1, sign_B2, sign_B3;
 
-    logic [1:0] sew_delayed;
-
     logic signed [31:0] product_16sew_1, product_16sew_2;
     logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4;
     logic signed [63:0] product_32sew;
@@ -755,7 +759,6 @@ module top(
             mult_out_6_delayed <= 0;
             mult_out_7_delayed <= 0;
             mult_out_8_delayed <= 0;
-            sew_delayed        <= 0;
         end else begin
             mult_out_1_delayed <= mult_out_1;
             mult_out_2_delayed <= mult_out_2;
@@ -765,7 +768,6 @@ module top(
             mult_out_6_delayed <= mult_out_6;
             mult_out_7_delayed <= mult_out_7;
             mult_out_8_delayed <= mult_out_8;
-            sew_delayed        <= sew;
         end
     end
 
@@ -775,7 +777,7 @@ module top(
     carry_save_8 cs (
         .clk(clk),
         .reset(reset),
-        .sew(sew_delayed),
+        .sew(sew),
         .mult_out_1(mult_out_1_delayed),
         .mult_out_2(mult_out_2_delayed),
         .mult_out_3(mult_out_3_delayed),
@@ -799,7 +801,7 @@ always_comb begin
         product_16sew_1 = 32'h0;
         product_16sew_2 = 32'h0;
         product_32sew   = 64'h0;
-        product         = 0;
+        product         = '0;
     case (sew)
         2'b00: begin // 8-bit: individual two's complement
 
@@ -841,18 +843,18 @@ always_comb begin
 endmodule
 
 // Top-level wrapper for 512-bit inputs
-module vector_multiplier(
+module top_512(
     input  logic                clk,
     input  logic                reset,
     input  logic        [1:0]   sew,           // 00=8-bit, 01=16-bit, 10=32-bit
-    input  logic signed [4095:0] data_in_A,     // 512-bit input A
-    input  logic signed [4095:0] data_in_B,     // 512-bit input B
+    input  logic signed [511:0] data_in_A,     // 512-bit input A
+    input  logic signed [511:0] data_in_B,     // 512-bit input B
     input  logic                signed_mode,
     output logic                count_0,
     output logic                mult_done,
-    output logic signed [4095:0] product_1,     // Changed: aggregated output
-    output logic signed [4095:0] product_2,     // Changed: aggregated output
-    output logic signed [8191:0] product       // 1024-bit result
+    output logic signed [511:0] product_1,     // Changed: aggregated output
+    output logic signed [511:0] product_2,     // Changed: aggregated output
+    output logic signed [1023:0] product       // 1024-bit result
 );
 
     // Number of 32-bit processing elements
@@ -860,7 +862,7 @@ module vector_multiplier(
     
     // Per-PE signals
     logic [NUM_PES-1:0] pe_count_0;
-    logic [NUM_PES-1:0] pe_mult_done;           // ✅ Separate done signal per PE
+    logic [NUM_PES-1:0] pe_mult_done;           //  Separate done signal per PE
     logic signed [31:0] pe_product_1 [NUM_PES-1:0];
     logic signed [31:0] pe_product_2 [NUM_PES-1:0];
     logic signed [63:0] pe_product [NUM_PES-1:0];
@@ -876,25 +878,25 @@ module vector_multiplier(
                 .clk(clk),
                 .reset(reset),
                 .sew(sew),
-                .mult_done(pe_mult_done[i]),        // ✅ Individual done signal
+                .mult_done(pe_mult_done[i]),        //  Individual done signal
                 .signed_mode(signed_mode),
                 .data_in_A(data_in_A[BASE +: 32]),  // Extract 32 bits
                 .data_in_B(data_in_B[BASE +: 32]),
                 .count_0(pe_count_0[i]),
-                .product_1(pe_product_1[i]),        // ✅ 32-bit per PE
-                .product_2(pe_product_2[i]),        // ✅ 32-bit per PE
+                .product_1(pe_product_1[i]),        //  32-bit per PE
+                .product_2(pe_product_2[i]),        //  32-bit per PE
                 .product(pe_product[i])
             );
         end
     endgenerate
     
-    // ✅ Combine all mult_done signals (AND operation - all must be done)
+    //  Combine all mult_done signals (AND operation - all must be done)
     assign mult_done = &pe_mult_done;
     
-    // ✅ Combine all count_0 signals
+    //  Combine all count_0 signals
     assign count_0 = &pe_count_0;
     
-    // ✅ Aggregate product_1 and product_2 outputs
+    //  Aggregate product_1 and product_2 outputs
     always_comb begin
         for (int j = 0; j < NUM_PES; j++) begin
             product_1[j*32 +: 32] = pe_product_1[j];
@@ -902,7 +904,7 @@ module vector_multiplier(
         end
     end
     
-    // ✅ Aggregate final product based on SEW
+    //  Aggregate final product based on SEW
     always_comb begin
         case (sew)
             2'b00: begin  // 8-bit elements (64 elements)
@@ -932,3 +934,4 @@ module vector_multiplier(
     end
 
 endmodule
+

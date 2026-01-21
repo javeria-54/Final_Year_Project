@@ -323,11 +323,11 @@ assign error     = error_flag || wrong_addr;
            /////////////////////
 
      // Zero-extend  scalar1 dynamically
-    assign scaler1_extended = {{`MAX_VLEN-`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
+    assign scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
 
     
     // Zero-extend  scalar1 dynamically
-    assign scaler2_extended = {{`MAX_VLEN-`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
+    assign scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
 
     
 
@@ -426,8 +426,8 @@ assign error     = error_flag || wrong_addr;
         .clk(clk),
         .reset(reset),
 
-        .data_1(data_mux1_out[`VLEN-1:0]),
-        .data_2(data_mux2_out[`VLEN-1:0]), 
+        .data_1(data_mux1_out[`MAX_VLEN-1:0]),
+        .data_2(data_mux2_out[`MAX_VLEN-1:0]), 
 
         .Ctrl(Ctrl),
         .sew_eew_mux_out(sew_eew_mux_out),
