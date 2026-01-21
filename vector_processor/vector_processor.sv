@@ -153,6 +153,10 @@ logic                               sat_add_signed_inst, sat_add_unsigned_inst, 
 
 logic                               and_inst, or_inst, xor_inst;
 
+logic   [4:0]                       bitwise_op;
+logic   [2:0]                       cmp_op;
+logic   [1:0]                       op_type;
+
 
     //==========================================================================//
     //                      MAIN DATAPTH INSTANTIATION                          //
@@ -231,7 +235,10 @@ logic                               and_inst, or_inst, xor_inst;
         .mul_low            (mul_low),
         .execution_inst     (execution_inst),
         .reverse_sub_inst   (reverse_sub_inst),
-        .signed_mode        (signed_mode)
+        .signed_mode        (signed_mode),
+        .bitwise_op(bitwise_op),
+        .op_type(op_type),
+        .cmp_op(cmp_op)
     );
 
 
@@ -297,7 +304,7 @@ logic                               and_inst, or_inst, xor_inst;
         .less_signed_inst           (less_signed_inst), 
         .greater_signed_inst        (greater_signed_inst), 
         .mul_add_dest_inst          (mul_add_dest_inst), 
-        .mul_sub_dest_inst          (mul_add_dest_inst), 
+        .mul_sub_dest_inst          (mul_sub_dest_inst), 
         .mul_add_source_inst        (mul_add_source_inst), 
         .mul_sub_source_inst        (mul_sub_source_inst),   
         .mask_and_inst              (mask_and_inst), 
@@ -335,7 +342,10 @@ logic                               and_inst, or_inst, xor_inst;
         .sat_sub_unsigned_inst      (sat_sub_unsigned_inst),
         .and_inst                   (and_inst), 
         .or_inst                    (or_inst), 
-        .xor_inst                   (xor_inst)
+        .xor_inst                   (xor_inst),
+        .bitwise_op(bitwise_op),
+        .op_type(op_type),
+        .cmp_op(cmp_op)
 
     );
 

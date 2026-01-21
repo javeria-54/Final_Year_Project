@@ -75,7 +75,10 @@ module vector_processor_datapth (
     input   logic                               Ctrl,
     input   logic   [2:0]                       execution_op,
     input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,
-    input   logic                               signed_mode
+    input   logic                               signed_mode,
+    input   logic   [4:0]                       bitwise_op,
+    input   logic   [2:0]                       cmp_op,
+    input   logic   [1:0]                       op_type
 );
 
 
@@ -83,7 +86,7 @@ module vector_processor_datapth (
 logic   [`XLEN-1:0] vec_read_addr_1  , vec_read_addr_2 , vec_write_addr;
 
 // Vector Immediate from the decode 
-logic   [`MAX_VLEN-1:0] vec_imm;
+logic   [`VLEN-1:0] vec_imm;
 
 // signal that tells that if the masking is  enabled or not
 logic  vec_mask;
@@ -150,15 +153,13 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
 
 
-logic   [`MAX_VLEN-1:0]     result;
+logic   [`MAX_VLEN-1:0]     execution_result;
 logic   [1:0]           sew_execution;         
 logic                   start;
 
 logic                   count_0;
 logic                   sew_16_32;
 logic                   sew_32;
-logic [`MAX_VLEN-1:0]       sum;
-logic [`MAX_VLEN*2-1:0]     product;
 logic [`MAX_VLEN-1:0]   vd_data;
 
 assign inst_done = data_written || csr_done || is_stored || error ;
@@ -418,36 +419,37 @@ assign error     = error_flag || wrong_addr;
     
     );
 
-    assign vec_wr_data = execution_inst ? result : vd_data ;
+    assign vec_wr_data = execution_inst ? execution_result : vd_data ;
     
     vector_execution_unit EXECUTION_UNIT(
+
         .clk(clk),
         .reset(reset),
-        .data_1(data_mux1_out[`MAX_VLEN-1:0]),
-        .data_2(data_mux2_out[`MAX_VLEN-1:0]), 
-        .Ctrl(Ctrl),
-        .result(result),
-        .sew(sew_execution),           
-        .start(start),
-        .reverse_sub_inst(reverse_sub_inst),
-        .execution_op(execution_op),
-        .sew_eew_mux_out(sew_eew_mux_out),
-        .signed_mode(signed_mode),  
-        .count_0(count_0),
-        .mul_high(mul_high),
-        .mul_low(mul_low),
-        .sew_16_32(sew_16_32),
-        .sew_32(sew_32),
-        .sum(sum),
-        .product(product)  
 
+        .data_1(data_mux1_out[`VLEN-1:0]),
+        .data_2(data_mux2_out[`VLEN-1:0]), 
+
+        .Ctrl(Ctrl),
+        .sew_eew_mux_out(sew_eew_mux_out),
+        .execution_op(execution_op),
+        .signed_mode(signed_mode),
+        .mul_high(mul_high),
+        .mul_low(mul_low), 
+        .reverse_sub_inst(reverse_sub_inst), 
+        .bitwise_op(bitwise_op),
+        .op_type(op_type),
+        .cmp_op(cmp_op),
+        .execution_result(execution_result),
+        .sew(sew_execution),                   
+        .count_0(count_0),
+        .sew_16_32(sew_16_32),
+        .sew_32(sew_32)
 );
 
 endmodule
 
-
 module data_mux_2x1 #(
-   parameter width = 32
+   parameter width = `MAX_VLEN
 ) ( 
     
     input   logic   [width-1:0] operand1,
@@ -467,7 +469,7 @@ endmodule
 
 
 module data_mux_3x1 #(
-   parameter width = 32
+   parameter width = `MAX_VLEN
 ) ( 
     
     input   logic   [width-1:0] operand1,

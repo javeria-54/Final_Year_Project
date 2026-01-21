@@ -1,185 +1,216 @@
-`include "vector_processor_defs.svh"
-// ============================================================
-// RVV Single-Width Shift Unit (SEW = 8 / 16 / 32)
-// Implements: vsll, vsrl, vsra (vv / vx / vi)
-// No mask, no tail (handled externally)
-// VLEN = 512, 4 lanes × 128-bit
-// ============================================================
-
-
-// ============================================================
-// 1. Barrel Shifter (based on your original design)
-//    - Shift only (no rotate)
-//    - Logical left / logical right
-// ============================================================
-module barrel_shifter (
-    input  logic [31:0] data_in,
-    input  logic [4:0]  shift_amt,
-    input  logic        left_right,   // 0 = left, 1 = right
-    input  logic        shift_rotate, // unused (tied to 0)
-    output logic [31:0] data_out
-);
-    logic [31:0] stage0, stage1, stage2, stage3;
-
-    always_comb begin
-        if (!left_right) begin // left shift
-            stage0 = shift_amt[0] ? (data_in << 1)  : data_in;
-            stage1 = shift_amt[1] ? (stage0 << 2)  : stage0;
-            stage2 = shift_amt[2] ? (stage1 << 4)  : stage1;
-            stage3 = shift_amt[3] ? (stage2 << 8)  : stage2;
-            data_out = shift_amt[4] ? (stage3 << 16) : stage3;
-        end
-        else begin // right shift (logical)
-            stage0 = shift_amt[0] ? (data_in >> 1)  : data_in;
-            stage1 = shift_amt[1] ? (stage0 >> 2)  : stage0;
-            stage2 = shift_amt[2] ? (stage1 >> 4)  : stage1;
-            stage3 = shift_amt[3] ? (stage2 >> 8)  : stage2;
-            data_out = shift_amt[4] ? (stage3 >> 16) : stage3;
-        end
-    end
-endmodule
-
-
-// ============================================================
-// 2. RVV Element Shift Unit (uses barrel shifter)
-// ============================================================
-module rvv_shift_element (
-    input  logic [31:0] vs2_elem,
-    input  logic [31:0] shift_src,
-    input  logic [1:0]  shift_op,   // 00=vsll, 01=vsrl, 10=vsra
-    input  logic [1:0]  sew,        // 00=8, 01=16, 10=32
-    output logic [31:0] vd_elem
+module vector_shift_unit #(
+    parameter VLEN = 512,
+    parameter ELEN = 32
+)(
+    // Input operands (both 512-bit)
+    input  logic [VLEN-1:0]         data1,         // vs1/scalar/imm (shift amount)
+    input  logic [VLEN-1:0]         data2,         // vs2_data (value to shift)
+    
+    // Control signals
+    input  logic [1:0]              op_type,       // 00: vv, 01: vx, 10: vi, 11: reserved
+    input  logic [2:0]              shift_op,      // Shift operation
+    input  logic [6:0]              sew,           // Standard Element Width
+    
+    // Output
+    output logic [VLEN-1:0]         shift_result,  // Shift result
+    output logic                    shift_done     // Completion signal
 );
 
-    logic [4:0]  shift_amt;
-    logic        left_right;
-    logic [31:0] shifter_in;
-    logic [31:0] shifter_out;
+    // Instruction types
+    typedef enum logic [1:0] {
+        OP_VV = 2'b00,
+        OP_VX = 2'b01,
+        OP_VI = 2'b10,
+        OP_RESERVED = 2'b11
+    } op_type_e;
 
-    // RVV shift amount masking
+    // Shift operations encoding
+    typedef enum logic [2:0] {
+        SHIFT_SLL  = 3'b000,  // Logical shift left
+        SHIFT_SRL  = 3'b001,  // Logical shift right
+        SHIFT_SRA  = 3'b010   // Arithmetic shift right
+    } shift_op_e;
+
+    // Internal signals
+    logic [VLEN-1:0] raw_result;
+    
+    // Calculate number of elements based on SEW
+    int num_elements;
     always_comb begin
         case (sew)
-            2'b00: shift_amt = shift_src[2:0]; // SEW=8
-            2'b01: shift_amt = shift_src[3:0]; // SEW=16
-            2'b10: shift_amt = shift_src[4:0]; // SEW=32
-            default: shift_amt = 5'd0;
+            8:  num_elements = 64;
+            16: num_elements = 32;
+            32: num_elements = 16;
+            64: num_elements = 8;
+            default: num_elements = 16;
         endcase
     end
 
-    // Operation control
+    // Main shift logic
     always_comb begin
-        case (shift_op)
-            2'b00: begin // vsll
-                left_right = 1'b0;
-                shifter_in = vs2_elem;
+        raw_result = '0;
+        
+        case (sew)
+            // 8-bit elements
+            8: begin
+                // Declare all variables at the beginning
+                logic [7:0] vs2_elem;
+                logic [7:0] vs1_elem;
+                logic [4:0] shift_amount;  // 5 bits for 8-bit shifts (max 31)
+                logic [7:0] shifted_result;
+                
+                for (int i = 0; i < 64; i++) begin
+                    if (i < num_elements) begin
+                        vs2_elem = data2[i*8 +: 8];
+                        
+                        // Get shift amount based on instruction type
+                        case (op_type)
+                            OP_VV: begin
+                                // For vv: shift amount from vs1
+                                vs1_elem = data1[i*8 +: 8];
+                                shift_amount = vs1_elem[4:0];  // Use lower 5 bits
+                            end
+                            OP_VX: begin
+                                // For vx: scalar shift amount
+                                vs1_elem = data1[7:0];
+                                shift_amount = vs1_elem[4:0];  // Use lower 5 bits
+                            end
+                            OP_VI: begin
+                                // For vi: immediate shift amount (5-bit unsigned)
+                                shift_amount = data1[4:0];
+                            end
+                            default: shift_amount = 5'b0;
+                        endcase
+                        
+                        // Perform shift operation
+                        case (shift_op_e'(shift_op))
+                            SHIFT_SLL: begin
+                                // Logical shift left
+                                shifted_result = vs2_elem << shift_amount;
+                            end
+                            SHIFT_SRL: begin
+                                // Logical shift right
+                                shifted_result = vs2_elem >> shift_amount;
+                            end
+                            SHIFT_SRA: begin
+                                // Arithmetic shift right (sign-extended)
+                                shifted_result = $signed(vs2_elem) >>> shift_amount;
+                            end
+                            default: shifted_result = 8'b0;
+                        endcase
+                        
+                        raw_result[i*8 +: 8] = shifted_result;
+                    end
+                end
             end
-            2'b01: begin // vsrl
-                left_right = 1'b1;
-                shifter_in = vs2_elem;
+            
+            // 16-bit elements
+            16: begin
+                // Declare all variables at the beginning
+                logic [15:0] vs2_elem;
+                logic [15:0] vs1_elem;
+                logic [4:0] shift_amount;  // 5 bits for 16-bit shifts (max 31)
+                logic [15:0] shifted_result;
+                
+                for (int i = 0; i < 32; i++) begin
+                    if (i < num_elements) begin
+                        vs2_elem = data2[i*16 +: 16];
+                        
+                        // Get shift amount based on instruction type
+                        case (op_type)
+                            OP_VV: begin
+                                vs1_elem = data1[i*16 +: 16];
+                                shift_amount = vs1_elem[4:0];  // Use lower 5 bits
+                            end
+                            OP_VX: begin
+                                vs1_elem = data1[15:0];
+                                shift_amount = vs1_elem[4:0];  // Use lower 5 bits
+                            end
+                            OP_VI: begin
+                                shift_amount = data1[4:0];
+                            end
+                            default: shift_amount = 5'b0;
+                        endcase
+                        
+                        // Perform shift operation
+                        case (shift_op_e'(shift_op))
+                            SHIFT_SLL: begin
+                                // Logical shift left
+                                shifted_result = vs2_elem << shift_amount;
+                            end
+                            SHIFT_SRL: begin
+                                // Logical shift right
+                                shifted_result = vs2_elem >> shift_amount;
+                            end
+                            SHIFT_SRA: begin
+                                // Arithmetic shift right (sign-extended)
+                                shifted_result = $signed(vs2_elem) >>> shift_amount;
+                            end
+                            default: shifted_result = 16'b0;
+                        endcase
+                        
+                        raw_result[i*16 +: 16] = shifted_result;
+                    end
+                end
             end
-            2'b10: begin // vsra
-                left_right = 1'b1;
-                shifter_in = {{32{vs2_elem[31]}}, vs2_elem}[31:0];
+            
+            // 32-bit elements
+            32: begin
+                // Declare all variables at the beginning
+                logic [31:0] vs2_elem;
+                logic [31:0] vs1_elem;
+                logic [4:0] shift_amount;  // 5 bits for 32-bit shifts (max 31)
+                logic [31:0] shifted_result;
+                
+                for (int i = 0; i < 16; i++) begin
+                    if (i < num_elements) begin
+                        vs2_elem = data2[i*32 +: 32];
+                        
+                        // Get shift amount based on instruction type
+                        case (op_type)
+                            OP_VV: begin
+                                vs1_elem = data1[i*32 +: 32];
+                                shift_amount = vs1_elem[4:0];  // Use lower 5 bits
+                            end
+                            OP_VX: begin
+                                vs1_elem = data1[31:0];
+                                shift_amount = vs1_elem[4:0];  // Use lower 5 bits
+                            end
+                            OP_VI: begin
+                                shift_amount = data1[4:0];
+                            end
+                            default: shift_amount = 5'b0;
+                        endcase
+                        
+                        // Perform shift operation
+                        case (shift_op_e'(shift_op))
+                            SHIFT_SLL: begin
+                                // Logical shift left
+                                shifted_result = vs2_elem << shift_amount;
+                            end
+                            SHIFT_SRL: begin
+                                // Logical shift right
+                                shifted_result = vs2_elem >> shift_amount;
+                            end
+                            SHIFT_SRA: begin
+                                // Arithmetic shift right (sign-extended)
+                                shifted_result = $signed(vs2_elem) >>> shift_amount;
+                            end
+                            default: shifted_result = 32'b0;
+                        endcase
+                        
+                        raw_result[i*32 +: 32] = shifted_result;
+                    end
+                end
             end
+            
             default: begin
-                left_right = 1'b0;
-                shifter_in = vs2_elem;
+                raw_result = '0;
             end
         endcase
     end
 
-    barrel_shifter u_barrel (
-        .data_in      (shifter_in),
-        .shift_amt    (shift_amt),
-        .left_right   (left_right),
-        .shift_rotate (1'b0),
-        .data_out     (shifter_out)
-    );
-
-    assign vd_elem = shifter_out;
-
-endmodule
-
-
-// ============================================================
-// 3. RVV Shift Lane (128-bit)
-// ============================================================
-module rvv_shift_lane (
-    input  logic [127:0] vs2_lane,
-    input  logic [127:0] vs1_lane,
-    input  logic [31:0]  rs1_scalar,
-    input  logic         use_scalar, // 1=vx/vi, 0=vv
-    input  logic [1:0]   shift_op,
-    input  logic [1:0]   sew,
-    output logic [127:0] vd_lane
-);
-
-    integer i;
-    logic [31:0] vs2_elem, shift_src, vd_elem;
-
-    always_comb begin
-        vd_lane = '0;
-
-        case (sew)
-
-            // SEW = 8
-            2'b00: for (i = 0; i < 16; i++) begin
-                vs2_elem  = {24'b0, vs2_lane[i*8 +: 8]};
-                shift_src = use_scalar ? rs1_scalar
-                                        : {24'b0, vs1_lane[i*8 +: 8]};
-                rvv_shift_element u_elem (vs2_elem, shift_src, shift_op, sew, vd_elem);
-                vd_lane[i*8 +: 8] = vd_elem[7:0];
-            end
-
-            // SEW = 16
-            2'b01: for (i = 0; i < 8; i++) begin
-                vs2_elem  = {16'b0, vs2_lane[i*16 +: 16]};
-                shift_src = use_scalar ? rs1_scalar
-                                        : {16'b0, vs1_lane[i*16 +: 16]};
-                rvv_shift_element u_elem (vs2_elem, shift_src, shift_op, sew, vd_elem);
-                vd_lane[i*16 +: 16] = vd_elem[15:0];
-            end
-
-            // SEW = 32
-            2'b10: for (i = 0; i < 4; i++) begin
-                vs2_elem  = vs2_lane[i*32 +: 32];
-                shift_src = use_scalar ? rs1_scalar
-                                        : vs1_lane[i*32 +: 32];
-                rvv_shift_element u_elem (vs2_elem, shift_src, shift_op, sew, vd_elem);
-                vd_lane[i*32 +: 32] = vd_elem;
-            end
-        endcase
-    end
-endmodule
-
-
-// ============================================================
-// 4. Top-Level RVV Shift Unit (4 lanes, 512-bit)
-// ============================================================
-module vector_shift_unit (
-    input  logic [`MAX_VLEN-1:0] vs2_i,
-    input  logic [`MAX_VLEN-1:0] vs1_i,
-    input  logic [31:0]  rs1_i,
-    input  logic         use_scalar,
-    input  logic [1:0]   shift_op,
-    input  logic [1:0]   sew,
-    output logic [`MAX_VLEN-1:0] vd_o
-);
-
-    genvar l;
-
-    generate
-        for (l = 0; l < 4; l++) begin : LANES
-            rvv_shift_lane u_lane (
-                .vs2_lane   (vs2_i[l*128 +: 128]),
-                .vs1_lane   (vs1_i[l*128 +: 128]),
-                .rs1_scalar (rs1_i),
-                .use_scalar (use_scalar),
-                .shift_op   (shift_op),
-                .sew        (sew),
-                .vd_lane    (vd_o[l*128 +: 128])
-            );
-        end
-    endgenerate
+    assign shift_result = raw_result;
+    assign shift_done = 1'b1;  // Combinational operation
 
 endmodule

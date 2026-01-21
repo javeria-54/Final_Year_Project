@@ -1,8 +1,0 @@
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dada.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module dadda_8
-INFO: [VRFC 10-311] analyzing module csa_dadda
-INFO: [VRFC 10-311] analyzing module HA
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/javeria/Documents/Final_Year_Project/rtl/execution_unit/multiplier_8/dadda_tb.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module dadda_8TB
-INFO: [VRFC 10-2263] Analyzing Verilog file "/home/javeria/Documents/Final_Year_Project/rtl/project_1/project_1.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module glbl

@@ -13,7 +13,7 @@ module vec_decode(
     output  logic [`XLEN-1:0]       vec_read_addr_1,        // vs1_addr
     output  logic [`XLEN-1:0]       vec_read_addr_2,        // vs2_addr
     output  logic [`XLEN-1:0]       vec_write_addr,         // vd_addr
-    output  logic [`MAX_VLEN-1:0]   vec_imm,
+    output  logic [`VLEN-1:0]       vec_imm,
     output  logic                   vec_mask,
 
     // vec_decode -> vector load
