@@ -7,7 +7,7 @@
 module vec_regfile (
     // Inputs
     input   logic                           clk, reset,
-    input   logic   [ADDR_WIDTH-1:0]        raddr_1, raddr_2,  // The address of the vector registers to be read
+    input   logic   [ADDR_WIDTH-1:0]        raddr_1, raddr_2, raddr_3,  // The address of the vector registers to be read
     input   logic   [DATA_WIDTH-1:0]        wdata,             // The vector that is to be written in the vector register
     input   logic   [ADDR_WIDTH-1:0]        waddr,             // The address of the vector register where the vector is written
     input   logic                           wr_en,             // The enable signal to write in the vector register 
@@ -17,7 +17,7 @@ module vec_regfile (
     input   logic                           mask_operation,    // This signal tell this instruction is going to perform mask register update 
     input   logic                           mask_wr_en,        // This the enable signal for updating the mask value                                                
     // Outputs 
-    output  logic   [DATA_WIDTH-1:0]        rdata_1, rdata_2,  // The read data from the vector register file
+    output  logic   [DATA_WIDTH-1:0]        rdata_1, rdata_2, rdata_3,  // The read data from the vector register file
     output  logic   [DATA_WIDTH-1:0]        dst_data,          // The data of the destination register that is to be replaced with the data after the opertaion and masking
     output  logic   [VECTOR_LENGTH-1:0]     vector_length,     // Width of the vector depending on LMUL
     output  logic                           wrong_addr,        // Signal to indicate an invalid address

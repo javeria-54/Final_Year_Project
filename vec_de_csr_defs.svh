@@ -17,56 +17,57 @@ typedef enum logic [6:0] {
 } v_opcode_e;
 
 typedef enum logic [5:0] {
-    VADD = 6'b000000,
-    VSUB = 6'b000010,
-    VRSUB = 6'b000011,
+    VADD    = 6'b000000,
+    VSUB    = 6'b000010,
+    VRSUB   = 6'b000011,
 
-    VMINU = 6'b000100,
-    VMIN = 6'b000101,
-    VMAXU = 6'b000110,
-    VMAX = 6'b000111,
+    VMINU   = 6'b000100,
+    VMIN    = 6'b000101,
+    VMAXU   = 6'b000110,
+    VMAX    = 6'b000111,
 
-    VAND = 6'b001001,
-    VOR = 6'b001010,
-    VXOR = 6'b001011,
+    VAND    = 6'b001001,
+    VOR     = 6'b001010,
+    VXOR    = 6'b001011,
+
+    VMSEQ   = 6'b011000,
+    VMSNE   = 6'b011001,
+    VMSLTU  = 6'b011010,
+    VMSLT   = 6'b011011,
+    VMSLEU  = 6'b011100,
+    VMSLE   = 6'b011101,
+    VMSGTU  = 6'b011110,
+    VMSGT   = 6'b011111,
+
+    VSLL    = 6'b100101,    
+    VSRL    = 6'b101000,
+    VSRA    = 6'b101001,
+
+    VMV     = 6'b010111,
+
+    VSSRL   = 6'b101010,
+    VSSRA   = 6'b101011,
+    VNSRL   = 6'b101100,
+    VNSRA   = 6'b101101,
     
-    VADC = 6'b010000,
-    VMADC = 6'b010001,
+    VADC    = 6'b010000,
+    VMADC   = 6'b010001,
 
-    VSBC = 6'b010010,
-    VMSBC = 6'b010011,
+    VSBC    = 6'b010010,
+    VMSBC   = 6'b010011,
 
-    VMSEQ = 6'b011000,
-    VMSNE = 6'b011001,
-    VMSLTU = 6'b011010,
-    VMSLT = 6'b011011,
-    VMSLEU = 6'b011100,
-    VMSLE = 6'b011101,
-    VMSGTU = 6'b011110,
-    VMSGT = 6'b011111,
-
-    VSLL = 6'b100101,    
-    VSRL = 6'b101000,
-    VSRA = 6'b101001,
-    
-    VSSRL = 6'b101010,
-    VSSRA = 6'b101011,
-    VNSRL = 6'b101100,
-    VNSRA = 6'b101101,
-
-    VSMUL = 6'b100111
-
+    VSMUL   = 6'b100111
 } v_func6_vix_e;
 
 typedef enum logic [5:0] {
-    VMULHU = 6'b100100,
-    VMUL = 6'b100101,
+    VMULHU  = 6'b100100,
+    VMUL    = 6'b100101,
     VMULHSU = 6'b100110,
-    VMULH = 6'b100111,
-    VMADD = 6'b101001,
-    VNMSUB = 6'b101011,
-    VMACC  = 6'b101101,
-    VNMSAC = 6'b101111
+    VMULH   = 6'b100111,
+    VMADD   = 6'b101001,
+    VNMSUB  = 6'b101011,
+    VMACC   = 6'b101101,
+    VNMSAC  = 6'b101111
 
 } v_func6_vx_e;
 
@@ -123,7 +124,5 @@ typedef struct packed {
     logic [11:7] rd;
     logic [6:0] opcode;
 } varith_type_t;
-
-
 
 `endif

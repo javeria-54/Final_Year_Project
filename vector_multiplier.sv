@@ -1,5 +1,3 @@
-`include "vector_processor_defs.svh"
-
 module multiplier_8 (
     input logic         clk,
     input logic         reset,
@@ -150,10 +148,10 @@ module multiplier_8 (
     // Multiplier A inputs (using absolute values)
     assign mult1_A = A0_abs;
     assign mult2_A = A1_abs;
-    assign mult3_A = A2_abs;
-    assign mult4_A = A3_abs;
-    assign mult5_A = A0_abs;
-    assign mult6_A = A1_abs;
+    assign mult3_A = (sew == 2'b01 ) ? A0_abs : A2_abs ;
+    assign mult4_A = (sew == 2'b01 ) ? A1_abs : A3_abs ;
+    assign mult5_A = (sew == 2'b01 ) ? A2_abs : A0_abs ;
+    assign mult6_A = (sew == 2'b01 ) ? A3_abs : A1_abs ;
     assign mult7_A = A2_abs;
     assign mult8_A = A3_abs;
 
@@ -197,204 +195,145 @@ module multiplier_8 (
 
 endmodule
 
+// dadda multiplier
+// A - 8 bits , B - 8bits, y(output) - 16bits
 
-module wallaceTreeMultiplier8Bit (result, a, b);
-    output logic [15:0] result;
-    input logic [7:0] a;
-    input logic [7:0] b;
-
-    logic [7:0] wallaceTree[7:0];
-    integer i, j;
-
-    always_comb begin
-        for(i = 0;i < 8;i = i+1)
-            for(j = 0;j < 8;j = j+1)
-                wallaceTree[i][j] = a[i] & b[j];
-    end
+module dadda_8(A,B,y);
     
-    // result[0]
-    assign result[0] = wallaceTree[0][0];
+    input [7:0] A;
+    input [7:0] B;
+    output wire [15:0] y;
+    wire  gen_pp [0:7][7:0];
+// stage-1 sum and carry
+    wire [0:5]s1,c1;
+// stage-2 sum and carry
+    wire [0:13]s2,c2;   
+// stage-3 sum and carry
+    wire [0:9]s3,c3;
+// stage-4 sum and carry
+    wire [0:11]s4,c4;
+// stage-5 sum and carry
+    wire [0:13]s5,c5;
 
-    // result[1]
-    logic result1_c;
+// generating partial products 
+genvar i;
+genvar j;
+
+for(i = 0; i<8; i=i+1)begin
+
+   for(j = 0; j<8;j = j+1)begin
+      assign gen_pp[i][j] = A[j]*B[i];
+end
+end
+
+//Reduction by stages.
+// di_values = 2,3,4,6,8,13...
+
+//Stage 1 - reducing fom 8 to 6  
+    HA h1(.a(gen_pp[6][0]),.b(gen_pp[5][1]),.Sum(s1[0]),.Cout(c1[0]));
+    HA h2(.a(gen_pp[4][3]),.b(gen_pp[3][4]),.Sum(s1[2]),.Cout(c1[2]));
+    HA h3(.a(gen_pp[4][4]),.b(gen_pp[3][5]),.Sum(s1[4]),.Cout(c1[4]));
+
+    csa_dadda c11(.A(gen_pp[7][0]),.B(gen_pp[6][1]),.Cin(gen_pp[5][2]),.Y(s1[1]),.Cout(c1[1]));
+    csa_dadda c12(.A(gen_pp[7][1]),.B(gen_pp[6][2]),.Cin(gen_pp[5][3]),.Y(s1[3]),.Cout(c1[3]));     
+    csa_dadda c13(.A(gen_pp[7][2]),.B(gen_pp[6][3]),.Cin(gen_pp[5][4]),.Y(s1[5]),.Cout(c1[5]));
     
-    HA result1_HA_1(result1_c, result[1], wallaceTree[0][1], wallaceTree[1][0]);
+//Stage 2 - reducing fom 6 to 4
 
-    // result[2]
-    logic result2_c_temp_1, result2_c, result2_temp_1;
-    FA result2_FA_1(result2_c_temp_1, result2_temp_1, wallaceTree[0][2], wallaceTree[1][1], result1_c);
-    HA result2_HA_1(result2_c, result[2], wallaceTree[2][0], result2_temp_1);
+    HA h4(.a(gen_pp[4][0]),.b(gen_pp[3][1]),.Sum(s2[0]),.Cout(c2[0]));
+    HA h5(.a(gen_pp[2][3]),.b(gen_pp[1][4]),.Sum(s2[2]),.Cout(c2[2]));
 
-    // result[3]
-    logic result3_c_temp_1, result3_c_temp_2, result3_c, result3_temp_1, result3_temp_2;
-    FA result3_FA_1(result3_c_temp_1, result3_temp_1, wallaceTree[0][3], wallaceTree[1][2], result2_c);
-    FA result3_FA_2(result3_c_temp_2, result3_temp_2, wallaceTree[2][1], result3_temp_1, result2_c_temp_1);
-    HA result3_HA_1(result3_c, result[3], wallaceTree[3][0], result3_temp_2);
+    csa_dadda c21(.A(gen_pp[5][0]),.B(gen_pp[4][1]),.Cin(gen_pp[3][2]),.Y(s2[1]),.Cout(c2[1]));
+    csa_dadda c22(.A(s1[0]),.B(gen_pp[4][2]),.Cin(gen_pp[3][3]),.Y(s2[3]),.Cout(c2[3]));
+    csa_dadda c23(.A(gen_pp[2][4]),.B(gen_pp[1][5]),.Cin(gen_pp[0][6]),.Y(s2[4]),.Cout(c2[4]));
+    csa_dadda c24(.A(s1[1]),.B(s1[2]),.Cin(c1[0]),.Y(s2[5]),.Cout(c2[5]));
+    csa_dadda c25(.A(gen_pp[2][5]),.B(gen_pp[1][6]),.Cin(gen_pp[0][7]),.Y(s2[6]),.Cout(c2[6]));
+    csa_dadda c26(.A(s1[3]),.B(s1[4]),.Cin(c1[1]),.Y(s2[7]),.Cout(c2[7]));
+    csa_dadda c27(.A(c1[2]),.B(gen_pp[2][6]),.Cin(gen_pp[1][7]),.Y(s2[8]),.Cout(c2[8]));
+    csa_dadda c28(.A(s1[5]),.B(c1[3]),.Cin(c1[4]),.Y(s2[9]),.Cout(c2[9]));
+    csa_dadda c29(.A(gen_pp[4][5]),.B(gen_pp[3][6]),.Cin(gen_pp[2][7]),.Y(s2[10]),.Cout(c2[10]));
+    csa_dadda c210(.A(gen_pp[7][3]),.B(c1[5]),.Cin(gen_pp[6][4]),.Y(s2[11]),.Cout(c2[11]));
+    csa_dadda c211(.A(gen_pp[5][5]),.B(gen_pp[4][6]),.Cin(gen_pp[3][7]),.Y(s2[12]),.Cout(c2[12]));
+    csa_dadda c212(.A(gen_pp[7][4]),.B(gen_pp[6][5]),.Cin(gen_pp[5][6]),.Y(s2[13]),.Cout(c2[13]));
+    
+//Stage 3 - reducing fom 4 to 3
 
-    // result[4]
-    logic result4_c_temp_1, result4_c_temp_2, result4_c_temp_3, result4_c, result4_temp_1, result4_temp_2, result4_temp_3;
-    FA result4_FA_1(result4_c_temp_1, result4_temp_1, wallaceTree[0][4], wallaceTree[1][3], result3_c);
-    FA result4_FA_2(result4_c_temp_2, result4_temp_2, wallaceTree[2][2], result4_temp_1, result3_c_temp_1);
-    FA result4_FA_3(result4_c_temp_3, result4_temp_3, wallaceTree[3][1], result4_temp_2, result3_c_temp_2);
-    HA result4_HA_1(result4_c, result[4], wallaceTree[4][0], result4_temp_3);
+    HA h6(.a(gen_pp[3][0]),.b(gen_pp[2][1]),.Sum(s3[0]),.Cout(c3[0]));
 
-    // result[5]
-    logic result5_c_temp_1, result5_c_temp_2, result5_c_temp_3, result5_c_temp_4, result5_c, result5_temp_1, result5_temp_2, result5_temp_3, result5_temp_4;
-    FA result5_FA_1(result5_c_temp_1, result5_temp_1, wallaceTree[0][5], wallaceTree[1][4], result4_c);
-    FA result5_FA_2(result5_c_temp_2, result5_temp_2, wallaceTree[2][3], result5_temp_1, result4_c_temp_1);
-    FA result5_FA_3(result5_c_temp_3, result5_temp_3, wallaceTree[3][2], result5_temp_2, result4_c_temp_2);
-    FA result5_FA_4(result5_c_temp_4, result5_temp_4, wallaceTree[4][1], result5_temp_3, result4_c_temp_3);
-    HA result5_HA_1(result5_c, result[5], wallaceTree[5][0], result5_temp_4);
+    csa_dadda c31(.A(s2[0]),.B(gen_pp[2][2]),.Cin(gen_pp[1][3]),.Y(s3[1]),.Cout(c3[1]));
+    csa_dadda c32(.A(s2[1]),.B(s2[2]),.Cin(c2[0]),.Y(s3[2]),.Cout(c3[2]));
+    csa_dadda c33(.A(c2[1]),.B(c2[2]),.Cin(s2[3]),.Y(s3[3]),.Cout(c3[3]));
+    csa_dadda c34(.A(c2[3]),.B(c2[4]),.Cin(s2[5]),.Y(s3[4]),.Cout(c3[4]));
+    csa_dadda c35(.A(c2[5]),.B(c2[6]),.Cin(s2[7]),.Y(s3[5]),.Cout(c3[5]));
+    csa_dadda c36(.A(c2[7]),.B(c2[8]),.Cin(s2[9]),.Y(s3[6]),.Cout(c3[6]));
+    csa_dadda c37(.A(c2[9]),.B(c2[10]),.Cin(s2[11]),.Y(s3[7]),.Cout(c3[7]));
+    csa_dadda c38(.A(c2[11]),.B(c2[12]),.Cin(s2[13]),.Y(s3[8]),.Cout(c3[8]));
+    csa_dadda c39(.A(gen_pp[7][5]),.B(gen_pp[6][6]),.Cin(gen_pp[5][7]),.Y(s3[9]),.Cout(c3[9]));
 
-    // result[6]
-    logic result6_c_temp_1, result6_c_temp_2, result6_c_temp_3, result6_c_temp_4, result6_c_temp_5, result6_c, result6_temp_1, result6_temp_2, result6_temp_3, result6_temp_4, result6_temp_5;
-    FA result6_FA_1(result6_c_temp_1, result6_temp_1, wallaceTree[0][6], wallaceTree[1][5], result5_c);
-    FA result6_FA_2(result6_c_temp_2, result6_temp_2, wallaceTree[2][4], result6_temp_1, result5_c_temp_1);
-    FA result6_FA_3(result6_c_temp_3, result6_temp_3, wallaceTree[3][3], result6_temp_2, result5_c_temp_2);
-    FA result6_FA_4(result6_c_temp_4, result6_temp_4, wallaceTree[4][2], result6_temp_3, result5_c_temp_3);
-    FA result6_FA_5(result6_c_temp_5, result6_temp_5, wallaceTree[5][1], result6_temp_4, result5_c_temp_4);
-    HA result6_HA_1(result6_c, result[6], wallaceTree[6][0], result6_temp_5);
+//Stage 4 - reducing fom 3 to 2
 
-    // result[7]
-    logic result7_c_temp_1, result7_c_temp_2, result7_c_temp_3, result7_c_temp_4, result7_c_temp_5, result7_c_temp_6, result7_c, result7_temp_1, result7_temp_2, result7_temp_3, result7_temp_4, result7_temp_5, result7_temp_6;
-    FA result7_FA_1(result7_c_temp_1, result7_temp_1, wallaceTree[0][7], wallaceTree[1][6], result6_c);
-    FA result7_FA_2(result7_c_temp_2, result7_temp_2, wallaceTree[2][5], result7_temp_1, result6_c_temp_1);
-    FA result7_FA_3(result7_c_temp_3, result7_temp_3, wallaceTree[3][4], result7_temp_2, result6_c_temp_2);
-    FA result7_FA_4(result7_c_temp_4, result7_temp_4, wallaceTree[4][3], result7_temp_3, result6_c_temp_3);
-    FA result7_FA_5(result7_c_temp_5, result7_temp_5, wallaceTree[5][2], result7_temp_4, result6_c_temp_4);
-    FA result7_FA_6(result7_c_temp_6, result7_temp_6, wallaceTree[6][1], result7_temp_5, result6_c_temp_5);
-    HA result7_HA_1(result7_c, result[7], wallaceTree[7][0], result7_temp_6);
+    HA h7(.a(gen_pp[2][0]),.b(gen_pp[1][1]),.Sum(s4[0]),.Cout(c4[0]));
 
-    // result[8]
-    logic result8_c_temp_1, result8_c_temp_2, result8_c_temp_3, result8_c_temp_4, result8_c_temp_5, result8_c_temp_6, result8_c, result8_temp_1, result8_temp_2, result8_temp_3, result8_temp_4, result8_temp_5, result8_temp_6;
-    FA result8_FA_1(result8_c_temp_1, result8_temp_1, wallaceTree[1][7], wallaceTree[2][6], result7_c);
-    FA result8_FA_2(result8_c_temp_2, result8_temp_2, wallaceTree[3][5], result8_temp_1, result7_c_temp_1);
-    FA result8_FA_3(result8_c_temp_3, result8_temp_3, wallaceTree[4][4], result8_temp_2, result7_c_temp_2);
-    FA result8_FA_4(result8_c_temp_4, result8_temp_4, wallaceTree[5][3], result8_temp_3, result7_c_temp_3);
-    FA result8_FA_5(result8_c_temp_5, result8_temp_5, wallaceTree[6][2], result8_temp_4, result7_c_temp_4);
-    FA result8_FA_6(result8_c_temp_6, result8_temp_6, wallaceTree[7][1], result8_temp_5, result7_c_temp_5);
-    HA result8_HA_1(result8_c, result[8], result8_temp_6, result7_c_temp_6);
+    csa_dadda c41(.A(s3[0]),.B(gen_pp[1][2]),.Cin(gen_pp[0][3]),.Y(s4[1]),.Cout(c4[1]));
+    csa_dadda c42(.A(c3[0]),.B(s3[1]),.Cin(gen_pp[0][4]),.Y(s4[2]),.Cout(c4[2]));
+    csa_dadda c43(.A(c3[1]),.B(s3[2]),.Cin(gen_pp[0][5]),.Y(s4[3]),.Cout(c4[3]));
+    csa_dadda c44(.A(c3[2]),.B(s3[3]),.Cin(s2[4]),.Y(s4[4]),.Cout(c4[4]));
+    csa_dadda c45(.A(c3[3]),.B(s3[4]),.Cin(s2[6]),.Y(s4[5]),.Cout(c4[5]));
+    csa_dadda c46(.A(c3[4]),.B(s3[5]),.Cin(s2[8]),.Y(s4[6]),.Cout(c4[6]));
+    csa_dadda c47(.A(c3[5]),.B(s3[6]),.Cin(s2[10]),.Y(s4[7]),.Cout(c4[7]));
+    csa_dadda c48(.A(c3[6]),.B(s3[7]),.Cin(s2[12]),.Y(s4[8]),.Cout(c4[8]));
+    csa_dadda c49(.A(c3[7]),.B(s3[8]),.Cin(gen_pp[4][7]),.Y(s4[9]),.Cout(c4[9]));
+    csa_dadda c410(.A(c3[8]),.B(s3[9]),.Cin(c2[13]),.Y(s4[10]),.Cout(c4[10]));
+    csa_dadda c411(.A(c3[9]),.B(gen_pp[7][6]),.Cin(gen_pp[6][7]),.Y(s4[11]),.Cout(c4[11]));
+    
+//Stage 5 - reducing fom 2 to 1
+    // adding total sum and carry to get final output
 
-    // result[9]
-    logic result9_c_temp_1, result9_c_temp_2, result9_c_temp_3, result9_c_temp_4, result9_c_temp_5, result9_c, result9_temp_1, result9_temp_2, result9_temp_3, result9_temp_4, result9_temp_5;
-    FA result9_FA_1(result9_c_temp_1, result9_temp_1, wallaceTree[2][7], wallaceTree[3][6], result8_c);
-    FA result9_FA_2(result9_c_temp_2, result9_temp_2, wallaceTree[4][5], result9_temp_1, result8_c_temp_1);
-    FA result9_FA_3(result9_c_temp_3, result9_temp_3, wallaceTree[5][4], result9_temp_2, result8_c_temp_2);
-    FA result9_FA_4(result9_c_temp_4, result9_temp_4, wallaceTree[6][3], result9_temp_3, result8_c_temp_3);
-    FA result9_FA_5(result9_c_temp_5, result9_temp_5, wallaceTree[7][2], result9_temp_4, result8_c_temp_4);
-    FA result9_FA_6(result9_c, result[9], result9_temp_5, result8_c_temp_5, result8_c_temp_6);
+    HA h8(.a(gen_pp[1][0]),.b(gen_pp[0][1]),.Sum(y[1]),.Cout(c5[0]));
 
-    // result[10]
-    logic result10_c_temp_1, result10_c_temp_2, result10_c_temp_3, result10_c_temp_4, result10_c, result10_temp_1, result10_temp_2, result10_temp_3, result10_temp_4;
-    FA result10_FA_1(result10_c_temp_1, result10_temp_1, wallaceTree[3][7], wallaceTree[4][6], result9_c);
-    FA result10_FA_2(result10_c_temp_2, result10_temp_2, wallaceTree[5][5], result10_temp_1, result9_c_temp_1);
-    FA result10_FA_3(result10_c_temp_3, result10_temp_3, wallaceTree[6][4], result10_temp_2, result9_c_temp_2);
-    FA result10_FA_4(result10_c_temp_4, result10_temp_4, wallaceTree[7][3], result10_temp_3, result9_c_temp_3);
-    FA result10_FA_5(result10_c, result[10], result10_temp_4, result9_c_temp_4, result9_c_temp_5);
+    csa_dadda c51(.A(s4[0]),.B(gen_pp[0][2]),.Cin(c5[0]),.Y(y[2]),.Cout(c5[1]));
+    csa_dadda c52(.A(c4[0]),.B(s4[1]),.Cin(c5[1]),.Y(y[3]),.Cout(c5[2]));
+    csa_dadda c54(.A(c4[1]),.B(s4[2]),.Cin(c5[2]),.Y(y[4]),.Cout(c5[3]));
+    csa_dadda c55(.A(c4[2]),.B(s4[3]),.Cin(c5[3]),.Y(y[5]),.Cout(c5[4]));
+    csa_dadda c56(.A(c4[3]),.B(s4[4]),.Cin(c5[4]),.Y(y[6]),.Cout(c5[5]));
+    csa_dadda c57(.A(c4[4]),.B(s4[5]),.Cin(c5[5]),.Y(y[7]),.Cout(c5[6]));
+    csa_dadda c58(.A(c4[5]),.B(s4[6]),.Cin(c5[6]),.Y(y[8]),.Cout(c5[7]));
+    csa_dadda c59(.A(c4[6]),.B(s4[7]),.Cin(c5[7]),.Y(y[9]),.Cout(c5[8]));
+    csa_dadda c510(.A(c4[7]),.B(s4[8]),.Cin(c5[8]),.Y(y[10]),.Cout(c5[9]));
+    csa_dadda c511(.A(c4[8]),.B(s4[9]),.Cin(c5[9]),.Y(y[11]),.Cout(c5[10]));
+    csa_dadda c512(.A(c4[9]),.B(s4[10]),.Cin(c5[10]),.Y(y[12]),.Cout(c5[11]));
+    csa_dadda c513(.A(c4[10]),.B(s4[11]),.Cin(c5[11]),.Y(y[13]),.Cout(c5[12]));
+    csa_dadda c514(.A(c4[11]),.B(gen_pp[7][7]),.Cin(c5[12]),.Y(y[14]),.Cout(c5[13]));
 
-    // result[11]
-    logic result11_c_temp_1, result11_c_temp_2, result11_c_temp_3, result11_c, result11_temp_1, result11_temp_2, result11_temp_3;
-    FA result11_FA_1(result11_c_temp_1, result11_temp_1, wallaceTree[4][7], wallaceTree[5][6], result10_c);
-    FA result11_FA_2(result11_c_temp_2, result11_temp_2, wallaceTree[6][5], result11_temp_1, result10_c_temp_1);
-    FA result11_FA_3(result11_c_temp_3, result11_temp_3, wallaceTree[7][4], result11_temp_2, result10_c_temp_2);
-    FA result11_FA_4(result11_c, result[11], result11_temp_3, result10_c_temp_3, result10_c_temp_4);
+    assign y[0] =  gen_pp[0][0];
+    assign y[15] = c5[13];
+    
+endmodule 
 
-    // result[12]
-    logic result12_c_temp_1, result12_c_temp_2, result12_c, result12_temp_1, result12_temp_2;
-    FA result12_FA_1(result12_c_temp_1, result12_temp_1, wallaceTree[5][7], wallaceTree[6][6], result11_c);
-    FA result12_FA_2(result12_c_temp_2, result12_temp_2, wallaceTree[7][5], result12_temp_1, result11_c_temp_1);
-    FA result12_FA_3(result12_c, result[12], result12_temp_2, result11_c_temp_2, result11_c_temp_3);
+// Designing in Half Adder 
+// Sum = a XOR b, Cout = a AND b
 
-    // result[13]
-    logic result13_c_temp_1, result13_c, result13_temp_1;
-    FA result13_FA_1(result13_c_temp_1, result13_temp_1, wallaceTree[6][7], wallaceTree[7][6], result12_c);
-    FA result13_FA_2(result13_c, result[13], result13_temp_1, result12_c_temp_2, result12_c_temp_1);
 
-    // result[14]
-    logic result14_c;
-    FA result14_FA_1(result14_c, result[14], wallaceTree[7][7], result13_c, result13_c_temp_1);
+module HA(a, b, Sum, Cout);
 
-    // result[15]
-    assign result[15] = result14_c;
+input a, b; // a and b are inputs with size 1-bit
+output Sum, Cout; // Sum and Cout are outputs with size 1-bit
+
+assign Sum = a ^ b; 
+assign Cout = a & b; 
+
 endmodule
 
+//carry save adder -- for implementing dadda multiplier
+//csa for use of half adder and full adder.
 
-module nBitCarryLookAheadAdder #(parameter n = 4)(total, A, B);
-    output logic [n:0] total;
-    input logic [n-1:0] A;
-    input logic [n-1:0] B;
-
-    logic[n-1:0] gi, pi, sum;
-    logic[n:0] ci;
-
-    assign ci[0] = 1'b0;
-
-    genvar i;
-    generate
-        for(i = 0;i < n;i = i+1) begin: giAndpi
-            assign gi[i] = A[i]&B[i];
-            assign pi[i] = A[i]^B[i];
-            assign ci[i+1] = gi[i]|(pi[i]&ci[i]);
-        end
-    endgenerate
-
-    genvar j;
-    generate
-        for(j = 0;j < n;j = j+1) begin: calculation
-            FA adder(.Cout(), .sum(sum[j]), .A(A[j]), .B(B[j]), .Cin(ci[j]));
-        end
-    endgenerate
-
-    assign total = {ci[n], sum[n-1:0]};
-endmodule
-
-
-module HA (carry, sum, A, B);
-    output logic carry;
-    output logic sum;
-    input logic A;
-    input logic B;
-
-    // instantiating sum and carry primitives
-    outSum s(sum, A, B);
-    outCarry c(carry, A, B);
-endmodule
-
-
-module FA (Cout, sum, A, B, Cin);
-    output logic Cout;
-    output logic sum;
-    input logic A;
-    input logic B;
-    input logic Cin;
-
-    logic temp_sum, temp_carry1, temp_carry2;
-
-    // Sum = A XOR B XOR Cin
-    assign temp_sum = A ^ B;
-    assign sum = temp_sum ^ Cin;
-
-    // Cout = (A AND B) OR (Cin AND (A XOR B))
-    assign temp_carry1 = A & B;
-    assign temp_carry2 = Cin & temp_sum;
-    assign Cout = temp_carry1 | temp_carry2;
-endmodule
-
-
-module outSum (sum, A, B);
-    output logic sum;
-    input logic A;
-    input logic B;
-
-    assign sum = A ^ B;
-endmodule
-
-module outCarry (carry, A, B);
-    output logic carry;
-    input logic A;
-    input logic B;
-
-    assign carry = A & B;
+module csa_dadda(A,B,Cin,Y,Cout);
+input A,B,Cin;
+output Y,Cout;
+    
+assign Y = A^B^Cin;
+assign Cout = (A&B)|(A&Cin)|(B&Cin);
+    
 endmodule
 
 module carry_save_8 (
@@ -409,13 +348,9 @@ module carry_save_8 (
     input  logic signed [15:0] mult_out_6,  // Partial product for multiplier 6
     input  logic signed [15:0] mult_out_7,  // Partial product for multiplier 7
     input  logic signed [15:0] mult_out_8,  // Partial product for multiplier 8
-    input logic                sign_A0, sign_A1, sign_A2, sign_A3,
-    input logic                sign_B0, sign_B1, sign_B2, sign_B3,
+    output logic               mult_done,
     output logic signed [31:0] product_1,  // Final result for multiplier 1 (or low 32 bits in 32-bit mode)
-    output logic signed [31:0] product_2,   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
-    output logic signed [31:0] product_16sew_1, product_16sew_2,
-    output logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4,
-    output logic signed [63:0] product_32sew, product    
+    output logic signed [31:0] product_2   // Final result for multiplier 2 (or high 32 bits in 32-bit mode) 
 );
 
 // Internal registers
@@ -435,7 +370,6 @@ logic   signed [16:0]   sum_accum_0, sum_accum_1, sum_accum_2, sum_accum_3;
 logic   signed [9:0]    result_0, result_1, result_2, result_3;
 logic   signed [9:0]    result_4, result_5, result_6, result_7;
 logic   signed          accum_carry_0, accum_carry_1, accum_carry_2, accum_carry_3;
-
 
 // Combined state definitions
 typedef enum logic [2:0] {
@@ -508,6 +442,12 @@ always_comb begin
     PP32_11A  = '0;          PP32_11B  = '0;        PP32_12A  = '0;          PP32_12B  = '0;
     PP32_13A  = '0;          PP32_13B  = '0;        PP32_14A  = '0;          PP32_14B  = '0;
     PP32_15A  = '0;          PP32_15B  = '0;        PP32_16A  = '0;          PP32_16B  = '0;
+
+    carry_0 = '0;           carry_1 = '0;           carry_2 = '0;           carry_3 = '0;       carry_4 = '0;
+    sum_accum_0 = '0;       sum_accum_1 = '0;       sum_accum_2 = '0;       sum_accum_3 = '0;
+    result_0 = '0;          result_1 = '0;          result_2 = '0;          result_3 = '0;
+    result_4 = '0;          result_5 = '0;          result_6 = '0;          result_7 = '0;
+    accum_carry_0 = '0;     accum_carry_1 = '0;     accum_carry_2 = '0;     accum_carry_3 = '0;
 
     case (state)
         IDLE: begin
@@ -679,10 +619,23 @@ always_comb begin
             next_state = IDLE ;
 
         end 
-        default:
-            next_state = IDLE;
     endcase
 end
+    // Sequential logic (always_ff)
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset) begin
+            mult_done <= 1'b0;
+        end else begin
+            case (state)
+                IDLE:    mult_done <= 1'b0;    
+                PP_8:    mult_done <= 1'b1;
+                PP_16:   mult_done <= 1'b1;
+                PP1_32:  mult_done <= 1'b0;
+                PP2_32:  mult_done <= 1'b1;
+                default: mult_done <= 1'b0;
+            endcase
+        end
+    end
     always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
         accum_0 <= 0;
@@ -704,67 +657,20 @@ assign product_1 =  {accum_1, accum_0} ;
 assign product_2 =  {accum_3, accum_2} ;
 
 
-// Compute absolute values based on SEW
-always_comb begin
-        product_8sew_1  = 16'h0;
-        product_8sew_2  = 16'h0;
-        product_8sew_3  = 16'h0;
-        product_8sew_4  = 16'h0;
-        product_16sew_1 = 32'h0;
-        product_16sew_2 = 32'h0;
-        product_32sew   = 64'h0;
-        product         = 0;
-    case (sew)
-        2'b00: begin // 8-bit: individual two's complement
-
-            product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 8'd1) : product_1[15:0];
-            product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 8'd1) : product_1[31:16];
-            product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 8'd1) : product_2[15:0];
-            product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 8'd1) : product_2[31:16];
-            product        = {product_8sew_4, product_8sew_3, product_8sew_2, product_8sew_1};
-
-            end
-        2'b01: begin // 16-bit: two's complement on 16-bit pairs
-
-            product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 8'd1) : product_1;
-            product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 8'd1) : product_2;
-            product = {product_16sew_2, product_16sew_1};
-               
-            end
-        2'b10: begin // 32-bit: two's complement on full 32-bit
-                
-            product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 8'd1) : {product_2, product_1};
-            product = product_32sew;
-
-            end
-       default: begin
-            product_8sew_1  = 16'h0;
-            product_8sew_2  = 16'h0;
-            product_8sew_3  = 16'h0;
-            product_8sew_4  = 16'h0;
-            product_16sew_1 = 32'h0;
-            product_16sew_2 = 32'h0;
-            product_32sew   = 64'h0;
-
-            product = {product_2 , product_1};
-
-            end
-        endcase
-    end
-
 endmodule
 
-module multiplier_top(
-    input  logic                clk,
-    input  logic                reset,
-    input  logic        [1:0]   sew,
-    input  logic signed [31:0]  data_in_A,
-    input  logic signed [31:0]  data_in_B,
-    input logic                 signed_mode,
-    output logic                count_0, 
-    output logic signed [31:0]  product_1,
-    output logic signed [31:0]  product_2,
-    output logic signed [63:0]  product
+module top(
+    input  logic               clk,
+    input  logic               reset,
+    input  logic        [1:0]  sew,
+    input  logic               signed_mode,
+    input  logic signed [31:0] data_in_A,
+    input  logic signed [31:0] data_in_B,
+    output logic               count_0, 
+    output logic               mult_done,
+    output logic signed [31:0] product_1,
+    output logic signed [31:0] product_2,
+    output logic signed [63:0] product
 );
 
     // Multiplier inputs
@@ -798,8 +704,9 @@ module multiplier_top(
         .data_in_A(data_in_A),
         .data_in_B(data_in_B),
         .sew(sew),
-        .count_0(count_0),
         .signed_mode(signed_mode),
+        
+        .count_0(count_0),
         .mult1_A(mult1_A),
         .mult2_A(mult2_A), 
         .mult3_A(mult3_A), 
@@ -816,6 +723,7 @@ module multiplier_top(
         .mult6_B(mult6_B), 
         .mult7_B(mult7_B), 
         .mult8_B(mult8_B),
+
         .sign_A0(sign_A0),
         .sign_A1(sign_A1),
         .sign_A2(sign_A2),
@@ -826,18 +734,18 @@ module multiplier_top(
         .sign_B3(sign_B3)
     );
 
-    // ──────────────────────────────────────────────
+     // ──────────────────────────────────────────────
     // Stage 2: Dadda Multipliers (8 of them)
     // ──────────────────────────────────────────────
-    wallaceTreeMultiplier8Bit wallace_1 (.a(mult1_A), .b(mult1_B), .result(mult_out_1));
-    wallaceTreeMultiplier8Bit wallace_2 (.a(mult2_A), .b(mult2_B), .result(mult_out_2));
-    wallaceTreeMultiplier8Bit wallace_3 (.a(mult3_A), .b(mult3_B), .result(mult_out_3));
-    wallaceTreeMultiplier8Bit wallace_4 (.a(mult4_A), .b(mult4_B), .result(mult_out_4));
-    wallaceTreeMultiplier8Bit wallace_5 (.a(mult5_A), .b(mult5_B), .result(mult_out_5));
-    wallaceTreeMultiplier8Bit wallace_6 (.a(mult6_A), .b(mult6_B), .result(mult_out_6));
-    wallaceTreeMultiplier8Bit wallace_7 (.a(mult7_A), .b(mult7_B), .result(mult_out_7));
-    wallaceTreeMultiplier8Bit wallace_8 (.a(mult8_A), .b(mult8_B), .result(mult_out_8));
-
+    dadda_8 dadda_1 (.A(mult1_A), .B(mult1_B), .y(mult_out_1));
+    dadda_8 dadda_2 (.A(mult2_A), .B(mult2_B), .y(mult_out_2));
+    dadda_8 dadda_3 (.A(mult3_A), .B(mult3_B), .y(mult_out_3));
+    dadda_8 dadda_4 (.A(mult4_A), .B(mult4_B), .y(mult_out_4));
+    dadda_8 dadda_5 (.A(mult5_A), .B(mult5_B), .y(mult_out_5));
+    dadda_8 dadda_6 (.A(mult6_A), .B(mult6_B), .y(mult_out_6));
+    dadda_8 dadda_7 (.A(mult7_A), .B(mult7_B), .y(mult_out_7));
+    dadda_8 dadda_8 (.A(mult8_A), .B(mult8_B), .y(mult_out_8));
+    
     // ──────────────────────────────────────────────
     //  Stage 3: 1-cycle delay (stall registers)
     // ──────────────────────────────────────────────
@@ -878,93 +786,140 @@ module multiplier_top(
         .mult_out_6(mult_out_6_delayed),
         .mult_out_7(mult_out_7_delayed),
         .mult_out_8(mult_out_8_delayed),
-        .sign_A0(sign_A0),
-        .sign_A1(sign_A1),
-        .sign_A2(sign_A2),
-        .sign_A3(sign_A3),
-        .sign_B0(sign_B0),
-        .sign_B1(sign_B1),
-        .sign_B2(sign_B2),
-        .sign_B3(sign_B3),
+        .mult_done(mult_done),
         .product_1(product_1),
-        .product_2(product_2),
-        .product_8sew_1(product_8sew_1),
-        .product_8sew_2(product_8sew_2),
-        .product_8sew_3(product_8sew_3),
-        .product_8sew_4(product_8sew_4),
-        .product_16sew_1(product_16sew_1),
-        .product_16sew_2(product_16sew_2),
-        .product_32sew(product_32sew),
-        .product(product)
+        .product_2(product_2)
     );
 
 
+// Compute absolute values based on SEW
+always_comb begin
+        product_8sew_1  = 16'h0;
+        product_8sew_2  = 16'h0;
+        product_8sew_3  = 16'h0;
+        product_8sew_4  = 16'h0;
+        product_16sew_1 = 32'h0;
+        product_16sew_2 = 32'h0;
+        product_32sew   = 64'h0;
+        product         = '0;
+    case (sew)
+        2'b00: begin // 8-bit: individual two's complement
+
+            product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 8'd1) : product_1[15:0];
+            product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 8'd1) : product_1[31:16];
+            product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 8'd1) : product_2[15:0];
+            product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 8'd1) : product_2[31:16];
+            product        = {product_8sew_4, product_8sew_3, product_8sew_2, product_8sew_1};
+
+            end
+        2'b01: begin // 16-bit: two's complement on 16-bit pairs
+
+            product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 8'd1) : product_1;
+            product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 8'd1) : product_2;
+            product = {product_16sew_2, product_16sew_1};
+               
+            end
+        2'b10: begin // 32-bit: two's complement on full 32-bit
+                
+            product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 8'd1) : {product_2, product_1};
+            product = product_32sew;
+
+            end
+       default: begin
+            product_8sew_1  = 16'h0;
+            product_8sew_2  = 16'h0;
+            product_8sew_3  = 16'h0;
+            product_8sew_4  = 16'h0;
+            product_16sew_1 = 32'h0;
+            product_16sew_2 = 32'h0;
+            product_32sew   = 64'h0;
+
+            product = {product_2 , product_1};
+
+            end
+        endcase
+    end
+
 endmodule
 
-// ============================================================================
-// 512-bit Vector Multiplier with Configurable SEW (OOP-based Design)
-// ============================================================================
-
 // Top-level wrapper for 512-bit inputs
-module vector_multiplier(
-    input  logic               clk,
-    input  logic               reset,
-    input  logic        [1:0]  sew,           // 00=8-bit, 01=16-bit, 10=32-bit
-    input  logic signed [`MAX_VLEN-1:0] data_in_A,    // 512-bit input A
-    input  logic signed [`MAX_VLEN-1:0] data_in_B,    // 512-bit input B
+module top_512(
+    input  logic                clk,
+    input  logic                reset,
+    input  logic        [1:0]   sew,           // 00=8-bit, 01=16-bit, 10=32-bit
+    input  logic signed [511:0] data_in_A,     // 512-bit input A
+    input  logic signed [511:0] data_in_B,     // 512-bit input B
     input  logic                signed_mode,
-    output logic               count_0,
-    output logic signed [`MAX_VLEN*2-1:0] product      // 1024-bit result
+    output logic                count_0,
+    output logic                mult_done,
+    output logic signed [511:0] product_1,     // Changed: aggregated output
+    output logic signed [511:0] product_2,     // Changed: aggregated output
+    output logic signed [1023:0] product       // 1024-bit result
 );
 
     // Number of 32-bit processing elements
-    localparam NUM_PES = (`MAX_VLEN / 32); 
+    localparam NUM_PES = 16;  // 512 / 32 = 16 PEs
     
+    // Per-PE signals
     logic [NUM_PES-1:0] pe_count_0;
+    logic [NUM_PES-1:0] pe_mult_done;           //  Separate done signal per PE
     logic signed [31:0] pe_product_1 [NUM_PES-1:0];
     logic signed [31:0] pe_product_2 [NUM_PES-1:0];
     logic signed [63:0] pe_product [NUM_PES-1:0];
     
+    // Generate 16 processing elements
     genvar i;
     generate
         for (i = 0; i < NUM_PES; i++) begin : gen_processing_elements
+            // Extract 32-bit slices for each PE
             localparam BASE = i * 32;
             
-            multiplier_top u_top_pe (
+            top u_top_pe (
                 .clk(clk),
                 .reset(reset),
                 .sew(sew),
+                .mult_done(pe_mult_done[i]),        //  Individual done signal
                 .signed_mode(signed_mode),
-                .data_in_A(data_in_A[BASE +: 32]),  
+                .data_in_A(data_in_A[BASE +: 32]),  // Extract 32 bits
                 .data_in_B(data_in_B[BASE +: 32]),
                 .count_0(pe_count_0[i]),
-                .product_1(pe_product_1[i]),
-                .product_2(pe_product_2[i]),
+                .product_1(pe_product_1[i]),        //  32-bit per PE
+                .product_2(pe_product_2[i]),        //  32-bit per PE
                 .product(pe_product[i])
             );
         end
     endgenerate
     
+    //  Combine all mult_done signals (AND operation - all must be done)
+    assign mult_done = &pe_mult_done;
+    
+    //  Combine all count_0 signals
+    assign count_0 = &pe_count_0;
+    
+    //  Aggregate product_1 and product_2 outputs
     always_comb begin
-        count_0 = &pe_count_0;  // AND all count_0 signals
-        
+        for (int j = 0; j < NUM_PES; j++) begin
+            product_1[j*32 +: 32] = pe_product_1[j];
+            product_2[j*32 +: 32] = pe_product_2[j];
+        end
+    end
+    
+    //  Aggregate final product based on SEW
+    always_comb begin
         case (sew)
             2'b00: begin  // 8-bit elements (64 elements)
-                // Each PE produces 4x 16-bit results
                 for (int j = 0; j < NUM_PES; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end
             end
             
             2'b01: begin  // 16-bit elements (32 elements)
-                // Each PE produces 2x 32-bit results
                 for (int j = 0; j < NUM_PES; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end
             end
             
             2'b10: begin  // 32-bit elements (16 elements)
-                // Each PE produces 1x 64-bit result
                 for (int j = 0; j < NUM_PES; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end

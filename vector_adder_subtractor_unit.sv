@@ -46,7 +46,8 @@ module adder_subtractor_32bit (
     input  logic        sew_32,        // 1 = 32-bit op
     input  logic signed [31:0] A,
     input  logic signed [31:0] B,
-    output logic signed [31:0] Sum
+    output logic signed [31:0] Sum,
+    output logic               sum_done
 );
 
     // Segment input and output
@@ -107,14 +108,27 @@ module adder_subtractor_32bit (
 
     // Final sum packing
     always_comb begin
+        Sum = '0;
+        sum_done = 1'b1;
         case ({sew_32, sew_16_32})
-            2'b00: Sum = {Sum_seg[3],Sum_seg[2], Sum_seg[1], Sum_seg[0]};      // 8-bit
-            2'b01: Sum = {Sum_seg[3], Sum_seg[2],Sum_seg[1], Sum_seg[0]};      // 16-bit
-            2'b11: Sum = {Sum_seg[3], Sum_seg[2], Sum_seg[1], Sum_seg[0]};     // 32-bit
-            default: Sum = 32'd0;
+            2'b00: begin
+                Sum = {Sum_seg[3],Sum_seg[2], Sum_seg[1], Sum_seg[0]};      // 8-bit
+                sum_done = 1'b1;
+            end
+            2'b01: begin
+                Sum = {Sum_seg[3], Sum_seg[2],Sum_seg[1], Sum_seg[0]};      // 16-bit
+                sum_done = 1'b1;
+            end
+            2'b11: begin
+                Sum = {Sum_seg[3], Sum_seg[2], Sum_seg[1], Sum_seg[0]};     // 32-bit
+                sum_done = 1'b1;
+            end
+            default:  begin
+                Sum = 32'd0;
+                sum_done = 1'b0;
+            end
         endcase
     end
-
 
 endmodule
 
@@ -124,10 +138,14 @@ module vector_adder_subtractor (
     input  logic                          sew_32,        // 1 = 32-bit
     input  logic signed [`MAX_VLEN-1:0]   A,
     input  logic signed [`MAX_VLEN-1:0]   B,
-    output logic signed [`MAX_VLEN-1:0]   Sum
+    output logic signed [`MAX_VLEN-1:0]   Sum,
+    output logic                          sum_done
 );
 
     localparam NUM_SLICES = (`MAX_VLEN / 32);
+
+    // Array to collect sum_done from each unit
+    logic [NUM_SLICES-1:0] sum_done_array;
 
     genvar i;
     generate
@@ -138,9 +156,12 @@ module vector_adder_subtractor (
                 .sew_32    (sew_32),
                 .A         (A[i*32 +: 32]),
                 .B         (B[i*32 +: 32]),
-                .Sum       (Sum[i*32 +: 32])
+                .Sum       (Sum[i*32 +: 32]),
+                .sum_done  (sum_done_array[i])  // Connect to array element
             );
         end
     endgenerate
+
+    assign sum_done = &sum_done_array;
 
 endmodule

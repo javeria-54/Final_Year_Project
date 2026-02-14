@@ -123,13 +123,39 @@ logic                               signed_mode;
 logic                               Ctrl;
 logic                               mul_low;
 logic                               mul_high;
-logic                               add_inst;
-logic                               sub_inst;
-logic                               reverse_sub_inst;
-logic                               shift_left_logical_inst;
-logic                               shift_right_arith_inst;
-logic                               shift_right_logical_inst;
+
+logic                               add_inst, sub_inst, reverse_sub_inst;
+                              
+logic                               shift_left_logical_inst, shift_right_arith_inst, shift_right_logical_inst;
+                             
 logic                               mul_inst;
+
+logic                               equal_inst, not_equal_inst, les_or_equal_unsigned_inst, less_or_equal_signed_inst,
+                                    less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst;
+
+logic                               mul_add_dest_inst, mul_sub_dest_inst, mul_add_source_inst, mul_sub_source_inst;  
+
+logic                               mask_and_inst, mask_nand_inst, mask_and_not_inst, mask_xor_inst, mask_or_inst, mask_nor_inst,
+                                    mask_or_not_inst , mask_xnor_inst; 
+
+logic                               red_sum_inst, red_max_unsigned_inst, red_max_signed_inst,
+                                    red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst;
+    
+logic                               signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst; 
+                                
+logic                               move_inst; 
+
+logic                               wid_add_signed_inst, wid_add_unsigned_inst, wid_sub_signed_inst, wid_sub_unsigned_inst; 
+
+logic                               add_carry_inst_inst, sub_borrow_inst, add_carry_masked_inst, sub_borrow_masked_inst; 
+
+logic                               sat_add_signed_inst, sat_add_unsigned_inst, sat_sub_signed_inst, sat_sub_unsigned_inst;
+
+logic                               and_inst, or_inst, xor_inst;
+
+logic   [4:0]                       bitwise_op;
+logic   [2:0]                       cmp_op;
+logic   [1:0]                       op_type;
 
 
     //==========================================================================//
@@ -205,11 +231,14 @@ logic                               mul_inst;
         
         .Ctrl               (Ctrl),
         .execution_op       (execution_op),
-        .mul_high(mul_high),
-        .mul_low(mul_low),
-        .execution_inst(execution_inst),
-        .reverse_sub_inst(reverse_sub_inst),
-        .signed_mode        (signed_mode)
+        .mul_high           (mul_high),
+        .mul_low            (mul_low),
+        .execution_inst     (execution_inst),
+        .reverse_sub_inst   (reverse_sub_inst),
+        .signed_mode        (signed_mode),
+        .bitwise_op(bitwise_op),
+        .op_type(op_type),
+        .cmp_op(cmp_op)
     );
 
 
@@ -238,33 +267,85 @@ logic                               mul_inst;
         .rs1rd_de           (rs1rd_de       ),
 
         // vec_control_signals -> vec_register_file
-        .vec_reg_wr_en      (vec_reg_wr_en  ),
-        .mask_operation     (mask_operation ),
-        .mask_wr_en         (mask_wr_en     ),
-        .data_mux1_sel      (data_mux1_sel  ),
-        .data_mux2_sel      (data_mux2_sel  ),
-        .offset_vec_en      (offset_vec_en  ),
+        .vec_reg_wr_en              (vec_reg_wr_en  ),
+        .mask_operation             (mask_operation ),
+        .mask_wr_en                 (mask_wr_en     ),
+        .data_mux1_sel              (data_mux1_sel  ),
+        .data_mux2_sel              (data_mux2_sel  ),
+        .offset_vec_en              (offset_vec_en  ),
 
         // vec_control_signals -> vec_lsu
-        .stride_sel             (stride_sel     ),
-        .ld_inst                (ld_inst        ),
-        .st_inst                (st_inst        ),
-        .index_str              (index_str      ),
-        .index_unordered        (index_unordered),
+        .stride_sel                 (stride_sel     ),
+        .ld_inst                    (ld_inst        ),
+        .st_inst                    (st_inst        ),
+        .index_str                  (index_str      ),
+        .index_unordered            (index_unordered),
 
         .execution_op               (execution_op),
         .signed_mode                (signed_mode),
         .Ctrl                       (Ctrl),
         .mul_low                    (mul_low), 
         .mul_high                   (mul_high),
+
         .add_inst                   (add_inst), 
         .sub_inst                   (sub_inst), 
         .reverse_sub_inst           (reverse_sub_inst), 
         .shift_left_logical_inst    (shift_left_logical_inst), 
         .shift_right_arith_inst     (shift_right_arith_inst), 
         .shift_right_logical_inst   (shift_right_logical_inst),
-        .execution_inst (execution_inst),
-        .mul_inst                   (mul_inst)
+        .execution_inst             (execution_inst),
+        .mul_inst                   (mul_inst),
+        .equal_inst                 (equal_inst), 
+        .not_equal_inst             (not_equal_inst),
+        .less_or_equal_unsigned_inst(less_or_equal_unsigned_inst),
+        .less_or_equal_signed_inst  (less_or_equal_signed_inst), 
+        .less_unsinged_inst         (less_unsinged_inst),
+        .greater_unsigned_inst      (greater_unsigned_inst),
+        .less_signed_inst           (less_signed_inst), 
+        .greater_signed_inst        (greater_signed_inst), 
+        .mul_add_dest_inst          (mul_add_dest_inst), 
+        .mul_sub_dest_inst          (mul_sub_dest_inst), 
+        .mul_add_source_inst        (mul_add_source_inst), 
+        .mul_sub_source_inst        (mul_sub_source_inst),   
+        .mask_and_inst              (mask_and_inst), 
+        .mask_nand_inst             (mask_nand_inst), 
+        .mask_and_not_inst          (mask_and_not_inst), 
+        .mask_xor_inst              (mask_xor_inst), 
+        .mask_or_inst               (mask_or_inst), 
+        .mask_nor_inst              (mask_nor_inst),
+        .mask_or_not_inst           (mask_or_not_inst) , 
+        .mask_xnor_inst             (mask_xnor_inst), 
+        .red_sum_inst               (red_sum_inst), 
+        .red_max_unsigned_inst      (red_max_unsigned_inst), 
+        .red_max_signed_inst        (red_max_signed_inst),
+        .red_min_signed_inst        (red_min_signed_inst), 
+        .red_min_unsigned_inst      (red_min_unsigned_inst), 
+        .red_and_inst               (red_and_inst) , 
+        .red_or_inst                (red_or_inst), 
+        .red_xor_inst               (red_xor_inst),
+        .signed_min_inst            (signed_min_inst),
+        .unsigned_min_inst          (unsigned_min_inst), 
+        .signed_max_inst            (signed_max_inst), 
+        .unsigned_max_inst          (unsigned_max_inst), 
+        .move_inst                  (move_inst), 
+        .wid_add_signed_inst        (wid_add_signed_inst), 
+        .wid_add_unsigned_inst      (wid_add_unsigned_inst), 
+        .wid_sub_signed_inst        (wid_sub_signed_inst), 
+        .wid_sub_unsigned_inst      (wid_sub_unsigned_inst), 
+        .add_carry_inst_inst        (add_carry_inst_inst), 
+        .sub_borrow_inst            (sub_borrow_inst), 
+        .add_carry_masked_inst      (add_carry_masked_inst), 
+        .sub_borrow_masked_inst     (sub_borrow_masked_inst), 
+        .sat_add_signed_inst        (sat_add_signed_inst), 
+        .sat_add_unsigned_inst      (sat_add_unsigned_inst), 
+        .sat_sub_signed_inst        (sat_sub_signed_inst), 
+        .sat_sub_unsigned_inst      (sat_sub_unsigned_inst),
+        .and_inst                   (and_inst), 
+        .or_inst                    (or_inst), 
+        .xor_inst                   (xor_inst),
+        .bitwise_op(bitwise_op),
+        .op_type(op_type),
+        .cmp_op(cmp_op)
 
     );
 

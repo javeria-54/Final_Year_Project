@@ -12,8 +12,9 @@ module vec_decode(
     // vec_decode -> vec_regfile
     output  logic [`XLEN-1:0]       vec_read_addr_1,        // vs1_addr
     output  logic [`XLEN-1:0]       vec_read_addr_2,        // vs2_addr
+    output  logic [`XLEN-1:0]       vec_read_addr_3,        //read_write_port
     output  logic [`XLEN-1:0]       vec_write_addr,         // vd_addr
-    output  logic [`MAX_VLEN-1:0]   vec_imm,
+    output  logic [`VLEN-1:0]       vec_imm,
     output  logic                   vec_mask,
 
     // vec_decode -> vector load
@@ -99,6 +100,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = vs1_addr;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -121,6 +123,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = imm;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -143,6 +146,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -165,6 +169,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = vs1_addr;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = vd_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6;  
@@ -184,6 +189,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -242,6 +248,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = '0;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = '0;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = '0;
                     rs2_o           = '0;
@@ -296,6 +303,7 @@ always_comb begin : vec_decode
             vec_write_addr  = '0;
             vec_read_addr_1 = '0;
             vec_read_addr_2 = '0;
+            vec_read_addr_3 = '0; 
             vec_imm         = '0;
             vec_mask        = '0;
             rs1_o           = '0;
