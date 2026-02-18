@@ -1,5 +1,10 @@
 `include "vec_de_csr_defs.svh"
 `include "vector_processor_defs.svh"
+`include "vector_bitwise_unit.sv"
+`include "vector_compare_unit.sv"
+`include "vector_multiplier.sv"
+`include "vector_shift_module.sv"
+`include "vector_adder_subtractor_unit.sv"
 
 module vector_execution_unit(
     input   logic                               clk,
@@ -7,6 +12,7 @@ module vector_execution_unit(
 
     input   logic [`MAX_VLEN-1:0]               data_1,
     input   logic [`MAX_VLEN-1:0]               data_2, 
+    input   logic [`MAX_VLEN-1:0]               data_3,
 
     input   logic                               Ctrl,
     input   logic [6:0]                         sew_eew_mux_out,
@@ -16,27 +22,31 @@ module vector_execution_unit(
     input   logic                               mul_high,
     input   logic                               reverse_sub_inst,
     input   logic [4:0]                         bitwise_op, 
-    input   logic [1:0]                         op_type, 
-    input   logic [2:0]                         cmp_op, 
+    input   logic [2:0]                         cmp_op,accum_op,shift_op, 
 
     output  logic [`MAX_VLEN-1:0]               execution_result,
     output  logic [1:0]                         sew,
-    output  logic                               count_0,
+    output  logic                               count_0,execution_done,
     output  logic                               sew_16_32,
     output  logic                               sew_32   
 );
     
     // Internal signals
-    logic                           add_en, shift_en, mult_en, logical_en, compare_en, bitwise_en, reverse_sub_en, move_en;
-    logic                           add_done, shift_done, mult_done, logical_done, compare_done, bitwise_done;
+    logic                           add_en, shift_en, mult_en, compare_en, bitwise_en, reverse_sub_en, move_en, 
+                                    mult_add_en;
+    logic                           sum_done, shift_done, mult_done, compare_done, bitwise_done, product_sum_done;
     logic [`MAX_VLEN-1:0]           adder_data_1, adder_data_2;
     logic [`MAX_VLEN-1:0]           mult_data_1, mult_data_2;
     logic [`MAX_VLEN-1:0]           shift_data_1, shift_data_2 ;
     logic [`MAX_VLEN-1:0]           bitwise_data_1, bitwise_data_2;
     logic [`MAX_VLEN-1:0]           compare_data_1, compare_data_2 ;
+    logic [`MAX_VLEN-1:0]           mult_add_data_2, mult_add_data_1, mult_add_data_3 ;
+    logic [`MAX_VLEN-1:0]           move_data_1;
 
-    logic [`MAX_VLEN-1:0]           sum_result, compare_result, bitwise_result, shift_result, move_result, product_1, product_2; 
-    logic [`MAX_VLEN*2-1:0]         product_result;
+    logic [`MAX_VLEN-1:0]           sum_result, compare_result, bitwise_result, shift_result, move_result,  
+                                    sum_product_result; 
+    logic [(`MAX_VLEN-1):0]         product_1, product_2;
+    logic [`MAX_VLEN*2+1:0]         product_result;
 
     // SEW decoding
     always_comb begin
@@ -44,7 +54,7 @@ module vector_execution_unit(
             7'b0001000: sew = 2'b00;  // 8-bit
             7'b0010000: sew = 2'b01;  // 16-bit
             7'b0100000: sew = 2'b10;  // 32-bit
-            default:    sew = 2'b11;
+            default:    sew = 2'b00;
         endcase
     end
 
@@ -56,6 +66,8 @@ module vector_execution_unit(
         bitwise_en = 1'b0;
         compare_en = 1'b0;
         move_en = 1'b0;
+        mult_add_en = 1'b0;
+        reverse_sub_en = 1'b0;
         
         if (execution_op == 3'b000 ) begin
             if (!reverse_sub_inst) begin   
@@ -84,6 +96,9 @@ module vector_execution_unit(
         else if (execution_op == 3'b110 ) begin
             move_en = 1'b1;
         end
+        else if (execution_op == 3'b111) begin
+            mult_add_en = 1'b1;
+        end
         else begin
             add_en = 1'b0;
             shift_en = 1'b0;
@@ -91,6 +106,7 @@ module vector_execution_unit(
             bitwise_en = 1'b0;
             compare_en = 1'b0;
             move_en = 1'b0;
+            mult_add_en = 1'b0;
         end
     end
 
@@ -124,6 +140,10 @@ module vector_execution_unit(
     assign  compare_data_2      = compare_en        ? data_2 :  `MAX_VLEN'b0;
     assign  bitwise_data_1      = bitwise_en        ? data_1 :  `MAX_VLEN'b0;
     assign  bitwise_data_2      = bitwise_en        ? data_2 :  `MAX_VLEN'b0;
+    assign  mult_add_data_1     = mult_add_en       ? data_1 :  `MAX_VLEN'b0;
+    assign  mult_add_data_2     = mult_add_en       ? data_2 :  `MAX_VLEN'b0;
+    assign  mult_add_data_3     = mult_add_en       ? data_3 :  `MAX_VLEN'b0;
+    assign  move_data_1         = move_en           ? data_1 :  `MAX_VLEN'b0;
 
     vector_adder_subtractor adder_inst (
         .A              (adder_data_1),
@@ -131,7 +151,8 @@ module vector_execution_unit(
         .Ctrl           (Ctrl),         
         .sew_16_32      (sew_16_32),     
         .sew_32         (sew_32),        
-        .Sum            (sum_result)
+        .Sum            (sum_result),
+        .sum_done       (sum_done)
     );
 
     vector_multiplier vect_mult(
@@ -149,9 +170,8 @@ module vector_execution_unit(
     );  
 
     vector_compare_unit vect_comp (
-        .data1          (compare_data_1),         
-        .data2          (compare_data_2),         
-        .op_type        (op_type),       
+        .dataA          (compare_data_1),         
+        .dataB          (compare_data_2),               
         .cmp_op         (cmp_op),        
         .sew            (sew),         
         .compare_result (compare_result), 
@@ -159,54 +179,100 @@ module vector_execution_unit(
     );
 
     vector_bitwise_unit vect_bitwise (
-        .data1          (bitwise_data_1),         
-        .data2          (bitwise_data_2),         
-        .op_type        (op_type),       
-        .bitwise_op     (alu_opcode),   
+        .dataA          (bitwise_data_1),         
+        .dataB          (bitwise_data_2),              
+        .bitwise_op     (bitwise_op),   
         .sew            (sew),          
-        .alu_result     (bitwise_result),   
-        .alu_done       (bitwise_done)       
+        .bitwise_result     (bitwise_result),   
+        .bitwise_done       (bitwise_done)       
     );
 
     vector_shift_unit vector_shift(
-        .data1          (shift_data_1),         
-        .data2          (shift_data_2),        
-        .op_type        (op_type),       
+        .dataA          (shift_data_1),         
+        .dataB          (shift_data_2),             
         .shift_op       (shift_op),      
         .sew            (sew),           
         .shift_result   (shift_result),  
         .shift_done     (shift_done)    
     );
 
+    vector_multiply_add_unit mult_add(
+        .clk                (clk),
+        .reset              (reset),
+        .data_A             (mult_add_data_1),    
+        .data_B             (mult_add_data_2),      
+        .data_C             (mult_add_data_3),      
+        .accum_op           (accum_op),     
+        .sew                (sew),         
+        .signed_mode        (signed_mode), 
+        .Ctrl               (Ctrl),
+        .sew_16_32          (sew_16_32),
+        .sew_32             (sew_32),
+        .count_0            (count_0),
+        .sum_product_result (sum_product_result),
+        .product_sum_done   (product_sum_done)
+);
+    assign move_result = move_data_1;
+
     always_comb begin
-        if (reset) begin
-            execution_result = '0;
-        end else begin
-            if (add_en) begin
-                execution_result = sum_result;
-            end 
-            else if (mult_en && mul_low) begin
-                execution_result = product_result[`MAX_VLEN-1:0];
-            end 
-            else if (mult_en && mul_high) begin
-                execution_result = product_result[(`MAX_VLEN*2)-1:`MAX_VLEN];
-            end 
-            else if (shift_en) begin
-                execution_result = shift_result;
-            end
-            else if (compare_en) begin
-                execution_result = compare_result;
-            end
-            else if (bitwise_en) begin
-                execution_result = bitwise_result;
-            end
-            else if (move_en) begin
-                execution_result = data_1;
+            if (reset) begin    
+                if (add_en) begin
+                    execution_result = sum_result;
+                end 
+                else if (shift_en) begin
+                    execution_result = shift_result;
+                end
+                else if (compare_en) begin
+                    execution_result = compare_result;
+                end
+                else if (bitwise_en) begin
+                    execution_result = bitwise_result;
+                end
+                else if (move_en) begin
+                    execution_result = move_result;
+                end
+                else if (mult_en) begin
+                    case (sew)
+                        2'b00: begin // 8-bit elements → 16-bit products
+                            for (int i = 0; i < `MAX_VLEN/8; i++) begin
+                                if (mul_high)
+                                    execution_result[i*8 +: 8] = product_result[i*16 + 8 +: 8]; // Upper 8 bits
+                                else if (mul_low) 
+                                    execution_result[i*8 +: 8] = product_result[i*16 +: 8];     // Lower 8 bits
+                                else 
+                                    execution_result = '0; 
+                            end
+                        end
+                        2'b01: begin // 16-bit elements → 32-bit products
+                            for (int i = 0; i < `MAX_VLEN/16; i++) begin
+                                if (mul_high)
+                                    execution_result[i*16 +: 16] = product_result[i*32 + 16 +: 16]; // Upper 16 bits
+                                else if (mul_low)
+                                    execution_result[i*16 +: 16] = product_result[i*32 +: 16];      // Lower 16 bits
+                                else 
+                                    execution_result = '0; 
+                            end
+                        end
+                        2'b10: begin // 32-bit elements → 64-bit products
+                            for (int i = 0; i < `MAX_VLEN/32; i++) begin
+                                if (mul_high)
+                                    execution_result[i*32 +: 32] = product_result[i*64 + 32 +: 32]; // Upper 32 bits
+                                else if (mul_low)
+                                    execution_result[i*32 +: 32] = product_result[i*64 +: 32];      // Lower 32 bits
+                                else 
+                                    execution_result = '0; 
+                            end
+                        end
+                        default: begin
+                            execution_result = '0;
+                        end 
+                    endcase
+                end
             end
             else begin 
                 execution_result = '0;
             end
         end
-    end
-
+    assign execution_done = sum_done || shift_done || mult_done || compare_done || bitwise_done || product_sum_done;
+ 
 endmodule

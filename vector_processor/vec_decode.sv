@@ -12,8 +12,9 @@ module vec_decode(
     // vec_decode -> vec_regfile
     output  logic [`XLEN-1:0]       vec_read_addr_1,        // vs1_addr
     output  logic [`XLEN-1:0]       vec_read_addr_2,        // vs2_addr
+    output  logic [`XLEN-1:0]       vec_read_addr_3,        //read_write_port
     output  logic [`XLEN-1:0]       vec_write_addr,         // vd_addr
-    output  logic [`VLEN-1:0]       vec_imm,
+    output  logic [`MAX_VLEN-1:0]   vec_imm,
     output  logic                   vec_mask,
 
     // vec_decode -> vector load
@@ -57,6 +58,7 @@ logic                 is_valid_vix, is_valid_vx, vec_op_valid;
 
 assign vopcode  = v_opcode_e'(vec_inst[6:0]);
 assign vd_addr  = vec_inst[11:7];
+assign vs3_addr = vec_inst[11:7];
 assign vfunc3   = v_func3_e'(vec_inst[14:12]);
 assign vs1_addr = vec_inst[19:15];
 assign rs1_addr = vec_inst[19:15];
@@ -82,6 +84,7 @@ always_comb begin : vec_decode
     vec_write_addr  = '0;
     vec_read_addr_1 = '0;
     vec_read_addr_2 = '0;
+    vec_read_addr_3 = '0;
     vec_imm         = '0;
     vec_mask        = '0;
     rs1_o           = '0;
@@ -90,6 +93,8 @@ always_comb begin : vec_decode
     is_valid_vix    = '0;
     is_valid_vx     = '0;
     vec_op_valid    = '0;
+    vec_func6       = '0;
+
     case (vopcode)
         // vector arithematic and set instructions opcode = 0x57
         V_ARITH: begin
@@ -99,9 +104,10 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = vs1_addr;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = vm;
-                    vec_func6    = func_6; 
+                    vec_func6       = func_6; 
                     case (vfunc6_vix)
                             VADD , VSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
                             VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , 
@@ -121,6 +127,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = imm;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -143,6 +150,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -165,6 +173,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = vs1_addr;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = vs3_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6;  
@@ -184,6 +193,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = vd_addr;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = vs2_addr;
+                    vec_read_addr_3 = vs3_addr;
                     vec_imm         = '0;
                     vec_mask        = vm;
                     vec_func6    = func_6; 
@@ -242,6 +252,7 @@ always_comb begin : vec_decode
                     vec_write_addr  = '0;
                     vec_read_addr_1 = '0;
                     vec_read_addr_2 = '0;
+                    vec_read_addr_3 = '0;
                     vec_imm         = '0;
                     vec_mask        = '0;
                     rs2_o           = '0;
@@ -296,6 +307,7 @@ always_comb begin : vec_decode
             vec_write_addr  = '0;
             vec_read_addr_1 = '0;
             vec_read_addr_2 = '0;
+            vec_read_addr_3 = '0; 
             vec_imm         = '0;
             vec_mask        = '0;
             rs1_o           = '0;

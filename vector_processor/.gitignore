@@ -1,0 +1,264 @@
+###########################################
+# Vivado Files
+###########################################
+
+# Vivado project files
+*.xpr
+*.jou
+*.log
+*.str
+*.debug
+*.wdf
+*.wcfg
+*.xpe
+
+# Vivado directories
+.Xil/
+.cache/
+.metadata/
+vivado*.backup.jou
+vivado*.backup.log
+
+# Vivado synthesis/implementation
+*.runs/
+*.hw/
+*.ip_user_files/
+*.sim/
+*.cache/
+*.gen/
+
+# Vivado reports
+*.rpt
+*.dcp
+*.bit
+*.ltx
+*.sdf
+
+# Checkpoint files
+*.backup.*
+*_stub.v
+*_stub.vhdl
+*_funcsim.v
+*_funcsim.vhdl
+*_sim_netlist.v
+*_sim_netlist.vhdl
+
+# IP cores
+*.xci
+managed_ip_project/
+
+# Block designs
+*.bd
+
+# Vivado HLS
+*.prj
+*.app
+solution*/
+.autopilot/
+
+###########################################
+# Questa/ModelSim Files
+###########################################
+
+# Compiled simulation files
+*.mti
+*.mpf
+*.wlf
+*.ini
+*.vstf
+*.db
+*.qdb
+
+# Questa/ModelSim directories
+work/
+transcript
+vsim.wlf
+vish_stacktrace.vstf
+
+# ModelSim libraries
+modelsim.ini
+*.lib
+*.qpg
+*.qtl
+
+# QuestaSim coverage
+*.ucdb
+covhtmlreport/
+
+# Lock files
+*_lock
+*.lock
+
+# Temporary files
+transcript.*
+*.bak
+
+###########################################
+# Icarus Verilog
+###########################################
+*.vvp
+*.vcd
+*.lxt
+*.lxt2
+*.fst
+
+###########################################
+# Verilator
+###########################################
+obj_dir/
+*.mk
+*.d
+*.o
+
+###########################################
+# Synopsys
+###########################################
+*.syn
+*.mr
+*.pvl
+*.svf
+*_syn.v
+
+# Design Compiler
+*.ddc
+*.sdc
+*.sdf
+command.log
+default.svf
+
+# VCS
+*.vcs
+*.vpd
+csrc/
+simv
+simv.daidir/
+ucli.key
+DVEfiles/
+urgReport/
+
+###########################################
+# Cadence
+###########################################
+*.shm/
+*.trn
+*.dsn
+*.optrpt
+INCA_libs/
+irun.*
+ncsim.*
+.simvision/
+
+###########################################
+# General HDL
+###########################################
+# Backup files
+*~
+*.swp
+*.swo
+*#
+.#*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+###########################################
+# Python (for testbenches/scripts)
+###########################################
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+
+###########################################
+# Build outputs
+###########################################
+build/
+dist/
+*.out
+*.exe
+*.bin
+*.elf
+*.hex
+*.mif
+
+###########################################
+# Documentation
+###########################################
+*.pdf
+*.doc
+*.docx
+# Uncomment if you want to track PDFs
+# !docs/*.pdf
+
+###########################################
+# IDE specific
+###########################################
+# VSCode
+.vscode/
+*.code-workspace
+
+# Eclipse
+.project
+.cproject
+.settings/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Emacs
+*~
+\#*\#
+
+# Vim
+*.swp
+*.swo
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+###########################################
+# Custom additions
+###########################################
+# Test outputs
+*.dump
+*.out
+results/
+test_results/
+
+# Temporary synthesis files
+*.ngc
+*.ngd
+*.ncd
+*.pcf
+*.ut
+*.xst
+
+# Keep these files (exceptions)
+!.gitkeep
+!*.sv
+!*.svh
+!*.v
+!*.vh
+!*.vhd
+!*.vhdl
+!Makefile
+!*.tcl
+!*.xdc
+!*.sdc
+!README.md
