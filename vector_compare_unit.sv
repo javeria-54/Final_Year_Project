@@ -2,20 +2,17 @@
 `include "vec_regfile_defs.svh"
 `include "vector_processor_defs.svh"
 
-module vector_compare_unit #(
-    parameter VLEN = 4096,
-    parameter ELEN = 32
-)(
+module vector_compare_unit (
     // Vector inputs (already prepared outside)
-    input  logic [VLEN-1:0] dataA,   // operand A (vector)
-    input  logic [VLEN-1:0] dataB,   // operand B (vector)
+    input  logic [`MAX_VLEN-1:0] dataA,   // operand A (vector)
+    input  logic [`MAX_VLEN-1:0] dataB,   // operand B (vector)
 
     // Control
     input  logic [2:0]      cmp_op,  // compare operation
     input  logic [1:0]      sew,     // 00:8, 01:16, 10:32, 11:64
 
     // Output
-    output logic [VLEN-1:0] compare_result,
+    output logic [`MAX_VLEN-1:0] compare_result,
     output logic            compare_done
 );
 
@@ -30,7 +27,7 @@ module vector_compare_unit #(
         CMP_GTU  = 3'b111   // pseudo
     } cmp_op_e;
 
-    logic [VLEN-1:0] raw_result;
+    logic [`MAX_VLEN-1:0] raw_result;
     logic use_swapped;
 
     always_comb begin
@@ -41,7 +38,7 @@ module vector_compare_unit #(
 
         // ---------------- 8-bit ----------------
         2'b00: begin
-            for (int i = 0; i < VLEN/8; i++) begin
+            for (int i = 0; i < `MAX_VLEN/8; i++) begin
                 logic [7:0] a, b;
                 logic cmp;
 
@@ -71,7 +68,7 @@ module vector_compare_unit #(
 
         // ---------------- 16-bit ----------------
         2'b01: begin
-            for (int i = 0; i < VLEN/16; i++) begin
+            for (int i = 0; i < `MAX_VLEN/16; i++) begin
                 logic [15:0] a, b;
                 logic cmp;
 
@@ -101,7 +98,7 @@ module vector_compare_unit #(
 
         // ---------------- 32-bit ----------------
         2'b10: begin
-            for (int i = 0; i < VLEN/32; i++) begin
+            for (int i = 0; i < `MAX_VLEN/32; i++) begin
                 logic [31:0] a, b;
                 logic cmp;
 

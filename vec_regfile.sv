@@ -57,6 +57,7 @@ module vec_regfile (
         rdata_2_lmul     = 'h0;
         rdata_2          = 'h0;
         dst_data         = 'h0;
+        rdata_3          = 'h0;
         addr_error       =   0;
         addr_error_emul  =   0;
         // If the mask logical operations is to perform then the rdata should 
@@ -114,6 +115,7 @@ module vec_regfile (
                         rdata_1      = vec_regfile[raddr_1];
                         rdata_2_lmul = vec_regfile[raddr_2];
                         dst_data     = vec_regfile[waddr]; // Read data at waddr
+                        rdata_3 = dst_data;
                     end
                 end
                 4'b0010: begin // LMUL = 2
@@ -124,6 +126,7 @@ module vec_regfile (
                         rdata_1      = {vec_regfile[raddr_1 + 1], vec_regfile[raddr_1]};
                         rdata_2_lmul = {vec_regfile[raddr_2 + 1], vec_regfile[raddr_2]};
                         dst_data     = {vec_regfile[waddr + 1], vec_regfile[waddr]}; // Read data at waddr
+                        rdata_3 = dst_data;
                     end
                 end
                 4'b0100: begin // LMUL = 4
@@ -134,6 +137,7 @@ module vec_regfile (
                         rdata_1      = {vec_regfile[raddr_1 + 3], vec_regfile[raddr_1 + 2], vec_regfile[raddr_1 + 1], vec_regfile[raddr_1]};
                         rdata_2_lmul = {vec_regfile[raddr_2 + 3], vec_regfile[raddr_2 + 2], vec_regfile[raddr_2 + 1], vec_regfile[raddr_2]};
                         dst_data     = {vec_regfile[waddr + 3], vec_regfile[waddr + 2], vec_regfile[waddr + 1], vec_regfile[waddr]}; // Read data at waddr
+                        rdata_3 = dst_data;
                     end
                 end
                 4'b1000: begin // LMUL = 8
@@ -147,6 +151,7 @@ module vec_regfile (
                                         vec_regfile[raddr_2 + 3], vec_regfile[raddr_2 + 2], vec_regfile[raddr_2 + 1], vec_regfile[raddr_2]};
                         dst_data     = {vec_regfile[waddr + 7], vec_regfile[waddr + 6], vec_regfile[waddr + 5], vec_regfile[waddr + 4],
                                         vec_regfile[waddr + 3], vec_regfile[waddr + 2], vec_regfile[waddr + 1], vec_regfile[waddr]}; // Read data at waddr
+                        rdata_3 = dst_data;
                     end
                 end
                 default: begin 
@@ -155,6 +160,7 @@ module vec_regfile (
                     rdata_2_lmul = 'h0;
                     rdata_2_emul = 'h0;
                     dst_data     = 'h0;
+                    rdata_3      = 'h0;
                     addr_error   = 1;  // Flag an error for invalid LMUL
                 end
 

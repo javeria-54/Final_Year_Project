@@ -44,6 +44,7 @@ module vector_processor_controller (
     output  logic [1:0]          op_type, 
     output  logic [2:0]          cmp_op, 
     output  logic [2:0]          accum_op,
+    output  logic [2:0]          shift_op,
 
     output  logic                add_inst, sub_inst, reverse_sub_inst, 
 
@@ -196,6 +197,9 @@ always_comb begin
     bitwise_op                  = 5'b0; 
     op_type                     = 2'b0;
     cmp_op                      = 3'b0;
+    shift_op                    = 3'b000;
+    execution_op                = 'b0;
+    accum_op                    = 3'b000;
     
     case (vopcode)
     V_ARITH: begin
@@ -224,14 +228,17 @@ always_comb begin
                     VSLL: begin
                         shift_left_logical_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b000;
                     end
                     VSRL: begin
                         shift_right_logical_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b001;
                     end
                     VSRA: begin
                         shift_right_arith_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b010;
                     end
                     VAND: begin
                         and_inst = 1'b1;
@@ -347,14 +354,17 @@ always_comb begin
                     VSLL: begin
                         shift_left_logical_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b000;
                     end
                     VSRL: begin
                         shift_right_logical_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 'b001;
                     end
                     VSRA: begin 
                         shift_right_arith_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 'b010;
                     end
                     VAND: begin
                         and_inst = 1'b1;
@@ -475,14 +485,17 @@ always_comb begin
                     VSLL: begin
                         shift_left_logical_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b000;
                     end
                     VSRL: begin
                         shift_right_logical_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b001;
                     end
                     VSRA: begin
                         shift_right_arith_inst = 1'b1;
                         execution_op = 3'b001;
+                        shift_op = 3'b010;
                     end
                     VAND: begin
                         and_inst = 1'b1;

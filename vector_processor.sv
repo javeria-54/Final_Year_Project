@@ -19,7 +19,6 @@ module vector_processor(
     input   logic                           inst_valid,             // tells data comming from the saler processor is valid
     input   logic                           scalar_pro_ready,       // tells that scaler processor is ready to take output
 
-
     // Outputs from vector processor --> scaler processor 
     output  logic                           is_vec,                 // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                           error,                  // error has occure due to invalid configurations
@@ -154,7 +153,7 @@ logic                               sat_add_signed_inst, sat_add_unsigned_inst, 
 logic                               and_inst, or_inst, xor_inst;
 
 logic   [4:0]                       bitwise_op;
-logic   [2:0]                       cmp_op;
+logic   [2:0]                       cmp_op,accum_op,shift_op;
 logic   [1:0]                       op_type;
 
 
@@ -238,7 +237,9 @@ logic   [1:0]                       op_type;
         .signed_mode        (signed_mode),
         .bitwise_op(bitwise_op),
         .op_type(op_type),
-        .cmp_op(cmp_op)
+        .cmp_op(cmp_op),
+        .accum_op(accum_op),
+        .shift_op(shift_op)
     );
 
 
@@ -282,6 +283,7 @@ logic   [1:0]                       op_type;
         .index_unordered            (index_unordered),
 
         .execution_op               (execution_op),
+        
         .signed_mode                (signed_mode),
         .Ctrl                       (Ctrl),
         .mul_low                    (mul_low), 
@@ -343,9 +345,11 @@ logic   [1:0]                       op_type;
         .and_inst                   (and_inst), 
         .or_inst                    (or_inst), 
         .xor_inst                   (xor_inst),
-        .bitwise_op(bitwise_op),
-        .op_type(op_type),
-        .cmp_op(cmp_op)
+        .bitwise_op                 (bitwise_op),
+        .op_type                    (op_type),
+        .cmp_op                     (cmp_op),
+        .shift_op                   (shift_op),
+        .accum_op                    (accum_op)
 
     );
 
@@ -543,6 +547,9 @@ module instruction_data_queue #(
             inst_out_rs1_data    <= 0;
             inst_out_rs2_data    <= 0;
             read_ptr             <= 0;
+            write_ptr <= 0;
+            count <= 0;
+            inst_accepted <= 0;
         end else if (bypass) begin
             // Directly bypass the input instruction and data to output
             inst_out_instruction <= instruction;
@@ -552,6 +559,21 @@ module instruction_data_queue #(
             // Update read pointer and prepare for next cycle
             read_ptr <= read_ptr + 1;
             count    <= count - 1;
+        end else begin
+            if (inst_valid && inst_ready && !inst_accepted) begin
+                // Store the instruction and data in the queue
+                fifo[write_ptr].instruction <= instruction;
+                fifo[write_ptr].rs1_data    <= rs1_data;
+                fifo[write_ptr].rs2_data    <= rs2_data;
+                write_ptr <= write_ptr + 1;
+                count <= count + 1;
+
+                // Mark instruction as accepted
+                inst_accepted <= 1;
+            end else if (!inst_valid) begin
+                // Reset the accepted flag when inst_valid deasserts
+                inst_accepted <= 0;
+            end
         end
     end
 
@@ -575,32 +597,6 @@ module instruction_data_queue #(
         end
     end
 
-    // Enqueue logic
-    always_ff @(posedge clk or negedge reset) begin
-        if (!reset) begin
-            write_ptr <= 0;
-            count <= 0;
-            inst_accepted <= 0;
-        end else begin
-            if (inst_valid && inst_ready && !inst_accepted) begin
-                // Store the instruction and data in the queue
-                fifo[write_ptr].instruction <= instruction;
-                fifo[write_ptr].rs1_data    <= rs1_data;
-                fifo[write_ptr].rs2_data    <= rs2_data;
-                write_ptr <= write_ptr + 1;
-                count <= count + 1;
-
-                // Mark instruction as accepted
-                inst_accepted <= 1;
-            end else if (!inst_valid) begin
-                // Reset the accepted flag when inst_valid deasserts
-                inst_accepted <= 0;
-            end
-        end
-    end
-
-    
-   
     assign inst_ready = !full && !vec_pro_ready;
     
 endmodule

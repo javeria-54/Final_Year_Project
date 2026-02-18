@@ -77,16 +77,16 @@ module vector_processor_datapth (
     input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,
     input   logic                               signed_mode,
     input   logic   [4:0]                       bitwise_op,
-    input   logic   [2:0]                       cmp_op,
+    input   logic   [2:0]                       cmp_op, accum_op,shift_op,
     input   logic   [1:0]                       op_type
 );
 
 
 // Read and Write address from Decode --> Vector Register file 
-logic   [`XLEN-1:0] vec_read_addr_1  , vec_read_addr_2 , vec_write_addr;
+logic   [`XLEN-1:0] vec_read_addr_1  , vec_read_addr_2 , vec_write_addr, vector_read_addr_3;
 
 // Vector Immediate from the decode 
-logic   [`VLEN-1:0] vec_imm;
+logic   [`MAX_VLEN-1:0] vec_imm;
 
 // signal that tells that if the masking is  enabled or not
 logic  vec_mask;
@@ -132,8 +132,8 @@ logic   [`XLEN-1:0]             start_element;          // Gives the start elemn
  logic                          csr_done;               // This signal tells that csr instruction has been implemented successfully
 
 // vec_registerfile --> next moduels and data selection muxes
-logic   [DATA_WIDTH-1:0]        vec_data_1, vec_data_2; // The read data from the vector register file
-logic   [DATA_WIDTH-1:0]        dst_vec_data;           // The data of the destination register that is to be replaced with the data after the opertaion and masking
+logic   [`MAX_VLEN-1:0]        vec_data_1, vec_data_2,vector_data_3; // The read data from the vector register file
+logic   [`MAX_VLEN-1:0]        dst_vec_data;           // The data of the destination register that is to be replaced with the data after the opertaion and masking
 logic   [VECTOR_LENGTH-1:0]     vector_length;          // Width of the vector depending on LMUL
 logic                           wrong_addr;             // Signal to indicate an invalid address
 logic   [`VLEN-1:0]             v0_mask_data;           // The data of the mask register that is v0 in register file 
@@ -142,6 +142,7 @@ logic                           data_written;           // tells that data is wr
 // Outputs of the data selection muxes after register file
 logic   [`MAX_VLEN-1:0]         data_mux1_out;          // selection between the vec_reg_data_1 , vec_imm , scalar1
 logic   [`MAX_VLEN-1:0]         data_mux2_out;          // selection between the vec_reg_data_2 , scaler2
+logic   [`MAX_VLEN-1:0]         data_mux3_out;          // selection between the vec_reg_data_2 , scaler2
 
 // Outputs of the sew eew mux after the decode and csr
 logic   [6:0]                  sew_eew_mux_out;         // selection between sew and eew
@@ -161,13 +162,15 @@ logic                   count_0;
 logic                   sew_16_32;
 logic                   sew_32;
 logic [`MAX_VLEN-1:0]   vd_data;
+logic execution_done;
 
-assign inst_done = data_written || csr_done || is_stored || error ;
+assign inst_done = data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
 
              //////////////////////
             //      DECODE      //
-           //////////////////////          
+           //////////////////////   
+logic [`XLEN-1:0] vector_write_address;       
 
     vec_decode DECODER(
         // scalar_processor -> vec_decode
@@ -180,7 +183,8 @@ assign error     = error_flag || wrong_addr;
         
         // vec_decode -> vec_regfile
         .vec_read_addr_1    (vec_read_addr_1),      
-        .vec_read_addr_2    (vec_read_addr_2),      
+        .vec_read_addr_2    (vec_read_addr_2),   
+        .vec_read_addr_3    (vector_write_address),
         .vec_write_addr     (vec_write_addr ),      
         .vec_imm            (vec_imm        ),
         .vec_mask           (vec_mask       ),
@@ -291,6 +295,7 @@ assign error     = error_flag || wrong_addr;
             //   VEC REGFILE   //
            /////////////////////
 
+logic [`MAX_VLEN-1:0] dst_vector_data;
 
     vec_regfile VEC_REGFILE(
         // Inputs
@@ -298,6 +303,7 @@ assign error     = error_flag || wrong_addr;
         .reset          (reset              ),
         .raddr_1        (vec_read_addr_1    ), 
         .raddr_2        (vec_read_addr_2    ),  
+        .raddr_3        (vec_write_addr     ),
         .wdata          (vec_wr_data        ),          
         .waddr          (vec_write_addr     ),
         .wr_en          (vec_wr_en          ), 
@@ -310,13 +316,13 @@ assign error     = error_flag || wrong_addr;
         // Outputs 
         .rdata_1        (vec_data_1         ),
         .rdata_2        (vec_data_2         ),
+        .rdata_3        (dst_vector_data    ),
         .dst_data       (dst_vec_data       ),
         .vector_length  (vector_length      ),
         .wrong_addr     (wrong_addr         ),
         .v0_mask_data   (v0_mask_data       ),
         .data_written   (data_written       )  
     );
-
 
              /////////////////////
             //    DATA_1 MUX   //
@@ -328,8 +334,6 @@ assign error     = error_flag || wrong_addr;
     
     // Zero-extend  scalar1 dynamically
     assign scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
-
-    
 
     data_mux_3x1 #(.width(`MAX_VLEN)) DATA1_MUX( 
         
@@ -420,30 +424,34 @@ assign error     = error_flag || wrong_addr;
     );
 
     assign vec_wr_data = execution_inst ? execution_result : vd_data ;
+    assign data_mux3_out = (mul_high || mul_low || signed_mode) ? dst_vector_data : '0 ;
     
     vector_execution_unit EXECUTION_UNIT(
 
-        .clk(clk),
-        .reset(reset),
+        .clk                (clk),
+        .reset              (reset),
 
-        .data_1(data_mux1_out[`MAX_VLEN-1:0]),
-        .data_2(data_mux2_out[`MAX_VLEN-1:0]), 
+        .data_1             (data_mux1_out[`MAX_VLEN-1:0]),
+        .data_2             (data_mux2_out[`MAX_VLEN-1:0]), 
+        .data_3             (data_mux3_out[`MAX_VLEN-1:0]),
 
-        .Ctrl(Ctrl),
-        .sew_eew_mux_out(sew_eew_mux_out),
-        .execution_op(execution_op),
-        .signed_mode(signed_mode),
-        .mul_high(mul_high),
-        .mul_low(mul_low), 
-        .reverse_sub_inst(reverse_sub_inst), 
-        .bitwise_op(bitwise_op),
-        .op_type(op_type),
-        .cmp_op(cmp_op),
-        .execution_result(execution_result),
-        .sew(sew_execution),                   
-        .count_0(count_0),
-        .sew_16_32(sew_16_32),
-        .sew_32(sew_32)
+        .Ctrl               (Ctrl),
+        .sew_eew_mux_out    (sew_eew_mux_out),
+        .execution_op       (execution_op),
+        .signed_mode        (signed_mode),
+        .mul_high           (mul_high),
+        .mul_low            (mul_low), 
+        .reverse_sub_inst   (reverse_sub_inst), 
+        .bitwise_op         (bitwise_op),
+        .cmp_op             (cmp_op),
+        .accum_op           (accum_op),
+        .shift_op           (shift_op),
+        .execution_result   (execution_result),
+        .sew                (sew_execution),                   
+        .count_0            (count_0),
+        .sew_16_32          (sew_16_32),
+        .execution_done(execution_done),
+        .sew_32             (sew_32)
 );
 
 endmodule

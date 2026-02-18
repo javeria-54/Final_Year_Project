@@ -1,21 +1,18 @@
 `include "vec_regfile_defs.svh"
 `include "vector_processor_defs.svh"
 
-module vector_bitwise_unit #(
-    parameter VLEN = 4096,
-    parameter ELEN = 32
-)(
+module vector_bitwise_unit (
     // Prepared operands
-    input  logic [VLEN-1:0] dataA,   // Operand A (vector)
-    input  logic [VLEN-1:0] dataB,   // Operand B (vector)
+    input  logic [`MAX_VLEN-1:0] dataA,   // Operand A (vector)
+    input  logic [`MAX_VLEN-1:0] dataB,   // Operand B (vector)
 
     // Control
     input  logic [4:0]      bitwise_op, // ALU operation code
     input  logic [1:0]      sew,        // Standard Element Width
 
     // Output
-    output logic [VLEN-1:0] alu_result,
-    output logic            alu_done
+    output logic [`MAX_VLEN-1:0] bitwise_result,
+    output logic            bitwise_done
 );
 
     typedef enum logic [4:0] {
@@ -29,17 +26,17 @@ module vector_bitwise_unit #(
         ALU_MAX  = 5'b00111
     } alu_op_e;
 
-    logic [VLEN-1:0] raw_result;
+    logic [`MAX_VLEN-1:0] raw_result;
 
     // Calculate number of elements based on SEW
     int num_elements;
     always_comb begin
         case (sew)
-            2'b00: num_elements = VLEN/8;
-            2'b01: num_elements = VLEN/16;
-            2'b10: num_elements = VLEN/32;
-            2'b11: num_elements = VLEN/64;
-            default: num_elements = VLEN/32;
+            2'b00: num_elements = `MAX_VLEN/8;
+            2'b01: num_elements = `MAX_VLEN/16;
+            2'b10: num_elements = `MAX_VLEN/32;
+            2'b11: num_elements = `MAX_VLEN/64;
+            default: num_elements = `MAX_VLEN/32;
         endcase
     end
 
@@ -151,6 +148,6 @@ module vector_bitwise_unit #(
         endcase
     end
 
-    assign alu_result = raw_result;
-    assign alu_done   = 1'b1;  // combinational
+    assign bitwise_result = raw_result;
+    assign bitwise_done   = 1'b1;  // combinational
 endmodule

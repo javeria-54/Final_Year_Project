@@ -1,5 +1,6 @@
 `include "vector_adder_subtractor_unit.sv"
 `include "vector_multiplier.sv"
+`include "vec_regfile_defs.svh"
 
 module vector_multiply_add_unit (
     input  logic                 clk,
@@ -24,9 +25,10 @@ module vector_multiply_add_unit (
     logic [`MAX_VLEN-1:0] mult_operand_1;
     logic [`MAX_VLEN-1:0] mult_operand_2;
     logic [`MAX_VLEN-1:0] add_operand_1,add_operand_2,add_operand;
-    logic [`MAX_VLEN-1:0] product_result;
+    logic [`MAX_VLEN*2+1:0] product_result;
     logic [`MAX_VLEN-1:0] product_selected;
     logic                 mult_done;
+    logic [`MAX_VLEN-1:0] product_1,product_2;
 
     typedef enum logic [2:0] {
         VMACC_VV   = 3'b000,  // vd = +(vs1 * vs2) + vd
@@ -82,6 +84,8 @@ module vector_multiply_add_unit (
         .signed_mode    (signed_mode),
         .count_0        (count_0),
         .mult_done      (mult_done),
+        .product_1      (product_1),
+        .product_2      (product_2),
         .product        (product_result)
     );
 
