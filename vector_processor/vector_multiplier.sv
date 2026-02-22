@@ -1,6 +1,3 @@
-// vec_compare_execution_unit.sv
-`include "vec_regfile_defs.svh"
-`include "vector_processor_defs.svh"
 module multiplier_8 (
     input logic         clk,
     input logic         reset,
@@ -37,13 +34,7 @@ module multiplier_8 (
     logic [7:0] A0_abs, A1_abs, A2_abs, A3_abs;
     logic [7:0] B0_abs, B1_abs, B2_abs, B3_abs;
     logic sew_was_2;
-    
-    // Intermediate signals for two's complement
-    logic [15:0] A_low_16, A_high_16, B_low_16, B_high_16;
-    logic [31:0] A_32, B_32;
-    logic [15:0] A_low_16_comp, A_high_16_comp;
-    logic [15:0] B_low_16_comp, B_high_16_comp;
-    logic [31:0] A_32_comp, B_32_comp;
+    logic count_0_prev;
     
     // Extract 8-bit chunks
     assign A0 = data_in_A[7:0];
@@ -54,22 +45,6 @@ module multiplier_8 (
     assign B1 = data_in_B[15:8];
     assign B2 = data_in_B[23:16];
     assign B3 = data_in_B[31:24];
-
-    // Group elements based on SEW for two's complement
-    assign A_low_16 = {A1, A0};
-    assign A_high_16 = {A3, A2};
-    assign B_low_16 = {B1, B0};
-    assign B_high_16 = {B3, B2};
-    assign A_32 = data_in_A;
-    assign B_32 = data_in_B;
-    
-    // Two's complement for 16-bit and 32-bit
-    assign A_low_16_comp = ~A_low_16 + 16'd1;
-    assign A_high_16_comp = ~A_high_16 + 16'd1;
-    assign B_low_16_comp = ~B_low_16 + 16'd1;
-    assign B_high_16_comp = ~B_high_16 + 16'd1;
-    assign A_32_comp = ~A_32 + 32'd1;
-    assign B_32_comp = ~B_32 + 32'd1;
 
     assign sign_A0 = A0[7];
     assign sign_A1 = A1[7];
@@ -96,15 +71,15 @@ module multiplier_8 (
                     B3_abs = sign_B3 ? (~B3 + 8'd1) : B3;
                 end
                 2'b01: begin // 16-bit: two's complement on 16-bit pairs
-                    {A1_abs, A0_abs} = sign_A0 ? A_low_16_comp : A_low_16;
-                    {A3_abs, A2_abs} = sign_A2 ? A_high_16_comp : A_high_16;
+                    {A1_abs, A0_abs} = sign_A1 ? (~{A1, A0} + 16'd1) : {A1, A0};
+                    {A3_abs, A2_abs} = sign_A3 ? (~{A3, A2} + 16'd1) : {A3, A2};
                 
-                    {B1_abs, B0_abs} = sign_B0 ? B_low_16_comp : B_low_16;
-                    {B3_abs, B2_abs} = sign_B2 ? B_high_16_comp : B_high_16;
+                    {B1_abs, B0_abs} = sign_B1 ? (~{B1, B0} + 16'd1) : {B1, B0};
+                    {B3_abs, B2_abs} = sign_B3 ? (~{B3, B2} + 16'd1) : {B3, B2};
                 end
                 2'b10: begin // 32-bit: two's complement on full 32-bit
-                    {A3_abs, A2_abs, A1_abs, A0_abs} = sign_A0 ? A_32_comp : A_32;
-                    {B3_abs, B2_abs, B1_abs, B0_abs} = sign_B0 ? B_32_comp : B_32;
+                    {A3_abs, A2_abs, A1_abs, A0_abs} = sign_A3 ?  (~data_in_A + 32'd1) : data_in_A;
+                    {B3_abs, B2_abs, B1_abs, B0_abs} = sign_B3 ?  (~data_in_B + 32'd1) : data_in_B;
                 end
                 default: begin
                     A0_abs = A0; A1_abs = A1; A2_abs = A2; A3_abs = A3;
@@ -134,21 +109,47 @@ module multiplier_8 (
         end
     end
 
-    // Count logic for 32-bit mode
+    logic [1:0] cycle_counter;
+    logic [31:0] prev_data_in_A;
+    logic [31:0] prev_data_in_B;
+    logic new_transaction;
+
     always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
-            sew_was_2 <= 1'b0;
+            cycle_counter <= 2'b00;
             count_0 <= 1'b0;
-        end else if (sew == 2'b10) begin
-            sew_was_2 <= 1'b1;
-            count_0 <= sew_was_2;
-        end else begin
-            sew_was_2 <= 1'b0;
-            count_0 <= 1'b0;
+            prev_data_in_A <= 32'h0;
+            prev_data_in_B <= 32'h0;
+            new_transaction <= 1'b0;
+        end
+        else begin
+            count_0 <= 1'b0;  
+            new_transaction <= 1'b0;
+            
+            if ((data_in_A != prev_data_in_A) || (data_in_B != prev_data_in_B)) begin
+                new_transaction <= 1'b1;
+                prev_data_in_A <= data_in_A;
+                prev_data_in_B <= data_in_B;
+                cycle_counter <= 2'b00;
+            end
+            else if (sew == 2'b10) begin
+                cycle_counter <= cycle_counter + 1'b1;
+                if (cycle_counter == 2'b11)
+                    cycle_counter <= 2'b00;
+            end
+            else begin
+                cycle_counter <= 2'b00;
+            end
+            
+            if (new_transaction && sew == 2'b10) begin
+                count_0 <= 1'b0;  
+            end
+            else if (sew == 2'b10 && cycle_counter == 2'b00) begin
+                count_0 <= 1'b1;  
+            end
         end
     end
 
-    // Multiplier A inputs (using absolute values)
     assign mult1_A = A0_abs;
     assign mult2_A = A1_abs;
     assign mult3_A = (sew == 2'b01 ) ? A0_abs : A2_abs ;
@@ -163,7 +164,6 @@ module multiplier_8 (
     assign mux0_out = count_0 ? B2_abs : B0_abs;
     assign mux1_out = count_0 ? B3_abs : B1_abs;
 
-    // Multiplier B inputs (using absolute values)
     assign mult1_B = (sew == 2'b00) ? B0_abs :
                      (sew == 2'b01) ? B0_abs :
                      (sew == 2'b10) ? mux0_out : 8'b0;
@@ -197,6 +197,7 @@ module multiplier_8 (
                      (sew == 2'b10) ? mux1_out : 8'b0;
 
 endmodule
+
 
 // dadda multiplier
 // A - 8 bits , B - 8bits, y(output) - 16bits
@@ -339,10 +340,13 @@ assign Cout = (A&B)|(A&Cin)|(B&Cin);
     
 endmodule
 
+
+
 module carry_save_8 (
     input  logic               clk,
     input  logic               reset,
     input  logic        [1:0]  sew,         // 0: 16-bit mode (2x16x16), 1: 32-bit mode (1x32x32)
+    input  logic               start,
     input  logic signed [15:0] mult_out_1,  // Partial product for multiplier 1 
     input  logic signed [15:0] mult_out_2,  // Partial product for multiplier 2 
     input  logic signed [15:0] mult_out_3,  // Partial product for multiplier 3
@@ -381,7 +385,8 @@ typedef enum logic [2:0] {
     // 16-bit mode states
     PP_16, 
     // 32-bit mode states
-    PP1_32, PP2_32    
+    PP1_32, PP2_32,
+    DONE    
 } state_t;
 
 state_t state, next_state;
@@ -451,20 +456,27 @@ always_comb begin
     result_0 = '0;          result_1 = '0;          result_2 = '0;          result_3 = '0;
     result_4 = '0;          result_5 = '0;          result_6 = '0;          result_7 = '0;
     accum_carry_0 = '0;     accum_carry_1 = '0;     accum_carry_2 = '0;     accum_carry_3 = '0;
+    mult_done = 0;
 
     case (state)
         IDLE: begin
-            //next_done = 0;
-            if (!reset) begin
+            if (start) begin
                 next_accum_0 = 0;
                 next_accum_1 = 0;
                 next_accum_2 = 0;
                 next_accum_3 = 0;
-
-                next_state = (sew == 2'b00) ? PP_8 :
-                                    (sew == 2'b01) ? PP_16:
-                                    (sew == 2'b10) ? PP1_32: IDLE;               
-                end
+                next_state =    (sew == 2'b00) ? PP_8 :
+                                (sew == 2'b01) ? PP_16:
+                                (sew == 2'b10) ? PP1_32: IDLE;    
+            end
+            else begin
+                next_accum_0 = 0;
+                next_accum_1 = 0;
+                next_accum_2 = 0;
+                next_accum_3 = 0;
+                next_state = IDLE;
+                
+            end
         end
 
         PP_8: begin
@@ -472,7 +484,8 @@ always_comb begin
             next_accum_1 =  mult_out_2;
             next_accum_2 =  mult_out_3;
             next_accum_3 =  mult_out_4; 
-            next_state = IDLE;   
+            mult_done = 0;
+            next_state = DONE;   
         end
 
         PP_16: begin   
@@ -510,19 +523,20 @@ always_comb begin
             result_7 = add_sum_carry(sum16_7[7:0],  sum16_7[15:8]);
 
             sum16_8 = add_carry_8bit(result_1[7:0], result_0[9:8], 1'b0, 1'b0);
-            sum16_9 = add_carry_8bit(result_2[7:0], result_1[9:8], 1'b0, 1'b0);
-            sum16_10 = add_carry_8bit(result_3[7:0],result_2[9:8], 1'b0, 1'b0);
+            sum16_9 = add_carry_8bit(result_2[7:0], result_1[9:8], sum16_8[8], 1'b0);
+            sum16_10 = add_carry_8bit(result_3[7:0],result_2[9:8], sum16_9[8], 1'b0);
 
             sum16_11 = add_carry_8bit(result_5[7:0], result_4[9:8], 1'b0, 1'b0);
-            sum16_12 = add_carry_8bit(result_6[7:0], result_5[9:8], 1'b0, 1'b0);
-            sum16_13 = add_carry_8bit(result_7[7:0], result_6[9:8], 1'b0, 1'b0);
+            sum16_12 = add_carry_8bit(result_6[7:0], result_5[9:8], sum16_11[8], 1'b0);
+            sum16_13 = add_carry_8bit(result_7[7:0], result_6[9:8], sum16_12[8], 1'b0);
  
             next_accum_0 =  {sum16_8[7:0], result_0[7:0]};
             next_accum_1 =  {sum16_10[7:0], sum16_9[7:0]};
             next_accum_2 =  {sum16_11[7:0], result_4[7:0]};
             next_accum_3 =  {sum16_13[7:0], sum16_12[7:0]};
+            mult_done = 0;
                       
-            next_state = IDLE ;            
+            next_state = DONE ;            
         end
 
         PP1_32: begin 
@@ -563,10 +577,11 @@ always_comb begin
             carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], carry_2[8], result_3[9:8]);
             carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);
 
-            {accum_carry_0, next_accum_0} =  {carry_0[7:0], result_0[7:0]};
-            {accum_carry_1, next_accum_1} =  {carry_2[7:0], carry_1[7:0]};
-            {accum_carry_2, next_accum_2} =  {carry_4[7:0], carry_3[7:0]};
-            {accum_carry_3, next_accum_3} =  {15'b0        ,carry_4[8]};
+            next_accum_0 =  {carry_0[7:0], result_0[7:0]};
+            next_accum_1 =  {carry_2[7:0], carry_1[7:0]};
+            next_accum_2 =  {carry_4[7:0], carry_3[7:0]};
+            next_accum_3 =  {15'b0        ,carry_4[8]};
+            mult_done = 0;
 
             next_state = PP2_32;
 
@@ -618,27 +633,18 @@ always_comb begin
             next_accum_1 = sum_accum_1[15:0];
             next_accum_2 = sum_accum_2[15:0];
             next_accum_3 = sum_accum_3[15:0];
+            mult_done = 0;
 
-            next_state = IDLE ;
+            next_state = DONE ;
 
         end 
+        DONE: begin
+            mult_done = 1;
+            next_state = IDLE;
+        
+        end
     endcase
 end
-    // Sequential logic (always_ff)
-    always_ff @(posedge clk or posedge reset) begin
-        if (reset) begin
-            mult_done <= 1'b0;
-        end else begin
-            case (state)
-                IDLE:    mult_done <= 1'b0;    
-                PP_8:    mult_done <= 1'b1;
-                PP_16:   mult_done <= 1'b1;
-                PP1_32:  mult_done <= 1'b0;
-                PP2_32:  mult_done <= 1'b1;
-                default: mult_done <= 1'b0;
-            endcase
-        end
-    end
     always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
         accum_0 <= 0;
@@ -659,21 +665,21 @@ end
 assign product_1 =  {accum_1, accum_0} ;
 assign product_2 =  {accum_3, accum_2} ;
 
-
 endmodule
 
-module top(
-    input  logic               clk,
-    input  logic               reset,
-    input  logic        [1:0]  sew,
-    input  logic               signed_mode,
-    input  logic signed [31:0] data_in_A,
-    input  logic signed [31:0] data_in_B,
-    output logic               count_0, 
-    output logic               mult_done,
-    output logic signed [31:0] product_1,
-    output logic signed [31:0] product_2,
-    output logic signed [63:0] product
+
+module top_8(
+    input  logic                clk,
+    input  logic                reset,
+    input  logic        [1:0]   sew,
+    input  logic                start,
+    input  logic                signed_mode,
+    input  logic signed [31:0]  data_in_A,
+    input  logic signed [31:0]  data_in_B,
+
+    output logic                count_0, 
+    output logic                mult_done,    
+    output logic signed [63:0]  product
 );
 
     // Multiplier inputs
@@ -690,9 +696,10 @@ module top(
     logic signed [15:0] mult_out_1_delayed, mult_out_2_delayed, mult_out_3_delayed, mult_out_4_delayed;
     logic signed [15:0] mult_out_5_delayed, mult_out_6_delayed, mult_out_7_delayed, mult_out_8_delayed;
 
-    // Sign outputs for result adjustment
-    logic sign_A0, sign_A1, sign_A2, sign_A3;
-    logic sign_B0, sign_B1, sign_B2, sign_B3;
+    logic                sign_A0, sign_A1, sign_A2, sign_A3;
+    logic                sign_B0, sign_B1, sign_B2, sign_B3;
+    logic signed [31:0]  product_1;
+    logic signed [31:0]  product_2;
 
     logic signed [31:0] product_16sew_1, product_16sew_2;
     logic signed [15:0] product_8sew_1, product_8sew_2, product_8sew_3, product_8sew_4;
@@ -781,6 +788,7 @@ module top(
         .clk(clk),
         .reset(reset),
         .sew(sew),
+        .start(start),
         .mult_out_1(mult_out_1_delayed),
         .mult_out_2(mult_out_2_delayed),
         .mult_out_3(mult_out_3_delayed),
@@ -804,28 +812,75 @@ always_comb begin
         product_16sew_1 = 32'h0;
         product_16sew_2 = 32'h0;
         product_32sew   = 64'h0;
-        product         = '0;
+        product         = 64'h0;
     case (sew)
         2'b00: begin // 8-bit: individual two's complement
-
-            product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 8'd1) : product_1[15:0];
-            product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 8'd1) : product_1[31:16];
-            product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 8'd1) : product_2[15:0];
-            product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 8'd1) : product_2[31:16];
-            product        = {product_8sew_4, product_8sew_3, product_8sew_2, product_8sew_1};
+            if (signed_mode) begin
+                product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 8'd1) : product_1[15:0];
+                product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 8'd1) : product_1[31:16];
+                product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 8'd1) : product_2[15:0];
+                product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 8'd1) : product_2[31:16];
+                product        = {product_8sew_4, product_8sew_3, product_8sew_2, product_8sew_1};
+                product_16sew_1 = 32'h0;
+                product_16sew_2 = 32'h0;
+                product_32sew = 64'h0;
+            end
+            else begin 
+                product = {product_2,product_1};
+                product_8sew_1 = 16'h0;
+                product_8sew_2 = 16'h0;
+                product_8sew_3 = 16'h0;
+                product_8sew_4 = 16'h0;
+                product_16sew_1 = 32'h0;
+                product_16sew_2 = 32'h0;
+                product_32sew = 64'h0;
+            end
 
             end
         2'b01: begin // 16-bit: two's complement on 16-bit pairs
-
-            product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 8'd1) : product_1;
-            product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 8'd1) : product_2;
-            product = {product_16sew_2, product_16sew_1};
+            if (signed_mode) begin
+                product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 8'd1) : product_1;
+                product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 8'd1) : product_2;
+                product = {product_16sew_2, product_16sew_1};
+                product_8sew_1 = 16'h0;
+                product_8sew_2 = 16'h0;
+                product_8sew_3 = 16'h0;
+                product_8sew_4 = 16'h0;
+                product_32sew = 64'h0;
+            end
+            else begin 
+                product = {product_2,product_1};
+                product_8sew_1  = 16'h0;
+                product_8sew_2  = 16'h0;
+                product_8sew_3  = 16'h0;
+                product_8sew_4  = 16'h0;
+                product_16sew_1 = 32'h0;
+                product_16sew_2 = 32'h0;
+                product_32sew   = 64'h0;
+            end
                
             end
         2'b10: begin // 32-bit: two's complement on full 32-bit
-                
-            product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 8'd1) : {product_2, product_1};
-            product = product_32sew;
+            if (signed_mode) begin    
+                product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 8'd1) : {product_2, product_1};
+                product = product_32sew;
+                product_8sew_1 = 16'h0;
+                product_8sew_2 = 16'h0;
+                product_8sew_3 = 16'h0;
+                product_8sew_4 = 16'h0;
+                product_16sew_1 = 32'h0;
+                product_16sew_2 = 32'h0;
+            end
+            else begin 
+                product = {product_2,product_1};
+                product_8sew_1  = 16'h0;
+                product_8sew_2  = 16'h0;
+                product_8sew_3  = 16'h0;
+                product_8sew_4  = 16'h0;
+                product_16sew_1 = 32'h0;
+                product_16sew_2 = 32'h0;
+                product_32sew   = 64'h0;
+            end
 
             end
        default: begin
@@ -836,8 +891,7 @@ always_comb begin
             product_16sew_1 = 32'h0;
             product_16sew_2 = 32'h0;
             product_32sew   = 64'h0;
-
-            product = {product_2 , product_1};
+            product = 64'h0;
 
             end
         endcase
@@ -848,15 +902,13 @@ endmodule
 // Top-level wrapper for 512-bit inputs
 module vector_multiplier(
     input  logic                clk,
-    input  logic                reset,
+    input  logic                reset,start,
     input  logic        [1:0]   sew,           // 00=8-bit, 01=16-bit, 10=32-bit
     input  logic signed [`MAX_VLEN-1:0] data_in_A,     // 512-bit input A
     input  logic signed [`MAX_VLEN-1:0] data_in_B,     // 512-bit input B
     input  logic                signed_mode,
     output logic                count_0,
     output logic                mult_done,
-    output logic signed [`MAX_VLEN-1:0] product_1,     // Changed: aggregated output
-    output logic signed [`MAX_VLEN-1:0] product_2,     // Changed: aggregated output
     output logic signed [`MAX_VLEN*2+1:0] product       // 1024-bit result
 );
 
@@ -866,8 +918,6 @@ module vector_multiplier(
     // Per-PE signals
     logic [NUM_PES-1:0] pe_count_0;
     logic [NUM_PES-1:0] pe_mult_done;           //  Separate done signal per PE
-    logic signed [31:0] pe_product_1 [NUM_PES-1:0];
-    logic signed [31:0] pe_product_2 [NUM_PES-1:0];
     logic signed [63:0] pe_product [NUM_PES-1:0];
     
     // Generate 16 processing elements
@@ -886,8 +936,6 @@ module vector_multiplier(
                 .data_in_A(data_in_A[BASE +: 32]),  // Extract 32 bits
                 .data_in_B(data_in_B[BASE +: 32]),
                 .count_0(pe_count_0[i]),
-                .product_1(pe_product_1[i]),        //  32-bit per PE
-                .product_2(pe_product_2[i]),        //  32-bit per PE
                 .product(pe_product[i])
             );
         end
@@ -898,14 +946,6 @@ module vector_multiplier(
     
     //  Combine all count_0 signals
     assign count_0 = &pe_count_0;
-    
-    //  Aggregate product_1 and product_2 outputs
-    always_comb begin
-        for (int j = 0; j < NUM_PES; j++) begin
-            product_1[j*32 +: 32] = pe_product_1[j];
-            product_2[j*32 +: 32] = pe_product_2[j];
-        end
-    end
     
     //  Aggregate final product based on SEW
     always_comb begin
@@ -937,4 +977,3 @@ module vector_multiplier(
     end
 
 endmodule
-

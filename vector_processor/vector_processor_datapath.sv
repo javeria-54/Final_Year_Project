@@ -33,7 +33,7 @@ module vector_processor_datapth (
 
 
     // Outputs from vector rocessor --> scaler processor
-    output  logic                               is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
+    input  logic                               is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                               error,              // error has occure due to invalid configurations
 
     

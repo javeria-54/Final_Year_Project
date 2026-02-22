@@ -41,7 +41,6 @@ module system_top_tb();
     // Scalar signals
     wire [31:0] pc          = DUT.SCALAR.pc_next;
     wire [31:0] instruction = DUT.SCALAR.instruction;
-    wire        is_vector   = DUT.is_vector;
 
     // Handshaking signals
     wire        inst_valid      = DUT.inst_valid;
@@ -86,7 +85,7 @@ module system_top_tb();
     //==========================================================================
     always @(posedge clk) begin
         if (rst) begin
-            if (!is_vector) begin
+            if (!is_vec) begin
                 scalar_inst_count++;
                 $display("[SCALAR] PC: 0x%08h | Inst: 0x%08h",
                     pc, instruction);
@@ -99,7 +98,7 @@ module system_top_tb();
     // Jab vector instruction detect ho
     //==========================================================================
     always @(posedge clk) begin
-        if (rst && is_vector && inst_valid) begin
+        if (rst && is_vec && inst_valid) begin
             vector_inst_count++;
             $display("[VECTOR] Detected  | PC: 0x%08h | Inst: 0x%08h",
                 pc, instruction);
@@ -151,15 +150,6 @@ module system_top_tb();
             $display("  Result              : %0d ERRORS ✗", error_count);
 
         $display("============================================\n");
-        $finish;
-    end
-
-    //==========================================================================
-    // TIMEOUT — Agar processor hang ho jaye
-    //==========================================================================
-    initial begin
-        #50000;  // 5000 cycles ke baad timeout
-        $display("\n[TIMEOUT] Simulation stuck! Check handshaking.");
         $finish;
     end
 

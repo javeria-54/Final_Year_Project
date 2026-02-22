@@ -20,7 +20,6 @@ module system_top (
     //==========================================================================
     // Scalar Processor Internal Signals
     //==========================================================================
-    logic        is_vector;
     logic [31:0] instruction_fwd;
     logic [31:0] rs1_data_fwd;
     logic [31:0] rs2_data_fwd;
@@ -56,7 +55,7 @@ module system_top (
     read_data_channel_t           re_data_channel;
     write_response_channel_t      wr_resp_channel;
 
-    assign pc_enable = ~is_vector | vec_pro_ready;
+    assign pc_enable = ~is_vec | vec_pro_ready;
 
     //==========================================================================
     // SCALAR PROCESSOR
@@ -65,7 +64,7 @@ module system_top (
         .clk      (clk),
         .rst      (!rst),
         .pc_enable(pc_enable), 
-        .is_vector(is_vector)
+        .is_vector(is_vec)
     );
 
     //==========================================================================
@@ -76,7 +75,7 @@ module system_top (
     assign rs2_data_fwd    = SCALAR.rdataB;
 
     // inst_valid: vector instruction detect ho aur vector ready ho
-    assign inst_valid = is_vector & vec_pro_ready;
+    assign inst_valid = is_vec & vec_pro_ready;
 
     // scalar_pro_ready: vec_pro_ack aane ke baad scalar ready signal
     always_ff @(posedge clk or negedge rst) begin

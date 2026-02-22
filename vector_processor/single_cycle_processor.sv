@@ -41,7 +41,7 @@ module single_cycle_processor_top(
  Immediate_Generator im_g1(instruction,immediate_value);
 
  
- ALU a1(alu_op,A,B,ALU_out);
+ ALU a1(alu_op,A,B,is_vector,ALU_out);
 
  logic [31:0] rdata,wdata,address;
  Data_Memory dm1(clk,rst,wr_en,rd_en,address,wdata,rdata);

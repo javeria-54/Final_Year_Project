@@ -7,7 +7,7 @@ module vec_decode(
     input   logic [`XLEN-1:0]       rs2_data,
 
     // vec_decode -> scalar_processor
-    output  logic                   is_vec,
+    input  logic                   is_vec,
 
     // vec_decode -> vec_regfile
     output  logic [`XLEN-1:0]       vec_read_addr_1,        // vs1_addr
@@ -80,7 +80,6 @@ assign uimm = vec_inst[19:15];
 assign mop = vec_inst[27:26];
 
 always_comb begin : vec_decode
-    is_vec          = '0;
     vec_write_addr  = '0;
     vec_read_addr_1 = '0;
     vec_read_addr_2 = '0;
@@ -95,229 +94,221 @@ always_comb begin : vec_decode
     vec_op_valid    = '0;
     vec_func6       = '0;
 
-    case (vopcode)
-        // vector arithematic and set instructions opcode = 0x57
-        V_ARITH: begin
-            is_vec          = 1;
-            case (vfunc3)
-                OPIVV: begin
-                    vec_write_addr  = vd_addr;
-                    vec_read_addr_1 = vs1_addr;
-                    vec_read_addr_2 = vs2_addr;
-                    vec_read_addr_3 = '0;
-                    vec_imm         = '0;
-                    vec_mask        = vm;
-                    vec_func6       = func_6; 
-                    case (vfunc6_vix)
-                            VADD , VSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
-                            VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , 
-                            VSLL , VSRL , VSRA  :
-                            is_valid_vix = 1'b1;  // ← Set flag if valid
-                        default:
-                            is_valid_vix = 1'b0;
-                    endcase
-                     if (is_valid_vix) begin
-                        vec_op_valid = 1'b1;
-                    end else begin
-                        vec_op_valid = 1'b0;
-                    end
-                end
-            
-                OPIVI: begin
-                    vec_write_addr  = vd_addr;
-                    vec_read_addr_1 = '0;
-                    vec_read_addr_2 = vs2_addr;
-                    vec_read_addr_3 = '0;
-                    vec_imm         = imm;
-                    vec_mask        = vm;
-                    vec_func6    = func_6; 
-                    case (vfunc6_vix)
-                            VADD , VRSUB ,  VAND , VOR , VXOR,
-                            VADC , VMADC , VMSEQ , VMSNE ,  VMSLEU, VMSLE , VMSGTU , VMSGT ,
-                            VSLL , VSRL , VSRA  :
-                            is_valid_vix = 1'b1;  // ← Set flag if valid
-                        default:
-                            is_valid_vix = 1'b0;
-                    endcase
-                    if (is_valid_vix) begin     
-                        vec_op_valid = 1'b1;
-                    end else begin
-                        vec_op_valid = 1'b0;
-                    end
-                end
-
-                OPIVX: begin
-                    vec_write_addr  = vd_addr;
-                    vec_read_addr_1 = '0;
-                    vec_read_addr_2 = vs2_addr;
-                    vec_read_addr_3 = '0;
-                    vec_imm         = '0;
-                    vec_mask        = vm;
-                    vec_func6    = func_6; 
-                    case (vfunc6_vix)
-                            VADD , VSUB , VRSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
-                            VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , VMSGTU , VMSGT ,
-                            VSLL ,  VSRL , VSRA  :
-                            is_valid_vix = 1'b1;  // ← Set flag if valid
-                        default:
-                            is_valid_vix = 1'b0;
-                    endcase
-                    if (is_valid_vix) begin
-                        vec_op_valid = 1'b1;
-                    end else begin
-                        vec_op_valid = 1'b0;
-                    end
-                end
-
-                OPMVV: begin 
-                    vec_write_addr  = vd_addr;
-                    vec_read_addr_1 = vs1_addr;
-                    vec_read_addr_2 = vs2_addr;
-                    vec_read_addr_3 = vs3_addr;
-                    vec_imm         = '0;
-                    vec_mask        = vm;
-                    vec_func6    = func_6;  
-                    case (vfunc6_vx)
-                            VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
-                            is_valid_vx = 1'b1;  // ← Set flag if valid
-                        default:
-                            is_valid_vx = 1'b0;
-                    endcase
-                    if (is_valid_vx) begin
-                        vec_op_valid = 1'b1;
-                    end else begin
-                        vec_op_valid = 1'b0;
-                    end
-                end
-                OPMVX: begin 
-                    vec_write_addr  = vd_addr;
-                    vec_read_addr_1 = '0;
-                    vec_read_addr_2 = vs2_addr;
-                    vec_read_addr_3 = vs3_addr;
-                    vec_imm         = '0;
-                    vec_mask        = vm;
-                    vec_func6    = func_6; 
-                    case (vfunc6_vx)
-                            VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
-                            is_valid_vx = 1'b1;  // ← Set flag if valid
-                        default:
-                            is_valid_vx = 1'b0;
-                    endcase
-                    if (is_valid_vx) begin
-                        vec_op_valid = 1'b1;
-                    end else begin
-                        vec_op_valid = 1'b0;
-                    end
-                end
-
-                // vector configuration instructions
-                CONF: begin
-                    case (inst_msb[1])
-                    // VSETVLI
-                        1'b0: begin
-                            rs1_o = rs1_data;
-                            rs2_o =  '0; 
-                            zimm  = vec_inst [30:20];
+    if (is_vec) begin
+        case (vopcode)
+            // vector arithematic and set instructions opcode = 0x57
+            V_ARITH: begin
+                
+                case (vfunc3)
+                    OPIVV: begin
+                        vec_write_addr  = vd_addr;
+                        vec_read_addr_1 = vs1_addr;
+                        vec_read_addr_2 = vs2_addr;
+                        vec_read_addr_3 = '0;
+                        vec_imm         = '0;
+                        vec_mask        = vm;
+                        vec_func6       = func_6; 
+                        case (vfunc6_vix)
+                                VADD , VSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
+                                VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , 
+                                VSLL , VSRL , VSRA  :
+                                is_valid_vix = 1'b1;  // ← Set flag if valid
+                            default:
+                                is_valid_vix = 1'b0;
+                        endcase
+                        if (is_valid_vix) begin
+                            vec_op_valid = 1'b1;
+                        end else begin
+                            vec_op_valid = 1'b0;
                         end
-                        1'b1: begin
-                            case (inst_msb[0])
-                            // VSETIVLI
-                                1'b1: begin
+                    end           
+                    OPIVI: begin
+                        vec_write_addr  = vd_addr;
+                        vec_read_addr_1 = '0;
+                        vec_read_addr_2 = vs2_addr;
+                        vec_read_addr_3 = '0;
+                        vec_imm         = imm;
+                        vec_mask        = vm;
+                        vec_func6    = func_6; 
+                        case (vfunc6_vix)
+                                VADD , VRSUB ,  VAND , VOR , VXOR,
+                                VADC , VMADC , VMSEQ , VMSNE ,  VMSLEU, VMSLE , VMSGTU , VMSGT ,
+                                VSLL , VSRL , VSRA  :
+                                is_valid_vix = 1'b1;  // ← Set flag if valid
+                            default:
+                                is_valid_vix = 1'b0;
+                        endcase
+                        if (is_valid_vix) begin     
+                            vec_op_valid = 1'b1;
+                        end else begin
+                            vec_op_valid = 1'b0;
+                        end
+                    end
+                    OPIVX: begin
+                        vec_write_addr  = vd_addr;
+                        vec_read_addr_1 = '0;
+                        vec_read_addr_2 = vs2_addr;
+                        vec_read_addr_3 = '0;
+                        vec_imm         = '0;
+                        vec_mask        = vm;
+                        vec_func6    = func_6; 
+                        case (vfunc6_vix)
+                                VADD , VSUB , VRSUB , VMINU , VMIN , VMAXU , VMAX , VAND , VOR , VXOR,
+                                VADC , VMADC , VSBC , VMSBC , VMSEQ , VMSNE , VMSLTU, VMSLT , VMSLEU, VMSLE , VMSGTU , VMSGT ,
+                                VSLL ,  VSRL , VSRA  :
+                                is_valid_vix = 1'b1;  // ← Set flag if valid
+                            default:
+                                is_valid_vix = 1'b0;
+                        endcase
+                        if (is_valid_vix) begin
+                            vec_op_valid = 1'b1;
+                        end else begin
+                            vec_op_valid = 1'b0;
+                        end
+                    end
+                    OPMVV: begin 
+                        vec_write_addr  = vd_addr;
+                        vec_read_addr_1 = vs1_addr;
+                        vec_read_addr_2 = vs2_addr;
+                        vec_read_addr_3 = vs3_addr;
+                        vec_imm         = '0;
+                        vec_mask        = vm;
+                        vec_func6    = func_6;  
+                        case (vfunc6_vx)
+                                VMULHU, VMUL, VMULHSU, VMULH, VMADD, VNMSUB, VMACC, VNMSAC, VMANDNOT, VMAND, VMOR, VMXOR, VMORNOT,
+                                VMNAND, VMNOR, VMXNOR  :
+                                is_valid_vx = 1'b1;  // ← Set flag if valid
+                            default:
+                                is_valid_vx = 1'b0;
+                        endcase
+                        if (is_valid_vx) begin
+                            vec_op_valid = 1'b1;
+                        end else begin
+                            vec_op_valid = 1'b0;
+                        end
+                    end
+                    OPMVX: begin 
+                        vec_write_addr  = vd_addr;
+                        vec_read_addr_1 = '0;
+                        vec_read_addr_2 = vs2_addr;
+                        vec_read_addr_3 = vs3_addr;
+                        vec_imm         = '0;
+                        vec_mask        = vm;
+                        vec_func6    = func_6; 
+                        case (vfunc6_vx)
+                                VMULHU , VMUL , VMULHSU , VMULH , VMADD , VNMSUB, VMACC, VNMSAC :
+                                is_valid_vx = 1'b1;  // ← Set flag if valid
+                            default:
+                                is_valid_vx = 1'b0;
+                        endcase
+                        if (is_valid_vx) begin
+                            vec_op_valid = 1'b1;
+                        end else begin
+                            vec_op_valid = 1'b0;
+                        end
+                    end
+                    // vector configuration instructions
+                    CONF: begin
+                        case (inst_msb[1])
+                        // VSETVLI
+                            1'b0: begin
+                                rs1_o = rs1_data;
+                                rs2_o =  '0; 
+                                zimm  = vec_inst [30:20];
+                            end
+                            1'b1: begin
+                                case (inst_msb[0])
+                                // VSETIVLI
+                                    1'b1: begin
+                                        rs1_o = '0;
+                                        rs2_o = '0; 
+                                        zimm  = {'0,vec_inst [29:20]};
+                                    end
+                                // VSETVL
+                                    1'b0: begin
+                                        rs1_o = rs1_data;
+                                        rs2_o = rs2_data;
+                                        zimm  =  '0;
+                                    end
+                                default: begin
                                     rs1_o = '0;
-                                    rs2_o = '0; 
-                                    zimm  = {'0,vec_inst [29:20]};
+                                    rs2_o = '0;
+                                    zimm  = '0;
                                 end
-                            // VSETVL
-                                1'b0: begin
-                                    rs1_o = rs1_data;
-                                    rs2_o = rs2_data;
-                                    zimm  =  '0;
-                                end
+                                endcase
+                            end
                             default: begin
                                 rs1_o = '0;
                                 rs2_o = '0;
                                 zimm  = '0;
                             end
-                            endcase
-                        end
-                        default: begin
-                            rs1_o = '0;
-                            rs2_o = '0;
-                            zimm  = '0;
-                        end
-                    endcase
-                end
-            
-                default: begin
-                    vec_write_addr  = '0;
-                    vec_read_addr_1 = '0;
-                    vec_read_addr_2 = '0;
-                    vec_read_addr_3 = '0;
-                    vec_imm         = '0;
-                    vec_mask        = '0;
-                    rs2_o           = '0;
-                    rs1_o           = '0;
-                    zimm            = '0;
-                end
-            endcase
-        end
-
-        // Vector load instructions
-        V_LOAD: begin
-            is_vec          = 1;
-            vec_write_addr  = vd_addr;
-            rs1_o           = rs1_data;
-            vec_imm         = '0;
-            vec_mask        = vm;
-            mew             = vec_inst[28];
-            nf              = vec_inst[31:29];
-            width           = vec_inst[14:12];
-            case(mop)
-                2'b10: rs2_o = rs2_data;
-                // gather unordered
-                2'b01:vec_read_addr_2 = vs2_addr;
-                // gather ordered
-                2'b11:vec_read_addr_2 = vs2_addr;
-                default:vec_read_addr_2 = '0;
-            endcase
-        end
-
-        // Vector Store instructions
-        V_STORE: begin
-            is_vec          = 1'b1;
-            vec_write_addr  = vd_addr;
-            rs1_o           = rs1_data;
-            vec_imm         = '0;
-            vec_mask        = vm;
-            mew             = vec_inst[28];
-            nf              = vec_inst[31:29];
-            width           = vec_inst[14:12];
-            case(mop)
-                2'b10: rs2_o = rs2_data;
-                // gather unordered
-                2'b01:vec_read_addr_2 = vs2_addr;
-                // gather ordered
-                2'b11:vec_read_addr_2 = vs2_addr;
-                default:vec_read_addr_2 = '0;
-            endcase
-        end
-
-        default: begin
-            is_vec          = '0;
-            vec_write_addr  = '0;
-            vec_read_addr_1 = '0;
-            vec_read_addr_2 = '0;
-            vec_read_addr_3 = '0; 
-            vec_imm         = '0;
-            vec_mask        = '0;
-            rs1_o           = '0;
-            rs2_o           = '0;
-            zimm            = '0;
-            mew             = '0;
-            nf              = '0;
-            width           = '0;
-        end
-    endcase
+                        endcase
+                    end
+                    default: begin
+                        vec_write_addr  = '0;
+                        vec_read_addr_1 = '0;
+                        vec_read_addr_2 = '0;
+                        vec_read_addr_3 = '0;
+                        vec_imm         = '0;
+                        vec_mask        = '0;
+                        rs2_o           = '0;
+                        rs1_o           = '0;
+                        zimm            = '0;
+                    end
+                endcase
+            end
+            // Vector load instructions
+            V_LOAD: begin
+                vec_write_addr  = vd_addr;
+                rs1_o           = rs1_data;
+                vec_imm         = '0;
+                vec_mask        = vm;
+                mew             = vec_inst[28];
+                nf              = vec_inst[31:29];
+                width           = vec_inst[14:12];
+                case(mop)
+                    2'b10: rs2_o = rs2_data;
+                    // gather unordered
+                    2'b01:vec_read_addr_2 = vs2_addr;
+                    // gather ordered
+                    2'b11:vec_read_addr_2 = vs2_addr;
+                    default:vec_read_addr_2 = '0;
+                endcase
+            end
+            // Vector Store instructions
+            V_STORE: begin
+                vec_write_addr  = vd_addr;
+                rs1_o           = rs1_data;
+                vec_imm         = '0;
+                vec_mask        = vm;
+                mew             = vec_inst[28];
+                nf              = vec_inst[31:29];
+                width           = vec_inst[14:12];
+                case(mop)
+                    2'b10: rs2_o = rs2_data;
+                    // gather unordered
+                    2'b01:vec_read_addr_2 = vs2_addr;
+                    // gather ordered
+                    2'b11:vec_read_addr_2 = vs2_addr;
+                    default:vec_read_addr_2 = '0;
+                endcase
+            end
+            default: begin
+                vec_write_addr  = '0;
+                vec_read_addr_1 = '0;
+                vec_read_addr_2 = '0;
+                vec_read_addr_3 = '0; 
+                vec_imm         = '0;
+                vec_mask        = '0;
+                rs1_o           = '0;
+                rs2_o           = '0;
+                zimm            = '0;
+                mew             = '0;
+                nf              = '0;
+                width           = '0;
+            end
+        endcase
+    end
 end
     
 /* Mux for vector configuration scalar2 selections*/

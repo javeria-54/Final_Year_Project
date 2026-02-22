@@ -16,7 +16,7 @@ module vector_multiply_add_unit (
     input  logic                 Ctrl,
     input  logic                 sew_16_32,
     input  logic                 sew_32,
-    input  logic                 count_0,
+    output  logic                 count_0,
 
     output logic [`MAX_VLEN-1:0] sum_product_result,
     output logic                 product_sum_done
@@ -146,8 +146,17 @@ module vector_multiply_add_unit (
         .sew_16_32      (sew_16_32),
         .sew_32         (sew_32),
         .Sum            (sum_product_result),
-        .sum_done        (product_sum_done)
+        .sum_done       (sum_done)
     );
+
+    always_comb begin
+        if (mult_done) begin
+            product_sum_done = 1'b1;
+        end
+        else begin
+            product_sum_done = 1'b0; 
+        end
+    end
 
 endmodule
 

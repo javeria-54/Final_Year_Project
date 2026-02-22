@@ -45,7 +45,6 @@ module vector_execution_unit(
 
     logic [`MAX_VLEN-1:0]           sum_result, compare_result, bitwise_result, shift_result, move_result,  
                                     sum_product_result; 
-    logic [(`MAX_VLEN-1):0]         product_1, product_2;
     logic [`MAX_VLEN*2+1:0]         product_result;
 
     // SEW decoding
@@ -164,8 +163,6 @@ module vector_execution_unit(
         .signed_mode    (signed_mode),
         .count_0        (count_0),
         .mult_done      (mult_done),
-        .product_1      (product_1),
-        .product_2      (product_2),
         .product        (product_result)
     );  
 

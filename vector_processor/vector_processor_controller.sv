@@ -45,6 +45,7 @@ module vector_processor_controller (
     output  logic [2:0]          cmp_op, 
     output  logic [2:0]          accum_op,
     output  logic [2:0]          shift_op,
+    output  logic [2:0]          mask_op,
 
     output  logic                add_inst, sub_inst, reverse_sub_inst, 
 
@@ -56,6 +57,8 @@ module vector_processor_controller (
 
     output  logic                equal_inst, not_equal_inst, less_or_equal_unsigned_inst, less_or_equal_signed_inst, 
                                  less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst, 
+                        
+    output  logic                signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst, 
 
     output  logic                move_inst, 
 
@@ -65,9 +68,7 @@ module vector_processor_controller (
                                  mask_or_not_inst , mask_xnor_inst, 
 
     output  logic                red_sum_inst, red_max_unsigned_inst, red_max_signed_inst,
-                                 red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst,
-    
-    output  logic                signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst, 
+                                 red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst, 
                                 
     output  logic                wid_add_signed_inst, wid_add_unsigned_inst, wid_sub_signed_inst, wid_sub_unsigned_inst, 
 
@@ -200,6 +201,7 @@ always_comb begin
     shift_op                    = 3'b000;
     execution_op                = 'b0;
     accum_op                    = 3'b000;
+    mask_op                     = 'b0; 
     
     case (vopcode)
     V_ARITH: begin
@@ -607,7 +609,39 @@ always_comb begin
                         signed_mode = 1'b1;
                         Ctrl = 1'b1;
                     end
-                
+
+                    VMAND: begin
+                        mask_and_inst = 1'b1;
+                        mask_op = 3'b000;
+                    end
+                    VMNAND: begin
+                        mask_nand_inst = 1'b1;
+                        mask_op = 3'b001;  
+                    end
+                    VMANDNOT: begin
+                        mask_and_not_inst = 1'b1;
+                        mask_op = 3'b010;
+                    end
+                    VMXOR: begin
+                        mask_xor_inst = 1'b1;
+                        mask_op = 3'b011;    
+                    end
+                    VMOR: begin
+                        mask_or_inst = 1'b1;
+                        mask_op = 3'b100;  
+                    end
+                    VMNOR: begin
+                        mask_nor_inst = 1'b1;
+                        mask_op = 3'b101;    
+                    end
+                    VMORNOT: begin
+                        mask_or_not_inst = 1'b1;
+                        mask_op = 3'b110; 
+                    end
+                    VMXNOR: begin
+                        mask_xnor_inst = 1'b1;
+                        mask_op = 3'b111;   
+                    end
                 endcase 
             end
 

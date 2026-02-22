@@ -57,6 +57,7 @@ typedef enum logic [5:0] {
     VMSBC   = 6'b010011,
 
     VSMUL   = 6'b100111
+
 } v_func6_vix_e;
 
 typedef enum logic [5:0] {
@@ -64,10 +65,20 @@ typedef enum logic [5:0] {
     VMUL    = 6'b100101,
     VMULHSU = 6'b100110,
     VMULH   = 6'b100111,
+    
     VMADD   = 6'b101001,
     VNMSUB  = 6'b101011,
     VMACC   = 6'b101101,
-    VNMSAC  = 6'b101111
+    VNMSAC  = 6'b101111,
+
+    VMANDNOT  = 6'b011000,
+    VMAND     = 6'b011001,
+    VMOR      = 6'b011010,
+    VMXOR     = 6'b011011,
+    VMORNOT   = 6'b011100,
+    VMNAND    = 6'b011101,
+    VMNOR     = 6'b011110,
+    VMXNOR    = 6'b011111
 
 } v_func6_vx_e;
 

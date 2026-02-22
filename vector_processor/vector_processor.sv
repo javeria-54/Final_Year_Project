@@ -20,7 +20,7 @@ module vector_processor(
     input   logic                           scalar_pro_ready,       // tells that scaler processor is ready to take output
 
     // Outputs from vector processor --> scaler processor 
-    output  logic                           is_vec,                 // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
+    input  logic                            is_vec,                 // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                           error,                  // error has occure due to invalid configurations
     
     // csr_regfile -> scalar_processor
@@ -153,8 +153,8 @@ logic                               sat_add_signed_inst, sat_add_unsigned_inst, 
 logic                               and_inst, or_inst, xor_inst;
 
 logic   [4:0]                       bitwise_op;
-logic   [2:0]                       cmp_op,accum_op,shift_op;
-logic   [1:0]                       op_type;
+logic   [2:0]                       mask_op,cmp_op,accum_op,shift_op;
+logic   [1:0]                       op_type; 
 
 
     //==========================================================================//
@@ -345,6 +345,7 @@ logic   [1:0]                       op_type;
         .and_inst                   (and_inst), 
         .or_inst                    (or_inst), 
         .xor_inst                   (xor_inst),
+        .mask_op                    (mask_op),
         .bitwise_op                 (bitwise_op),
         .op_type                    (op_type),
         .cmp_op                     (cmp_op),

@@ -12,10 +12,12 @@
 module ALU(
  	input logic [3:0] alu_op,
  	input logic [31:0] A, B,
+    input logic is_vector,
  	output logic [31:0] AB_out
  );
  
  	always_comb begin
+        if (!is_vector)begin
          case (alu_op)
              4'b0000: AB_out = A + B; // ADD
              4'b0001: AB_out = A - B; // SUB
@@ -31,6 +33,10 @@ module ALU(
          
              default: AB_out = 32'b0;
          endcase
+        end
+        else begin
+            AB_out = 32'b0; // Vector operations ke liye ALU output zero
+        end
      end
  
  endmodule
