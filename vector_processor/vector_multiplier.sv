@@ -1,3 +1,173 @@
+`include "vec_de_csr_defs.svh"
+`include "vector_processor_defs.svh"
+`include "vec_regfile_defs.svh"
+
+// =============================================================================
+// FILE: vector_multiplier.sv
+// DESCRIPTION:
+//   Vectorized integer multiplier supporting 8-bit, 16-bit, and 32-bit
+//   element widths (SEW). Uses a pipeline of:
+//     Stage 1 - multiplier_8:   Input preparation & absolute value extraction
+//     Stage 2 - dadda_8:        Eight 8x8 Dadda multipliers (combinational)
+//     Stage 3 - delay registers: 1-cycle stall to align data
+//     Stage 4 - carry_save_8:   Carry-save accumulation FSM → final product
+//   Instantiated 16x in vector_multiplier to handle 512-bit inputs.
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: multiplier_8
+// DESCRIPTION:
+//   Prepares 8-bit operand pairs for the eight Dadda multiplier instances.
+//   Splits two 32-bit inputs (A, B) into four 8-bit chunks each (A0–A3, B0–B3).
+//   In signed_mode, computes two's-complement absolute values at the granularity
+//   dictated by SEW (8-bit, 16-bit, or 32-bit). Sign bits are passed out so
+//   the final stage can restore the correct sign.
+//
+//   For SEW=32 (2'b10), a 2-bit cycle counter generates 'count_0' to select
+//   between the lower (B0/B1) and upper (B2/B3) bytes of B across two cycles,
+//   enabling time-multiplexed partial product generation.
+//
+// INPUTS:
+//   clk, reset      - Clock and synchronous reset
+//   data_in_A/B     - 32-bit operands
+//   sew             - Element width: 00=8b, 01=16b, 10=32b
+//   signed_mode     - Treat operands as signed (two's complement)
+//
+// OUTPUTS:
+//   count_0         - Cycle flag: high when computing upper-byte partials (SEW=32)
+//   mult[1–8]_A/B   - Byte-wide operand pairs routed to each Dadda instance
+//   sign_A[0–3]     - MSB (sign) of each byte of A (used for sign restoration)
+//   sign_B[0–3]     - MSB (sign) of each byte of B
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: dadda_8
+// DESCRIPTION:
+//   8×8-bit Dadda multiplier producing a 16-bit product.
+//   Uses a tree of half-adders (HA) and carry-save adders (csa_dadda) to
+//   reduce the 64 partial products in 5 stages down to a final sum.
+//   Fully combinational (no registers).
+//
+//   Partial product array gen_pp[i][j] = B[i] & A[j].
+//   Reduction stages target Dadda heights: 6 → 4 → 3 → 2 → 1.
+//
+// INPUTS:  A, B  - 8-bit unsigned operands (absolute values from multiplier_8)
+// OUTPUT:  y     - 16-bit product
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: HA (Half Adder)
+// DESCRIPTION:
+//   Standard 1-bit half adder.
+//   Sum  = a XOR b
+//   Cout = a AND b
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: csa_dadda (Carry-Save Adder cell)
+// DESCRIPTION:
+//   1-bit full-adder used as the CSA cell in the Dadda multiplier tree.
+//   Y    = A XOR B XOR Cin   (sum)
+//   Cout = majority(A, B, Cin)
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: carry_save_8
+// DESCRIPTION:
+//   FSM-based carry-save accumulator that combines partial products from the
+//   eight Dadda multipliers into a final 64-bit result (two 32-bit halves).
+//
+//   STATE MACHINE:
+//     IDLE    - Waits for 'start'. Resets accumulators.
+//     PP_8    - SEW=8:  Stores four 16-bit Dadda outputs directly → DONE.
+//     PP_16   - SEW=16: CSA-reduces four partial products per 16-bit element
+//                       into two 32-bit results → DONE.
+//     PP1_32  - SEW=32, cycle 1: CSA-reduces eight partial products covering
+//                       the low byte contributions → PP2_32.
+//     PP2_32  - SEW=32, cycle 2: CSA-reduces the high byte contributions and
+//                       combines with PP1_32 accumulators → DONE.
+//     DONE    - Asserts mult_done for one cycle → IDLE.
+//
+//   Helper functions:
+//     csa_3to2(a,b,c)         - 3:2 CSA returning {carry[7:0], sum[7:0]}
+//     add_sum_carry(sum,carry) - Adds sum + (carry<<1), returns 10-bit result
+//     add_carry_8bit(v,c1,c2,c3) - Adds 8-bit value with up to 3 carry bits
+//
+// INPUTS:
+//   clk, reset           - Clock and reset
+//   sew                  - Element width selector
+//   start                - Pulse to begin a new multiplication
+//   mult_out_[1–8]       - 16-bit partial products from the eight Dadda units
+//
+// OUTPUTS:
+//   mult_done            - High for one cycle when result is valid
+//   product_1            - Lower 32 bits of result  (or full result for SEW=8)
+//   product_2            - Upper 32 bits of result
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: top_8
+// DESCRIPTION:
+//   Pipeline wrapper combining all four stages for one 32-bit processing element:
+//     1. multiplier_8  - Operand prep / absolute value / byte routing
+//     2. dadda_8 (×8)  - Eight parallel 8×8 multiplications
+//     3. Delay regs    - 1-cycle pipeline register to align Dadda outputs
+//                        with the carry_save_8 FSM start
+//     4. carry_save_8  - Accumulates partial products → 64-bit product
+//
+//   Sign restoration (always_comb block at output):
+//     After unsigned accumulation, applies two's-complement negation to the
+//     result based on sign_A XOR sign_B for the appropriate element granularity.
+//
+// INPUTS:
+//   clk, reset      - Clock / reset
+//   sew             - Element width: 00=8b, 01=16b, 10=32b
+//   start           - Begin new multiply
+//   signed_mode     - Enable signed arithmetic
+//   data_in_A/B     - 32-bit operand inputs
+//
+// OUTPUTS:
+//   count_0         - Forwarded from multiplier_8 (SEW=32 cycle selector)
+//   mult_done       - Multiplication complete
+//   product         - 64-bit result (packed per SEW)
+// =============================================================================
+
+
+// =============================================================================
+// MODULE: vector_multiplier
+// DESCRIPTION:
+//   Top-level 512-bit vector multiplier. Instantiates 16 'top_8' processing
+//   elements (PEs), each handling a 32-bit slice of the input vectors.
+//
+//   Each PE operates independently on its 32-bit window of data_in_A/B.
+//   The global mult_done is the AND of all 16 PE done signals (all must finish).
+//   The global count_0 is the AND of all 16 PE count_0 signals.
+//
+//   Output packing:
+//     For all SEW values, each PE contributes 64 bits of product packed
+//     contiguously into the 1025-bit output bus (16 PEs × 64 bits = 1024 bits).
+//
+// PARAMETERS:
+//   NUM_PES = 16  (512-bit input / 32 bits per PE)
+//
+// INPUTS:
+//   clk, reset    - Clock / reset
+//   start         - Start pulse
+//   sew           - Element width selector
+//   data_in_A/B   - 512-bit operand vectors
+//   signed_mode   - Signed arithmetic enable
+//
+// OUTPUTS:
+//   count_0       - Cycle phase flag (all PEs in sync)
+//   mult_done     - All PEs have completed
+//   product       - 1025-bit packed product vector
+// =============================================================================
 module multiplier_8 (
     input logic         clk,
     input logic         reset,
