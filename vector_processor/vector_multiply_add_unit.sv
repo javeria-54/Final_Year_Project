@@ -1,5 +1,4 @@
-`include "vector_adder_subtractor_unit.sv"
-`include "vector_multiplier.sv"
+
 `include "vec_regfile_defs.svh"
 
 module vector_multiply_add_unit (
@@ -14,9 +13,10 @@ module vector_multiply_add_unit (
     input  logic [1:0]           sew,         
     input  logic                 signed_mode, 
     input  logic                 Ctrl,
+    input  logic                start,
     input  logic                 sew_16_32,
     input  logic                 sew_32,
-    output  logic                 count_0,
+    output  logic                 count_0_mul_add,
 
     output logic [`MAX_VLEN-1:0] sum_product_result,
     output logic                 product_sum_done
@@ -78,14 +78,13 @@ module vector_multiply_add_unit (
     vector_multiplier vect_mult (
         .clk            (clk),
         .reset          (reset),
+        .start          (start),
         .data_in_A      (mult_operand_1),
         .data_in_B      (mult_operand_2),
         .sew            (sew),
         .signed_mode    (signed_mode),
-        .count_0        (count_0),
+        .count_0        (count_0_mul_add    ),
         .mult_done      (mult_done),
-        .product_1      (product_1),
-        .product_2      (product_2),
         .product        (product_result)
     );
 

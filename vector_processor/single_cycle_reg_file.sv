@@ -1,69 +1,68 @@
-// Copyright 2025 Maktab-e-Digital Systems Lahore.
+// Copyright 2023 University of Engineering and Technology Lahore.
 // Licensed under the Apache License, Version 2.0, see LICENSE file for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Author: javeria
-// =============================================================================
-// Single-Cycle RISC-V Processor - Register File (Workshop Skeleton Version)
-// =============================================================================
+// Description: The register file with write operation on -ve clock edge.
+//
+// Author: Muhammad Tahir, UET Lahore
+// Date: 11.8.2022
 
-module register_file(
-     input logic [4:0] raddr1,raddr2,waddr,
-     input logic [31:0] wdata,
-     input logic clk,rst,reg_wr,
-     output logic [31:0] rdata1,rdata2
- );
- logic [31:0]reg_file[0:31];
-     always_ff @(negedge clk or posedge rst) begin
-          if (rst) begin 
-          reg_file[0]= 32'd0;
-          reg_file[1]= 32'd10;
-          reg_file[2]= 32'd20;
-          reg_file[3]= 32'd30;
-          reg_file[4]= 32'd40;
-          reg_file[5]= 32'd50;
-          reg_file[6]= 32'd60;
-          reg_file[7]= 32'd70;
-          reg_file[8]= 32'd80;
-          reg_file[9]= 32'd90;
-          reg_file[10]= 32'd100;
-          reg_file[11]= 32'd110;
-          reg_file[12]= 32'd120;
-          reg_file[13]= 32'd130;
-          reg_file[14]= 32'd140;
-          reg_file[15]= 32'd150;
-          reg_file[16]= 32'd160;
-          reg_file[17]= 32'd170;
-          reg_file[18]= 32'd180;
-          reg_file[19]= 32'd190;
-          reg_file[20]= 32'd200;
-          reg_file[21]= 32'd210;
-          reg_file[22]= 32'd220;
-          reg_file[23]= 32'd230;
-          reg_file[24]= 32'd240;
-          reg_file[25]= 32'd250;
-          reg_file[26]= 32'd260;
-          reg_file[27]= 32'd270;
-          reg_file[28]= 32'd280;
-          reg_file[29]= 32'd290;
-          reg_file[30]= 32'd300;
-          reg_file[31]= 32'd310;
-          end
-          else begin
-             if(reg_wr)
-                 reg_file[waddr] <= wdata;
-             reg_file[0] <= 32'd0;
- 
-          end
- 
-     end
-     always_comb begin
- 
-         rdata1 = reg_file[raddr1];
-         rdata2 = reg_file[raddr2];
- 
-     end
- 
- 
- 
- endmodule
+
+
+`include "single_cycle_pcore_interface_defs.svh"
+
+
+module reg_file (
+
+    input   logic                      rst_n,               // reset
+    input   logic                      clk,                 // clock
+
+    // IDU <---> RF interface
+    input   logic [`RF_AWIDTH-1:0]     id2rf_rs1_addr_i,    // rs1 read address
+    input   logic [`RF_AWIDTH-1:0]     id2rf_rs2_addr_i,    // rs2 read address
+    output  logic [`XLEN-1:0]          rf2id_rs1_data_o,    // rs1 read data
+    output  logic [`XLEN-1:0]          rf2id_rs2_data_o,    // rs2 read data
+
+    input   logic                      id2rf_rd_wr_req_i,   // write request
+    input   logic [`RF_AWIDTH-1:0]     id2rf_rd_addr_i,     // rd write address
+    input   logic [`XLEN-1:0]          id2rf_rd_data_i     // rd write data
+
+ //   input wire type_debug_port_s       debug_port_i
+);
+
+// register file instantiation
+logic   [`XLEN-1:0]          register_file[`RF_SIZE];
+
+// local signals
+logic                        rs1_addr_valid;
+logic                        rs2_addr_valid;
+logic                        rf_wr_valid;
+
+// control signals for validity of register file read/write operations
+assign  rs1_addr_valid   = |id2rf_rs1_addr_i;
+assign  rs2_addr_valid   = |id2rf_rs2_addr_i;
+assign  rf_wr_valid      = (|id2rf_rd_addr_i) & id2rf_rd_wr_req_i;
+
+// asynchronous read operation for two register operands
+assign  rf2id_rs1_data_o = (rs1_addr_valid) 
+                         ? register_file[id2rf_rs1_addr_i] 
+                         : '0;
+assign  rf2id_rs2_data_o = (rs2_addr_valid) 
+                         ? register_file[id2rf_rs2_addr_i] 
+                         : '0;
+
+// Write operation is performed on the negative edge
+always_ff @( negedge clk) begin
+    if (~rst_n) begin
+        register_file <= '{default: '0};
+    end else if (rf_wr_valid) begin
+        register_file[id2rf_rd_addr_i] <= id2rf_rd_data_i;
+    end
+
+  //  if (debug_port_i.reg_wr_req) begin
+  //      register_file[debug_port_i.reg_addr] <= debug_port_i.reg_data;
+  //  end
+end
+
+
+endmodule : reg_file

@@ -14,7 +14,7 @@ module vector_execution_unit(
     input   logic [`MAX_VLEN-1:0]               data_2, 
     input   logic [`MAX_VLEN-1:0]               data_3,
 
-    input   logic                               Ctrl,
+    input   logic                               Ctrl,start,
     input   logic [6:0]                         sew_eew_mux_out,
     input   logic [2:0]                         execution_op,
     input   logic                               signed_mode, 
@@ -111,7 +111,13 @@ module vector_execution_unit(
 
     // SEW control signals
     always_comb begin 
-        if (sew == 2'b01) begin
+        sew_16_32  = 1'b0;
+        sew_32     = 1'b0;
+        if (!reset) begin
+            sew_16_32  = 1'b0;
+            sew_32     = 1'b0;
+        end
+        else if (sew == 2'b01) begin
             sew_16_32 = 1'b1;
             sew_32    = 1'b0;
         end
@@ -162,6 +168,7 @@ module vector_execution_unit(
         .sew            (sew),
         .signed_mode    (signed_mode),
         .count_0        (count_0),
+        .start          (start),
         .mult_done      (mult_done),
         .product        (product_result)
     );  
@@ -193,6 +200,9 @@ module vector_execution_unit(
         .shift_done     (shift_done)    
     );
 
+    logic count_0_exe;
+    assign count_0_exe = count_0;
+
     vector_multiply_add_unit mult_add(
         .clk                (clk),
         .reset              (reset),
@@ -203,12 +213,13 @@ module vector_execution_unit(
         .sew                (sew),         
         .signed_mode        (signed_mode), 
         .Ctrl               (Ctrl),
+        .start              (start),
         .sew_16_32          (sew_16_32),
         .sew_32             (sew_32),
-        .count_0            (count_0),
+        .count_0_mul_add    (count_0_exe),
         .sum_product_result (sum_product_result),
         .product_sum_done   (product_sum_done)
-);
+    );
     assign move_result = move_data_1;
 
     always_comb begin

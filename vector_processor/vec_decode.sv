@@ -40,7 +40,7 @@ logic [1:0]     inst_msb;
 logic [4:0]     vs1_addr, vs3_addr;
 logic [4:0]     vs2_addr;
 logic [4:0]     vd_addr;
-logic [4:0]     rs1_addr;
+logic [4:0]     rs1_addr; 
 logic [4:0]     imm;
 logic           vm;         // vector mask
 

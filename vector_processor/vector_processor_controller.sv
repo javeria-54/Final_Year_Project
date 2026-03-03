@@ -25,6 +25,7 @@ module vector_processor_controller (
     output  logic                mask_wr_en,         // This the enable signal for updating the mask value
     output  logic   [1:0]        data_mux1_sel,      // This the selsction of the mux to select between vec_imm , scaler1 , and vec_data1
     output  logic                data_mux2_sel,      // This the selsction of the mux to select between scaler2 , and vec_data2
+    output  logic                data_mux3_sel,
     output  logic                offset_vec_en,      // Tells the rdata2 vector is offset vector and will be chosen on base of emul
 
     // vec_control_signals -> vec_lsu
@@ -37,7 +38,7 @@ module vector_processor_controller (
     output  logic [2:0]          execution_op,
     output  logic                execution_inst,
     output  logic                signed_mode,
-    output  logic                Ctrl,
+    output  logic                Ctrl,start,
     output  logic                mul_low, 
     output  logic                mul_high,
     output  logic [4:0]          bitwise_op, 
@@ -113,6 +114,7 @@ always_comb begin
 
     data_mux1_sel               = 2'b00;
     data_mux2_sel               = 1'b0;
+    data_mux3_sel               = 1'b0;
     
     sew_eew_sel                 = 1'b0;
     vlmax_evlmax_sel            = 1'b0;
@@ -202,6 +204,7 @@ always_comb begin
     execution_op                = 'b0;
     accum_op                    = 3'b000;
     mask_op                     = 'b0; 
+    start                       = 1'b0;
     
     case (vopcode)
     V_ARITH: begin
@@ -211,6 +214,7 @@ always_comb begin
             OPIVV: begin
                 data_mux1_sel = 2'b00;
                 data_mux2_sel = 1'b0;
+                data_mux3_sel = 1'b0;
                 sew_eew_sel     = 1'b0;     // eew selected
                 vlmax_evlmax_sel= 1'b0;     // evlmax selected
                 emul_vlmul_sel  = 1'b0;     // emul selected
@@ -332,6 +336,7 @@ always_comb begin
             OPIVX: begin
                 data_mux1_sel = 2'b01;
                 data_mux2_sel = 1'b0;
+                data_mux3_sel = 1'b0;
                 sew_eew_sel     = 1'b0;     // eew selected
                 vlmax_evlmax_sel= 1'b0;     // evlmax selected
                 emul_vlmul_sel  = 1'b0;     // emul selected
@@ -468,6 +473,7 @@ always_comb begin
             OPIVI: begin
                 data_mux1_sel = 2'b10;
                 data_mux2_sel = 1'b0;
+                data_mux3_sel = 1'b0;
                 sew_eew_sel     = 1'b0;     // eew selected
                 vlmax_evlmax_sel= 1'b0;     // evlmax selected
                 emul_vlmul_sel  = 1'b0;     // emul selected
@@ -551,6 +557,7 @@ always_comb begin
             OPMVV: begin
                 data_mux1_sel = 2'b00;
                 data_mux2_sel = 1'b0;
+                data_mux3_sel = 1'b1;
                 sew_eew_sel     = 1'b0;     // eew selected
                 vlmax_evlmax_sel= 1'b0;     // evlmax selected
                 emul_vlmul_sel  = 1'b0;     // emul selected
@@ -561,12 +568,14 @@ always_comb begin
                         mul_inst = 1'b1;
                         mul_low = 1'b1;
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMULH: begin
                         mul_inst = 1'b1;
                         mul_high = 1'b1; 
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMULHU: begin
@@ -579,6 +588,7 @@ always_comb begin
                         mul_inst = 1'b1;
                         signed_mode = 1'b1;
                         mul_high = 1'b1;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMACC: begin
@@ -586,6 +596,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b000;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b0;
                     end
                     VNMSAC: begin
@@ -593,6 +604,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b010;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b1;
                     end
                     VMADD: begin
@@ -600,6 +612,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b100;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b0;
                     end
                     VNMSUB: begin
@@ -607,6 +620,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b110;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b1;
                     end
 
@@ -648,6 +662,7 @@ always_comb begin
             OPMVX: begin
                 data_mux1_sel = 2'b01;
                 data_mux2_sel = 1'b0;
+                data_mux3_sel = 1'b1;
                 sew_eew_sel     = 1'b0;     // eew selected
                 vlmax_evlmax_sel= 1'b0;     // evlmax selected
                 emul_vlmul_sel  = 1'b0;     // emul selected
@@ -659,24 +674,28 @@ always_comb begin
                         mul_inst = 1'b1;
                         mul_low = 1'b1;
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMULH: begin
                         mul_inst = 1'b1;
                         mul_high = 1'b1; 
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMULHU: begin
                         mul_inst = 1'b1;
                         mul_high = 1'b1;
                         signed_mode = 1'b0;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMULHSU: begin
                         mul_inst = 1'b1;
                         signed_mode = 1'b1;
                         mul_high = 1'b1;
+                        start = 1'b1;
                         execution_op = 3'b011;
                     end
                     VMACC: begin
@@ -691,6 +710,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b011;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b1;
                     end
                     VMADD: begin
@@ -698,6 +718,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b101;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b0;
                     end
                     VNMSUB: begin
@@ -705,6 +726,7 @@ always_comb begin
                         execution_op = 3'b111;
                         accum_op     = 3'b111;   
                         signed_mode = 1'b1;
+                        start = 1'b1;
                         Ctrl = 1'b1;
                     end
                 

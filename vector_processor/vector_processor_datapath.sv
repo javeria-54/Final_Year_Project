@@ -33,7 +33,7 @@ module vector_processor_datapth (
 
 
     // Outputs from vector rocessor --> scaler processor
-    input  logic                               is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
+    input  logic                                is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                               error,              // error has occure due to invalid configurations
 
     
@@ -64,6 +64,7 @@ module vector_processor_datapth (
     input   logic                               offset_vec_en,     // Tells the rdata2 vector is offset vector and will be chosen on base of emul
     input   logic   [1:0]                       data_mux1_sel,     // This the selsction of the mux to select between vec_imm , scaler1 , and vec_data1
     input   logic                               data_mux2_sel,     // This the selsction of the mux to select between scaler2 , and vec_data2
+    input   logic                               data_mux3_sel,
 
     // vec_control_signals -> vec_lsu
     input   logic                               stride_sel,         // tells that  it is a unit stride or the indexed
@@ -72,7 +73,7 @@ module vector_processor_datapth (
     input   logic                               index_str,          // tells about index stride
     input   logic                               index_unordered,     // tells about index unordered stride
 
-    input   logic                               Ctrl,
+    input   logic                               Ctrl,start,
     input   logic   [2:0]                       execution_op,
     input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,
     input   logic                               signed_mode,
@@ -83,7 +84,7 @@ module vector_processor_datapth (
 
 
 // Read and Write address from Decode --> Vector Register file 
-logic   [`XLEN-1:0] vec_read_addr_1  , vec_read_addr_2 , vec_write_addr, vector_read_addr_3;
+logic   [`XLEN-1:0] vec_read_addr_1  , vec_read_addr_2 , vec_write_addr;
 
 // Vector Immediate from the decode 
 logic   [`MAX_VLEN-1:0] vec_imm;
@@ -132,8 +133,8 @@ logic   [`XLEN-1:0]             start_element;          // Gives the start elemn
  logic                          csr_done;               // This signal tells that csr instruction has been implemented successfully
 
 // vec_registerfile --> next moduels and data selection muxes
-logic   [`MAX_VLEN-1:0]        vec_data_1, vec_data_2,vector_data_3; // The read data from the vector register file
-logic   [`MAX_VLEN-1:0]        dst_vec_data;           // The data of the destination register that is to be replaced with the data after the opertaion and masking
+logic   [`MAX_VLEN-1:0]         vec_data_1, vec_data_2, vec_data_3; // The read data from the vector register file
+logic   [`MAX_VLEN-1:0]         dst_vec_data;           // The data of the destination register that is to be replaced with the data after the opertaion and masking
 logic   [VECTOR_LENGTH-1:0]     vector_length;          // Width of the vector depending on LMUL
 logic                           wrong_addr;             // Signal to indicate an invalid address
 logic   [`VLEN-1:0]             v0_mask_data;           // The data of the mask register that is v0 in register file 
@@ -156,8 +157,6 @@ logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlm
 
 logic   [`MAX_VLEN-1:0]     execution_result;
 logic   [1:0]           sew_execution;         
-logic                   start;
-
 logic                   count_0;
 logic                   sew_16_32;
 logic                   sew_32;
@@ -289,13 +288,11 @@ logic [`XLEN-1:0] vector_write_address;
         .mux_out        (vlmax_evlmax_mux_out)     
     );
 
-
-
              /////////////////////
             //   VEC REGFILE   //
            /////////////////////
 
-logic [`MAX_VLEN-1:0] dst_vector_data;
+
 
     vec_regfile VEC_REGFILE(
         // Inputs
@@ -303,7 +300,6 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
         .reset          (reset              ),
         .raddr_1        (vec_read_addr_1    ), 
         .raddr_2        (vec_read_addr_2    ),  
-        .raddr_3        (vec_write_addr     ),
         .wdata          (vec_wr_data        ),          
         .waddr          (vec_write_addr     ),
         .wr_en          (vec_wr_en          ), 
@@ -316,7 +312,7 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
         // Outputs 
         .rdata_1        (vec_data_1         ),
         .rdata_2        (vec_data_2         ),
-        .rdata_3        (dst_vector_data    ),
+        .rdata_3        (vec_data_3         ),
         .dst_data       (dst_vec_data       ),
         .vector_length  (vector_length      ),
         .wrong_addr     (wrong_addr         ),
@@ -324,22 +320,60 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
         .data_written   (data_written       )  
     );
 
+    logic [4:0] vec_imm_selected;
+    logic [`MAX_VLEN-1:0] vec_imm_extended;
+    assign vec_imm_selected = vec_imm[4:0];
+
+    always_comb begin
+        if (execution_inst) begin
+            case (sew_execution)
+                // SEW=8  → 5-bit to 8-bit sign extend, phir replicate
+                2'b00: vec_imm_extended = {(`MAX_VLEN/8) {{{3{vec_imm_selected[4]}}, vec_imm_selected}}};
+                
+                // SEW=16 → 5-bit to 16-bit sign extend, phir replicate
+                2'b01: vec_imm_extended = {(`MAX_VLEN/16){{{11{vec_imm_selected[4]}}, vec_imm_selected}}};
+                
+                // SEW=32 → 5-bit to 32-bit sign extend, phir replicate
+                2'b10: vec_imm_extended = {(`MAX_VLEN/32){{{27{vec_imm_selected[4]}}, vec_imm_selected}}};
+                
+                default: vec_imm_extended = '0;
+            endcase
+        end else begin
+            vec_imm_extended = '0;
+        end
+    end
+
+    always_comb begin 
+         // Zero-extend  scalar1 dynamically
+        if (execution_inst) begin
+            scaler1_extended = {(`MAX_VLEN/`XLEN){scalar1}};
+        end 
+        else begin
+            scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
+        end
+        //assign scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
+        //assign scaler1_extended = {(`MAX_VLEN/`XLEN){scalar1}};
+
+        // Zero-extend  scalar1 dynamically
+        if (execution_inst) begin
+            scaler2_extended = {(`MAX_VLEN/`XLEN){scalar2}};
+        end 
+        else begin
+            scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
+        end
+        //assign scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
+        //assign scaler2_extended = {(`MAX_VLEN/`XLEN){scalar2}};
+    end
+
              /////////////////////
             //    DATA_1 MUX   //
            /////////////////////
-
-     // Zero-extend  scalar1 dynamically
-    assign scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
-
-    
-    // Zero-extend  scalar1 dynamically
-    assign scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
 
     data_mux_3x1 #(.width(`MAX_VLEN)) DATA1_MUX( 
         
         .operand1       (vec_data_1         ),
         .operand2       (scaler1_extended   ),
-        .operand3       (vec_imm            ),
+        .operand3       (vec_imm_extended  ),
         .sel            (data_mux1_sel      ),
         .mux_out        (data_mux1_out      )     
     );
@@ -354,6 +388,14 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
         .operand2       (scaler2_extended   ),
         .sel            (data_mux2_sel      ),
         .mux_out        (data_mux2_out      )     
+    );
+
+    data_mux_2x1 #(.width(`MAX_VLEN)) DATA3_MUX( 
+        
+        .operand1       (4096'b0            ),
+        .operand2       (vec_data_3         ),
+        .sel            (data_mux3_sel      ),
+        .mux_out        (data_mux3_out      )     
     );
 
              //////////////////////
@@ -424,7 +466,6 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
     );
 
     assign vec_wr_data = execution_inst ? execution_result : vd_data ;
-    assign data_mux3_out = (mul_high || mul_low || signed_mode) ? dst_vector_data : '0 ;
     
     vector_execution_unit EXECUTION_UNIT(
 
@@ -433,7 +474,7 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
 
         .data_1             (data_mux1_out[`MAX_VLEN-1:0]),
         .data_2             (data_mux2_out[`MAX_VLEN-1:0]), 
-        .data_3             (data_mux3_out[`MAX_VLEN-1:0]),
+        .data_3             (vec_data_3),
 
         .Ctrl               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
@@ -449,6 +490,7 @@ logic [`MAX_VLEN-1:0] dst_vector_data;
         .execution_result   (execution_result),
         .sew                (sew_execution),                   
         .count_0            (count_0),
+        .start              (start),
         .sew_16_32          (sew_16_32),
         .execution_done(execution_done),
         .sew_32             (sew_32)

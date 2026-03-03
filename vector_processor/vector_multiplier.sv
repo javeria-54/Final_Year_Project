@@ -1097,10 +1097,11 @@ module vector_multiplier(
             // Extract 32-bit slices for each PE
             localparam BASE = i * 32;
             
-            top u_top_pe (
+            top_8 u_top8_pe (
                 .clk(clk),
                 .reset(reset),
                 .sew(sew),
+                .start(start),
                 .mult_done(pe_mult_done[i]),        //  Individual done signal
                 .signed_mode(signed_mode),
                 .data_in_A(data_in_A[BASE +: 32]),  // Extract 32 bits

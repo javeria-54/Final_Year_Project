@@ -7,7 +7,7 @@
 module vec_regfile (
     // Inputs
     input   logic                           clk, reset,
-    input   logic   [ADDR_WIDTH-1:0]        raddr_1, raddr_2, raddr_3,  // The address of the vector registers to be read
+    input   logic   [ADDR_WIDTH-1:0]        raddr_1, raddr_2,  // The address of the vector registers to be read
     input   logic   [DATA_WIDTH-1:0]        wdata,             // The vector that is to be written in the vector register
     input   logic   [ADDR_WIDTH-1:0]        waddr,             // The address of the vector register where the vector is written
     input   logic                           wr_en,             // The enable signal to write in the vector register 
@@ -271,6 +271,5 @@ module vec_regfile (
             end
         end
     end
-
-
+    
 endmodule

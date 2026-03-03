@@ -82,7 +82,7 @@ logic                               vec_reg_wr_en;      // The enable signal to 
 logic                               mask_operation;     // This signal tell this instruction is going to perform mask register update
 logic                               mask_wr_en;         // This the enable signal for updating the mask value
 logic   [1:0]                       data_mux1_sel;      // This the selsction of the mux to select between vec_imm , scaler1 , and vec_data1
-logic                               data_mux2_sel;      // This the selsction of the mux to select between scaler2 , and vec_data2
+logic                               data_mux2_sel,data_mux3_sel;      // This the selsction of the mux to select between scaler2 , and vec_data2
 logic                               offset_vec_en;      // Tells the rdata2 vector is offset vector and will be chosen on base of emul
 // vec_control_signals -> vec_lsu
 logic                               stride_sel;         // tells that  it is a unit stride or the constant stride
@@ -94,7 +94,7 @@ logic                               index_unordered;    // tells about index uno
 logic                               inst_done;
 
 // val_ready_controller --> datapath
-logic                               inst_reg_en;
+//logic                               inst_reg_en;
 
 //vector processor lsu --> AXI 4 MASTER
 logic   [`XLEN-1:0]                 lsu2mem_addr;           // Gives the memory address to load or store data
@@ -119,7 +119,7 @@ logic   [`XLEN-1:0]                 inst_reg_rs2_data;               // The scal
 
 logic   [2:0]                       execution_op;
 logic                               signed_mode;
-logic                               Ctrl;
+logic                               Ctrl,start;
 logic                               mul_low;
 logic                               mul_high;
 
@@ -129,8 +129,9 @@ logic                               shift_left_logical_inst, shift_right_arith_i
                              
 logic                               mul_inst;
 
-logic                               equal_inst, not_equal_inst, les_or_equal_unsigned_inst, less_or_equal_signed_inst,
-                                    less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst;
+logic                               equal_inst, not_equal_inst, less_or_equal_unsigned_inst, less_or_equal_signed_inst, 
+                                    less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst; 
+                        
 
 logic                               mul_add_dest_inst, mul_sub_dest_inst, mul_add_source_inst, mul_sub_source_inst;  
 
@@ -219,6 +220,7 @@ logic   [1:0]                       op_type;
         .mask_wr_en         (mask_wr_en          ),
         .data_mux1_sel      (data_mux1_sel       ),
         .data_mux2_sel      (data_mux2_sel       ),
+        .data_mux3_sel      (data_mux3_sel       ),
         .offset_vec_en      (offset_vec_en       ),
 
         // vec_control_signals -> vec_lsu
@@ -239,6 +241,7 @@ logic   [1:0]                       op_type;
         .op_type(op_type),
         .cmp_op(cmp_op),
         .accum_op(accum_op),
+        .start(start),
         .shift_op(shift_op)
     );
 
@@ -273,6 +276,7 @@ logic   [1:0]                       op_type;
         .mask_wr_en                 (mask_wr_en     ),
         .data_mux1_sel              (data_mux1_sel  ),
         .data_mux2_sel              (data_mux2_sel  ),
+        .data_mux3_sel              (data_mux3_sel  ),
         .offset_vec_en              (offset_vec_en  ),
 
         // vec_control_signals -> vec_lsu
@@ -288,6 +292,7 @@ logic   [1:0]                       op_type;
         .Ctrl                       (Ctrl),
         .mul_low                    (mul_low), 
         .mul_high                   (mul_high),
+        .start(start),
 
         .add_inst                   (add_inst), 
         .sub_inst                   (sub_inst), 
