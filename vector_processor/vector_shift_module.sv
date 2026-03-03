@@ -3,15 +3,15 @@
 
 module vector_shift_unit (
     // Prepared operands
-    input  logic [`MAX_VLEN-1:0] dataA,  // shift amount
-    input  logic [`MAX_VLEN-1:0] dataB,  // value to shift
+    input  logic [`VLEN-1:0] dataA,  // shift amount
+    input  logic [`VLEN-1:0] dataB,  // value to shift
 
     // Control
     input  logic [2:0]       shift_op, // Shift operation
     input  logic [1:0]       sew,      // Standard Element Width
 
     // Output
-    output logic [`MAX_VLEN-1:0]  shift_result,
+    output logic [`VLEN-1:0]  shift_result,
     output logic             shift_done
 );
 
@@ -21,17 +21,17 @@ module vector_shift_unit (
         SHIFT_SRA = 3'b010  // Arithmetic shift right
     } shift_op_e;
 
-    logic [`MAX_VLEN-1:0] raw_result;
+    logic [`VLEN-1:0] raw_result;
 
     // Number of elements based on SEW
     int num_elements;
     always_comb begin
         case (sew)
-            2'b00: num_elements = `MAX_VLEN/8;
-            2'b01: num_elements = `MAX_VLEN/16;
-            2'b10: num_elements = `MAX_VLEN/32;
-            2'b11: num_elements = `MAX_VLEN/64;
-            default: num_elements = `MAX_VLEN/32;
+            2'b00: num_elements = `VLEN/8;
+            2'b01: num_elements = `VLEN/16;
+            2'b10: num_elements = `VLEN/32;
+            2'b11: num_elements = `VLEN/64;
+            default: num_elements = `VLEN/32;
         endcase
     end
 

@@ -10,7 +10,7 @@
 //   comparison unit. It supports 8 operations across all four element
 //   widths (SEW = 8, 16, 32, 64 bits).
 //
-//   For each SEW, the full MAX_VLEN-bit vector is divided into independent
+//   For each SEW, the full VLEN-bit vector is divided into independent
 //   elements, and the selected operation is applied to each element in
 //   parallel using a for-loop inside always_comb.
 //
@@ -30,12 +30,12 @@
 //
 //   SEW Encoding (sew input):
 //   ┌──────┬───────┬──────────────────────────────────────────┐
-//   │ sew  │ Width │ Number of Elements (MAX_VLEN / SEW)      │
+//   │ sew  │ Width │ Number of Elements (VLEN / SEW)      │
 //   ├──────┼───────┼──────────────────────────────────────────┤
-//   │ 2'b00│  8    │ MAX_VLEN / 8                             │
-//   │ 2'b01│  16   │ MAX_VLEN / 16                            │
-//   │ 2'b10│  32   │ MAX_VLEN / 32                            │
-//   │ 2'b11│  64   │ MAX_VLEN / 64                            │
+//   │ 2'b00│  8    │ VLEN / 8                             │
+//   │ 2'b01│  16   │ VLEN / 16                            │
+//   │ 2'b10│  32   │ VLEN / 32                            │
+//   │ 2'b11│  64   │ VLEN / 64                            │
 //   └──────┴───────┴──────────────────────────────────────────┘
 //
 //   Output is always valid (bitwise_done = 1) since logic is purely
@@ -48,13 +48,13 @@ module vector_bitwise_unit (
     // INPUTS
     // ----------------------------------------------------------
 
-    // Operand A: Full-width vector input (MAX_VLEN bits)
+    // Operand A: Full-width vector input (VLEN bits)
     // Used as the second operand in most operations
-    input  logic [`MAX_VLEN-1:0] dataA,
+    input  logic [`VLEN-1:0] dataA,
 
-    // Operand B: Full-width vector input (MAX_VLEN bits)
+    // Operand B: Full-width vector input (VLEN bits)
     // Used as the primary operand (result is based on B for NOT)
-    input  logic [`MAX_VLEN-1:0] dataB,
+    input  logic [`VLEN-1:0] dataB,
 
     // Operation select code (5-bit)
     // Maps to alu_op_e enum: AND, OR, XOR, NOT, MINU, MIN, MAXU, MAX
@@ -68,8 +68,8 @@ module vector_bitwise_unit (
     // OUTPUTS
     // ----------------------------------------------------------
 
-    // Result vector: element-wise operation result (MAX_VLEN bits)
-    output logic [`MAX_VLEN-1:0] bitwise_result,
+    // Result vector: element-wise operation result (VLEN bits)
+    output logic [`VLEN-1:0] bitwise_result,
 
     // Done flag: always 1 since this is purely combinational
     output logic                 bitwise_done
@@ -95,9 +95,9 @@ module vector_bitwise_unit (
     // ----------------------------------------------------------
 
     // Intermediate result before assignment to output
-    logic [`MAX_VLEN-1:0] raw_result;
+    logic [`VLEN-1:0] raw_result;
 
-    // Number of elements = MAX_VLEN / SEW (computed from sew input)
+    // Number of elements = VLEN / SEW (computed from sew input)
     int num_elements;
 
     // ----------------------------------------------------------
@@ -106,11 +106,11 @@ module vector_bitwise_unit (
     // ----------------------------------------------------------
     always_comb begin
         case (sew)
-            2'b00: num_elements = `MAX_VLEN / 8;    // SEW=8:  e.g. 512/8  = 64 elements
-            2'b01: num_elements = `MAX_VLEN / 16;   // SEW=16: e.g. 512/16 = 32 elements
-            2'b10: num_elements = `MAX_VLEN / 32;   // SEW=32: e.g. 512/32 = 16 elements
-            2'b11: num_elements = `MAX_VLEN / 64;   // SEW=64: e.g. 512/64 = 8  elements
-            default: num_elements = `MAX_VLEN / 32; // Safe default: 32-bit
+            2'b00: num_elements = `VLEN / 8;    // SEW=8:  e.g. 512/8  = 64 elements
+            2'b01: num_elements = `VLEN / 16;   // SEW=16: e.g. 512/16 = 32 elements
+            2'b10: num_elements = `VLEN / 32;   // SEW=32: e.g. 512/32 = 16 elements
+            2'b11: num_elements = `VLEN / 64;   // SEW=64: e.g. 512/64 = 8  elements
+            default: num_elements = `VLEN / 32; // Safe default: 32-bit
         endcase
     end
 
@@ -128,7 +128,7 @@ module vector_bitwise_unit (
             // ==================================================
             // SEW = 8-bit elements
             // Each element is 8 bits wide
-            // Loop iterates num_elements = MAX_VLEN/8 times
+            // Loop iterates num_elements = VLEN/8 times
             // ==================================================
             2'b00: begin
                 for (int i = 0; i < num_elements; i++) begin
@@ -159,7 +159,7 @@ module vector_bitwise_unit (
             // ==================================================
             // SEW = 16-bit elements
             // Each element is 16 bits wide
-            // Loop iterates num_elements = MAX_VLEN/16 times
+            // Loop iterates num_elements = VLEN/16 times
             // ==================================================
             2'b01: begin
                 for (int i = 0; i < num_elements; i++) begin
@@ -188,7 +188,7 @@ module vector_bitwise_unit (
             // ==================================================
             // SEW = 32-bit elements
             // Each element is 32 bits wide
-            // Loop iterates num_elements = MAX_VLEN/32 times
+            // Loop iterates num_elements = VLEN/32 times
             // ==================================================
             2'b10: begin
                 for (int i = 0; i < num_elements; i++) begin
@@ -217,7 +217,7 @@ module vector_bitwise_unit (
             // ==================================================
             // SEW = 64-bit elements
             // Each element is 64 bits wide
-            // Loop iterates num_elements = MAX_VLEN/64 times
+            // Loop iterates num_elements = VLEN/64 times
             // ==================================================
             2'b11: begin
                 for (int i = 0; i < num_elements; i++) begin

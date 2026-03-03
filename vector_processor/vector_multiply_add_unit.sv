@@ -5,9 +5,9 @@ module vector_multiply_add_unit (
     input  logic                 clk,
     input  logic                 reset,
     
-    input  logic [`MAX_VLEN-1:0] data_A,    
-    input  logic [`MAX_VLEN-1:0] data_B,      
-    input  logic [`MAX_VLEN-1:0] data_C,      
+    input  logic [`VLEN-1:0] data_A,    
+    input  logic [`VLEN-1:0] data_B,      
+    input  logic [`VLEN-1:0] data_C,      
     
     input  logic [2:0]           accum_op,     
     input  logic [1:0]           sew,         
@@ -18,17 +18,17 @@ module vector_multiply_add_unit (
     input  logic                 sew_32,
     output  logic                 count_0_mul_add,
 
-    output logic [`MAX_VLEN-1:0] sum_product_result,
+    output logic [`VLEN-1:0] sum_product_result,
     output logic                 product_sum_done
 );
 
-    logic [`MAX_VLEN-1:0] mult_operand_1;
-    logic [`MAX_VLEN-1:0] mult_operand_2;
-    logic [`MAX_VLEN-1:0] add_operand_1,add_operand_2,add_operand;
-    logic [`MAX_VLEN*2+1:0] product_result;
-    logic [`MAX_VLEN-1:0] product_selected;
+    logic [`VLEN-1:0] mult_operand_1;
+    logic [`VLEN-1:0] mult_operand_2;
+    logic [`VLEN-1:0] add_operand_1,add_operand_2,add_operand;
+    logic [`VLEN*2+1:0] product_result;
+    logic [`VLEN-1:0] product_selected;
     logic                 mult_done;
-    logic [`MAX_VLEN-1:0] product_1,product_2;
+    logic [`VLEN-1:0] product_1,product_2;
 
     typedef enum logic [2:0] {
         VMACC_VV   = 3'b000,  // vd = +(vs1 * vs2) + vd
@@ -93,7 +93,7 @@ module vector_multiply_add_unit (
         
         case (sew)
             2'b00: begin // 8-bit elements → 16-bit products
-                for (int i = 0; i < `MAX_VLEN/8; i++) begin
+                for (int i = 0; i < `VLEN/8; i++) begin
                     if (mult_done) 
                         product_selected[i*8 +: 8] = product_result[i*16 +: 8];     // Lower 8 bits
                     else 
@@ -102,7 +102,7 @@ module vector_multiply_add_unit (
             end
             
             2'b01: begin // 16-bit elements → 32-bit products
-                for (int i = 0; i < `MAX_VLEN/16; i++) begin
+                for (int i = 0; i < `VLEN/16; i++) begin
                     if (mult_done)
                         product_selected[i*16 +: 16] = product_result[i*32 +: 16];      // Lower 16 bits
                     else 
@@ -111,7 +111,7 @@ module vector_multiply_add_unit (
             end
             
             2'b10: begin // 32-bit elements → 64-bit products
-                for (int i = 0; i < `MAX_VLEN/32; i++) begin
+                for (int i = 0; i < `VLEN/32; i++) begin
                     if (mult_done)
                         product_selected[i*32 +: 32] = product_result[i*64 +: 32];      // Lower 32 bits
                     else 

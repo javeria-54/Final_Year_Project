@@ -334,14 +334,14 @@ module vector_adder_subtractor (
     input  logic                          Ctrl,       // 0=Add, 1=Subtract
     input  logic                          sew_16_32,  // 1=16 or 32-bit, 0=8-bit
     input  logic                          sew_32,     // 1=32-bit mode
-    input  logic signed [`MAX_VLEN-1:0]   A,          // Full vector operand A
-    input  logic signed [`MAX_VLEN-1:0]   B,          // Full vector operand B
-    output logic signed [`MAX_VLEN-1:0]   Sum,        // Full vector result
+    input  logic signed [`VLEN-1:0]   A,          // Full vector operand A
+    input  logic signed [`VLEN-1:0]   B,          // Full vector operand B
+    output logic signed [`VLEN-1:0]   Sum,        // Full vector result
     output logic                          sum_done    // All slices valid
 );
 
     // Number of 32-bit slices needed to cover the full vector width
-    localparam NUM_SLICES = (`MAX_VLEN / 32);
+    localparam NUM_SLICES = (`VLEN / 32);
 
     // Collect sum_done from each 32-bit slice
     // Final sum_done = AND of all individual sum_done signals

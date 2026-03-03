@@ -25,27 +25,29 @@ module vector_execution_unit(
     input   logic [2:0]                         cmp_op,accum_op,shift_op, 
 
     output  logic [`MAX_VLEN-1:0]               execution_result,
-    output  logic [1:0]                         sew,
-    output  logic                               count_0,execution_done,
-    output  logic                               sew_16_32,
-    output  logic                               sew_32   
+    output  logic                               execution_done,
+    output  logic [1:0]                         sew
+     
 );
     
     // Internal signals
+    logic                               count_0;
+    logic                               sew_16_32;
+    logic                               sew_32;
     logic                           add_en, shift_en, mult_en, compare_en, bitwise_en, reverse_sub_en, move_en, 
                                     mult_add_en;
-    logic                           sum_done, shift_done, mult_done, compare_done, bitwise_done, product_sum_done;
-    logic [`MAX_VLEN-1:0]           adder_data_1, adder_data_2;
-    logic [`MAX_VLEN-1:0]           mult_data_1, mult_data_2;
-    logic [`MAX_VLEN-1:0]           shift_data_1, shift_data_2 ;
-    logic [`MAX_VLEN-1:0]           bitwise_data_1, bitwise_data_2;
-    logic [`MAX_VLEN-1:0]           compare_data_1, compare_data_2 ;
-    logic [`MAX_VLEN-1:0]           mult_add_data_2, mult_add_data_1, mult_add_data_3 ;
-    logic [`MAX_VLEN-1:0]           move_data_1;
+    logic                           sum_done, shift_done, mult_done, compare_done, bitwise_done, product_sum_done, move_done;
+    logic [`VLEN-1:0]           adder_data_1, adder_data_2;
+    logic [`VLEN-1:0]           mult_data_1, mult_data_2;
+    logic [`VLEN-1:0]           shift_data_1, shift_data_2 ;
+    logic [`VLEN-1:0]           bitwise_data_1, bitwise_data_2;
+    logic [`VLEN-1:0]           compare_data_1, compare_data_2 ;
+    logic [`VLEN-1:0]           mult_add_data_2, mult_add_data_1, mult_add_data_3 ;
+    logic [`VLEN-1:0]           move_data_1;
 
-    logic [`MAX_VLEN-1:0]           sum_result, compare_result, bitwise_result, shift_result, move_result,  
+    logic [`VLEN-1:0]           sum_result, compare_result, bitwise_result, shift_result, move_result,  
                                     sum_product_result; 
-    logic [`MAX_VLEN*2+1:0]         product_result;
+    logic [`VLEN*2+1:0]         product_result;
 
     // SEW decoding
     always_comb begin
@@ -131,24 +133,24 @@ module vector_execution_unit(
         end
     end 
 
-    assign adder_data_1         =   add_en          ? data_1 :
-                                    reverse_sub_en  ? data_2 :
-                                                                `MAX_VLEN'b0;
-    assign adder_data_2         =   add_en          ? data_2 :
-                                    reverse_sub_en  ? data_1 :
-                                                                `MAX_VLEN'b0;
-    assign  mult_data_1         = mult_en           ? data_1 :  `MAX_VLEN'b0;
-    assign  mult_data_2         = mult_en           ? data_2 :  `MAX_VLEN'b0;
-    assign  shift_data_1        = shift_en          ? data_1 :  `MAX_VLEN'b0;
-    assign  shift_data_2        = shift_en          ? data_2 :  `MAX_VLEN'b0;
-    assign  compare_data_1      = compare_en        ? data_1 :  `MAX_VLEN'b0;
-    assign  compare_data_2      = compare_en        ? data_2 :  `MAX_VLEN'b0;
-    assign  bitwise_data_1      = bitwise_en        ? data_1 :  `MAX_VLEN'b0;
-    assign  bitwise_data_2      = bitwise_en        ? data_2 :  `MAX_VLEN'b0;
-    assign  mult_add_data_1     = mult_add_en       ? data_1 :  `MAX_VLEN'b0;
-    assign  mult_add_data_2     = mult_add_en       ? data_2 :  `MAX_VLEN'b0;
-    assign  mult_add_data_3     = mult_add_en       ? data_3 :  `MAX_VLEN'b0;
-    assign  move_data_1         = move_en           ? data_1 :  `MAX_VLEN'b0;
+    assign adder_data_1         =   add_en          ? data_1[511:0] :
+                                    reverse_sub_en  ? data_2[511:0] :
+                                                            `VLEN'b0;
+    assign adder_data_2         =   add_en          ? data_2[511:0] :
+                                    reverse_sub_en  ? data_1[511:0] :
+                                                            `VLEN'b0;
+    assign  mult_data_1         = mult_en           ? data_1[511:0] :  `VLEN'b0;
+    assign  mult_data_2         = mult_en           ? data_2[511:0] :  `VLEN'b0;
+    assign  shift_data_1        = shift_en          ? data_1[511:0] :  `VLEN'b0;
+    assign  shift_data_2        = shift_en          ? data_2[511:0] :  `VLEN'b0;
+    assign  compare_data_1      = compare_en        ? data_1[511:0] :  `VLEN'b0;
+    assign  compare_data_2      = compare_en        ? data_2[511:0] :  `VLEN'b0;
+    assign  bitwise_data_1      = bitwise_en        ? data_1[511:0] :  `VLEN'b0;
+    assign  bitwise_data_2      = bitwise_en        ? data_2[511:0] :  `VLEN'b0;
+    assign  mult_add_data_1     = mult_add_en       ? data_1[511:0] :  `VLEN'b0;
+    assign  mult_add_data_2     = mult_add_en       ? data_2[511:0] :  `VLEN'b0;
+    assign  mult_add_data_3     = mult_add_en       ? data_3[511:0] :  `VLEN'b0;
+    assign  move_data_1         = move_en           ? data_1[511:0] :  `VLEN'b0;
 
     vector_adder_subtractor adder_inst (
         .A              (adder_data_1),
@@ -222,6 +224,7 @@ module vector_execution_unit(
     );
     assign move_result = move_data_1;
 
+
     always_comb begin
             if (reset) begin    
                 if (add_en) begin
@@ -238,6 +241,7 @@ module vector_execution_unit(
                 end
                 else if (move_en) begin
                     execution_result = move_result;
+                    move_done = 1'b1;
                 end
                 else if (mult_en) begin
                     case (sew)
@@ -281,6 +285,6 @@ module vector_execution_unit(
                 execution_result = '0;
             end
         end
-    assign execution_done = sum_done || shift_done || mult_done || compare_done || bitwise_done || product_sum_done;
+    assign execution_done = sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done;
  
 endmodule

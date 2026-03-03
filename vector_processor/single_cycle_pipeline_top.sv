@@ -19,6 +19,7 @@ module pipeline_top (
     input   wire                        rst_n,                    // reset
     input   wire                        clk,                      // clock
     output  logic                       is_vector, 
+    output  logic                       scalar_pro_ready,
 
    // IF <---> IMEM interface
     output type_if2imem_s                if2mem_o,              // Instruction memory request
@@ -188,6 +189,7 @@ decode decode_module (
     .rst_n                      (rst_n),
     .clk                        (clk),
     .is_vector                  (is_vector),
+    .scalar_pro_ready           (scalar_pro_ready),
 
     // ID module interface signals 
 `ifdef IF2ID_PIPELINE_STAGE

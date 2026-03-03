@@ -74,26 +74,10 @@ module vector_scalar_top (
     logic             dmem_sel;
 
     //==========================================================================
-    // Handshaking Logic
-    //==========================================================================
-    assign inst_valid = is_vec;
-
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            scalar_pro_ready <= 1'b0;
-        else if (inst_valid) 
-            scalar_pro_ready <= 1'b0;
-        else if (vec_pro_ack)
-            scalar_pro_ready <= 1'b1;
-        else 
-            scalar_pro_ready <= 1'b0;
-    end
-
-    //==========================================================================
     // 1 Cycle Delay Register — bas itna hi chahiye
     //==========================================================================
     always_comb begin 
-        if(scalar_pro_ready) begin
+        if(vec_pro_ack) begin
             instruction_d = instruction;
             rs1_data_d    = rs1_data;
             rs2_data_d    = rs2_data;
@@ -172,6 +156,7 @@ module vector_scalar_top (
         .rst_n          (rst_n),
         .clk            (clk),
         .is_vector      (is_vec),
+        .scalar_pro_ready(scalar_pro_ready),
 
         .if2mem_o       (if2mem),
         .mem2if_i       (mem2if),

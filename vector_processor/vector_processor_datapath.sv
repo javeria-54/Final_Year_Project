@@ -157,9 +157,6 @@ logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlm
 
 logic   [`MAX_VLEN-1:0]     execution_result;
 logic   [1:0]           sew_execution;         
-logic                   count_0;
-logic                   sew_16_32;
-logic                   sew_32;
 logic [`MAX_VLEN-1:0]   vd_data;
 logic execution_done;
 
@@ -489,11 +486,8 @@ logic [`XLEN-1:0] vector_write_address;
         .shift_op           (shift_op),
         .execution_result   (execution_result),
         .sew                (sew_execution),                   
-        .count_0            (count_0),
         .start              (start),
-        .sew_16_32          (sew_16_32),
-        .execution_done(execution_done),
-        .sew_32             (sew_32)
+        .execution_done(execution_done)
 );
 
 endmodule

@@ -61,11 +61,11 @@ module vector_compare_unit (
 
     // Operand A: Full-width vector (MAX_VLEN bits)
     // Used as the right-hand side of comparisons (B op A)
-    input  logic [`MAX_VLEN-1:0] dataA,
+    input  logic [`VLEN-1:0] dataA,
 
     // Operand B: Full-width vector (MAX_VLEN bits)
     // Used as the left-hand side of comparisons (B op A)
-    input  logic [`MAX_VLEN-1:0] dataB,
+    input  logic [`VLEN-1:0] dataB,
 
     // Comparison operation select (3-bit)
     // Maps to cmp_op_e enum values
@@ -81,7 +81,7 @@ module vector_compare_unit (
 
     // Result vector: each element holds {(SEW-1)'b0, cmp_bit}
     // LSB of each element = 1 if comparison true, 0 if false
-    output logic [`MAX_VLEN-1:0] compare_result,
+    output logic [`VLEN-1:0] compare_result,
 
     // Done flag: always 1 since this is purely combinational
     output logic                 compare_done
@@ -107,7 +107,7 @@ module vector_compare_unit (
     // ----------------------------------------------------------
 
     // Intermediate result before output assignment
-    logic [`MAX_VLEN-1:0] raw_result;
+    logic [`VLEN-1:0] raw_result;
 
     // Flag: indicates if operands should be swapped (GT/GTU pseudo-ops)
     // GT and GTU are implemented as: swap(A,B) then apply LT/LTU
@@ -133,7 +133,7 @@ module vector_compare_unit (
             // Loop runs MAX_VLEN/8 times
             // ==================================================
             2'b00: begin
-                for (int i = 0; i < `MAX_VLEN/8; i++) begin
+                for (int i = 0; i < `VLEN/8; i++) begin
                     logic [7:0] a, b;   // Local 8-bit operands for this element
                     logic cmp;          // 1-bit comparison result
 
@@ -172,7 +172,7 @@ module vector_compare_unit (
             // Loop runs MAX_VLEN/16 times
             // ==================================================
             2'b01: begin
-                for (int i = 0; i < `MAX_VLEN/16; i++) begin
+                for (int i = 0; i < `VLEN/16; i++) begin
                     logic [15:0] a, b;  // Local 16-bit operands for this element
                     logic cmp;          // 1-bit comparison result
 
@@ -209,7 +209,7 @@ module vector_compare_unit (
             // Loop runs MAX_VLEN/32 times
             // ==================================================
             2'b10: begin
-                for (int i = 0; i < `MAX_VLEN/32; i++) begin
+                for (int i = 0; i < `VLEN/32; i++) begin
                     logic [31:0] a, b;  // Local 32-bit operands for this element
                     logic cmp;          // 1-bit comparison result
 

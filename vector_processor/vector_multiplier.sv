@@ -1074,12 +1074,12 @@ module vector_multiplier(
     input  logic                clk,
     input  logic                reset,start,
     input  logic        [1:0]   sew,           // 00=8-bit, 01=16-bit, 10=32-bit
-    input  logic signed [`MAX_VLEN-1:0] data_in_A,     // 512-bit input A
-    input  logic signed [`MAX_VLEN-1:0] data_in_B,     // 512-bit input B
+    input  logic signed [`VLEN-1:0] data_in_A,     // 512-bit input A
+    input  logic signed [`VLEN-1:0] data_in_B,     // 512-bit input B
     input  logic                signed_mode,
     output logic                count_0,
     output logic                mult_done,
-    output logic signed [`MAX_VLEN*2+1:0] product       // 1024-bit result
+    output logic signed [`VLEN*2+1:0] product       // 1024-bit result
 );
 
     // Number of 32-bit processing elements

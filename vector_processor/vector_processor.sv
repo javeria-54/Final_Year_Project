@@ -237,12 +237,12 @@ logic   [1:0]                       op_type;
         .execution_inst     (execution_inst),
         .reverse_sub_inst   (reverse_sub_inst),
         .signed_mode        (signed_mode),
-        .bitwise_op(bitwise_op),
-        .op_type(op_type),
-        .cmp_op(cmp_op),
-        .accum_op(accum_op),
-        .start(start),
-        .shift_op(shift_op)
+        .bitwise_op         (bitwise_op),
+        .op_type            (op_type),
+        .cmp_op             (cmp_op),
+        .accum_op           (accum_op),
+        .start              (start),
+        .shift_op           (shift_op)
     );
 
 
