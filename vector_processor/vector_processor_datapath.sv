@@ -156,9 +156,13 @@ logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlm
 
 
 logic   [`MAX_VLEN-1:0]     execution_result;
-logic   [1:0]           sew_execution;         
-logic [`MAX_VLEN-1:0]   vd_data;
-logic execution_done;
+logic   [1:0]               sew_execution;         
+logic   [`MAX_VLEN-1:0]     vd_data;
+logic                       execution_done;
+logic   [`VLEN-1:0]         vs1,vs2;
+logic   [4095:0]            mask_unit_output;
+logic   [511:0]             mask_reg_updated;
+logic   [2:0]               mask_op; 
 
 assign inst_done = data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
@@ -489,6 +493,30 @@ logic [`XLEN-1:0] vector_write_address;
         .start              (start),
         .execution_done(execution_done)
 );
+
+    // vs1 mux — mask_operation ho to lower 512 bits, warna poora data
+    assign vs1 = mask_operation ? vec_data_1[`VLEN-1:0] : 'b0;
+
+    // vs2 mux — mask_operation ho to lower 512 bits, warna poora data  
+    assign vs2 = mask_operation ? vec_data_2[`VLEN-1:0] : 'b0;
+
+    vector_mask_unit MASK_UNIT(
+        .lanes_data_out     (execution_result),
+        .destination_data   (vd_data),
+        .mask_op            (mask_op),
+        .mask_en            (mask_operation),
+        .mask_reg_en        (mask_wr_en),
+        .vta                (tail_agnostic),
+        .vma                (mask_agnostic),
+        .vstart             (start_element),
+        .vl                 (vec_length),
+        .sew                (sew_eew_mux_out),
+        .vs1                (vs1),  
+        .vs2                (vs2),   
+        .v0                 (v0_mask_data),   
+        .mask_unit_output   (mask_unit_output),
+        .mask_reg_updated   (mask_reg_updated)     
+    );
 
 endmodule
 

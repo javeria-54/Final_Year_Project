@@ -98,16 +98,16 @@ module vector_mask_unit(
     
     // Starting element index (from CSR vstart)
     // Elements 0 to vstart-1 are "prestart" and are not modified
-    input  logic [8:0]    vstart,
+    input  logic [31:0]    vstart,
     
     // Vector length - number of active elements to process (from CSR vl)
     // Elements vstart to vl-1 are "body" (active)
     // Elements vl and above are "tail"
-    input  logic [8:0]    vl,
+    input  logic [31:0]    vl,
     
     // Single element width in bits (from CSR vtype.vsew)
     // Encoded as one-hot: 6'b000100=8, 6'b001000=16, 6'b010000=32, 6'b100000=64
-    input  logic [5:0]    sew,
+    input  logic [6:0]    sew,
     
     // Source mask registers for logical mask operations
     // Each bit corresponds to one vector element's mask
@@ -336,15 +336,15 @@ endmodule
 //    sew = 6'b100000 (64) → sew_sel = 2'b11
 //////////////////////////////////////////////////////////////////////////////////
 module sew_encoder (
-    input  logic [5:0] sew,      // One-hot SEW value from CSR
+    input  logic [6:0] sew,      // One-hot SEW value from CSR
     output logic [1:0] sew_sel   // 2-bit mux select signal
 );
     always_comb begin
         case (sew)
-            6'b000100: sew_sel = 2'b00;   // SEW = 8-bit
-            6'b001000: sew_sel = 2'b01;   // SEW = 16-bit
-            6'b010000: sew_sel = 2'b10;   // SEW = 32-bit
-            6'b100000: sew_sel = 2'b11;   // SEW = 64-bit
+            7'b0000100: sew_sel = 2'b00;   // SEW = 8-bit
+            7'b0001000: sew_sel = 2'b01;   // SEW = 16-bit
+            7'b0010000: sew_sel = 2'b10;   // SEW = 32-bit
+            7'b0100000: sew_sel = 2'b11;   // SEW = 64-bit
             default:   sew_sel = 2'b00;   // Default to SEW=8 (safe fallback)
         endcase
     end
@@ -368,8 +368,8 @@ endmodule
 //  each bit i in v0 directly corresponds to element i).
 //////////////////////////////////////////////////////////////////////////////////
 module check_generator (
-    input  logic [8:0]   vl,           // Number of active elements
-    input  logic [8:0]   vstart,       // Starting element index
+    input  logic [31:0]   vl,           // Number of active elements
+    input  logic [31:0]   vstart,       // Starting element index
     input  logic [511:0] v0_updated,   // Effective mask register (from mux2x1)
     
     output logic [511:0] mask_reg,        // Mask bit per element (bit i = mask for element i)
