@@ -54,6 +54,7 @@ module vector_shift_unit (
                     endcase
 
                     raw_result[i*8 +: 8] = res;
+                    shift_done   = 1'b1;
                 end
             end
 
@@ -71,6 +72,7 @@ module vector_shift_unit (
                     endcase
 
                     raw_result[i*16 +: 16] = res;
+                    shift_done   = 1'b1;
                 end
             end
 
@@ -88,6 +90,7 @@ module vector_shift_unit (
                     endcase
 
                     raw_result[i*32 +: 32] = res;
+                    shift_done   = 1'b1;
                 end
             end
 
@@ -105,6 +108,7 @@ module vector_shift_unit (
                     endcase
 
                     raw_result[i*64 +: 64] = res;
+                    shift_done   = 1'b1;
                 end
             end
 
@@ -113,5 +117,5 @@ module vector_shift_unit (
     end
 
     assign shift_result = raw_result;
-    assign shift_done   = 1'b1; // combinational
+    
 endmodule

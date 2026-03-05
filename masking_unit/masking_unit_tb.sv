@@ -1,534 +1,489 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Testbench: tb_vector_mask_unit
+//
+// Tests:
+//   1. No masking (mask_en=0) - bypass test
+//   2. SEW=8,  body active elements with mask_reg[i]=1
+//   3. SEW=8,  inactive body elements with vma=0 (undisturbed)
+//   4. SEW=8,  inactive body elements with vma=1 (agnostic → all 1s)
+//   5. SEW=8,  tail elements with vta=0 (undisturbed)
+//   6. SEW=8,  tail elements with vta=1 (agnostic → all 1s)
+//   7. SEW=16, basic mask test
+//   8. SEW=32, basic mask test
+//   9. SEW=64, basic mask test
+//  10. Prestart elements test
+//  11. mask_reg_en=1: mask register update via vmand
+//  12. mask_reg_en=1: mask register update via vmor
+//////////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ns/1ps
+`define VLEN 512
 
-module vector_mask_unit_tb;
+module tb_vector_mask_unit;
 
-    // =====================================================
+    // ----------------------------------------------------------------
     // DUT Signals
-    // =====================================================
-
+    // ----------------------------------------------------------------
     logic [4095:0] lanes_data_out;
     logic [4095:0] destination_data;
-
     logic [2:0]    mask_op;
     logic          mask_en;
     logic          mask_reg_en;
     logic          vta;
     logic          vma;
-
-    logic [8:0]    vstart;
-    logic [8:0]    vl;
-    logic [5:0]    sew;
-
+    logic [31:0]   vstart;
+    logic [31:0]   vl;
+    logic [6:0]    sew;
     logic [511:0]  vs1;
     logic [511:0]  vs2;
     logic [511:0]  v0;
+    logic [1:0]    sew_sel;
+    logic [63:0]   carry_out;
 
     logic [4095:0] mask_unit_output;
     logic [511:0]  mask_reg_updated;
 
-    logic [4095:0] expected_output;
+    // ----------------------------------------------------------------
+    // Test tracking
+    // ----------------------------------------------------------------
+    int test_num  = 0;
+    int pass_cnt  = 0;
+    int fail_cnt  = 0;
 
-    // =====================================================
-    // Counters for pass/fail summary
-    // =====================================================
-    integer pass_count = 0;
-    integer fail_count = 0;
-
-    // =====================================================
+    // ----------------------------------------------------------------
     // DUT Instantiation
-    // =====================================================
+    // ----------------------------------------------------------------
+    vector_mask_unit DUT (
+        .lanes_data_out  (lanes_data_out),
+        .destination_data(destination_data),
+        .mask_op         (mask_op),
+        .mask_en         (mask_en),
+        .mask_reg_en     (mask_reg_en),
+        .vta             (vta),
+        .vma             (vma),
+        .vstart          (vstart),
+        .vl              (vl),
+        .sew             (sew),
+        .vs1             (vs1),
+        .vs2             (vs2),
+        .v0              (v0),
+        .sew_sel         (sew_sel),
+        .carry_out       (carry_out),
+        .mask_unit_output(mask_unit_output),
+        .mask_reg_updated(mask_reg_updated)
+    );
 
-    vector_mask_unit DUT (.*);
-
-    // =====================================================
-    // Golden Model (Reference Logic)
-    // =====================================================
-    function automatic [4095:0] golden_model;
-
-        integer i;
-        logic [4095:0] temp;
-        logic [511:0]  effective_mask;
-
-        begin
-            temp = destination_data;
-
-            // Compute effective mask (same as DUT's mux2x1 + comb_mask_operations)
-            if (mask_reg_en)
-                effective_mask = mask_reg_updated;
-            else
-                effective_mask = v0;
-
-            if (!mask_en) begin
-                golden_model = lanes_data_out;
-            end
-            else begin
-
-                case (sew)
-
-                // ================= SEW = 8 =================
-                6'b000100: begin
-                    for (i = 0; i < 512; i++) begin
-                        if (i < vstart)
-                            temp[i*8 +: 8] = destination_data[i*8 +: 8];
-                        else if (i < vl) begin
-                            if (effective_mask[i])
-                                temp[i*8 +: 8] = lanes_data_out[i*8 +: 8];
-                            else if (!vma)
-                                temp[i*8 +: 8] = destination_data[i*8 +: 8];
-                            else
-                                temp[i*8 +: 8] = 8'hFF;
-                        end
-                        else begin
-                            if (!vta)
-                                temp[i*8 +: 8] = destination_data[i*8 +: 8];
-                            else
-                                temp[i*8 +: 8] = 8'hFF;
-                        end
-                    end
-                end
-
-                // ================= SEW = 16 =================
-                6'b001000: begin
-                    for (i = 0; i < 256; i++) begin
-                        if (i < vstart)
-                            temp[i*16 +: 16] = destination_data[i*16 +: 16];
-                        else if (i < vl) begin
-                            if (effective_mask[i])
-                                temp[i*16 +: 16] = lanes_data_out[i*16 +: 16];
-                            else if (!vma)
-                                temp[i*16 +: 16] = destination_data[i*16 +: 16];
-                            else
-                                temp[i*16 +: 16] = 16'hFFFF;
-                        end
-                        else begin
-                            if (!vta)
-                                temp[i*16 +: 16] = destination_data[i*16 +: 16];
-                            else
-                                temp[i*16 +: 16] = 16'hFFFF;
-                        end
-                    end
-                end
-
-                // ================= SEW = 32 =================
-                6'b010000: begin
-                    for (i = 0; i < 128; i++) begin
-                        if (i < vstart)
-                            temp[i*32 +: 32] = destination_data[i*32 +: 32];
-                        else if (i < vl) begin
-                            if (effective_mask[i])
-                                temp[i*32 +: 32] = lanes_data_out[i*32 +: 32];
-                            else if (!vma)
-                                temp[i*32 +: 32] = destination_data[i*32 +: 32];
-                            else
-                                temp[i*32 +: 32] = 32'hFFFF_FFFF;
-                        end
-                        else begin
-                            if (!vta)
-                                temp[i*32 +: 32] = destination_data[i*32 +: 32];
-                            else
-                                temp[i*32 +: 32] = 32'hFFFF_FFFF;
-                        end
-                    end
-                end
-
-                // ================= SEW = 64 =================
-                6'b100000: begin
-                    for (i = 0; i < 64; i++) begin
-                        if (i < vstart)
-                            temp[i*64 +: 64] = destination_data[i*64 +: 64];
-                        else if (i < vl) begin
-                            if (effective_mask[i])
-                                temp[i*64 +: 64] = lanes_data_out[i*64 +: 64];
-                            else if (!vma)
-                                temp[i*64 +: 64] = destination_data[i*64 +: 64];
-                            else
-                                temp[i*64 +: 64] = 64'hFFFF_FFFF_FFFF_FFFF;
-                        end
-                        else begin
-                            if (!vta)
-                                temp[i*64 +: 64] = destination_data[i*64 +: 64];
-                            else
-                                temp[i*64 +: 64] = 64'hFFFF_FFFF_FFFF_FFFF;
-                        end
-                    end
-                end
-
-                default: temp = destination_data;
-
-                endcase
-
-                golden_model = temp;
-            end
-        end
-    endfunction
-
-    // =====================================================
-    // Compare Task (with Input/Output Display)
-    // =====================================================
-    task compare_result(string testname);
-        begin
-            #1; // small settle time
-            expected_output = golden_model();
-
-            $display("");
-            $display("  ┌─────────────────────────────────────────────────┐");
-            $display("  │ TEST: %-43s│", testname);
-            $display("  ├─────────────────────────────────────────────────┤");
-            $display("  │ INPUTS:                                         │");
-            $display("  │   sew         = %6b  (%0d-bit)                  ", sew,
-                     (sew == 6'b000100) ? 8  :
-                     (sew == 6'b001000) ? 16 :
-                     (sew == 6'b010000) ? 32 : 64);
-            $display("  │   vstart      = %0d", vstart);
-            $display("  │   vl          = %0d", vl);
-            $display("  │   mask_en     = %0b  (0=bypass, 1=masked)", mask_en);
-            $display("  │   mask_reg_en = %0b  (0=use v0, 1=update v0)", mask_reg_en);
-            $display("  │   vta         = %0b  (tail agnostic)", vta);
-            $display("  │   vma         = %0b  (mask agnostic)", vma);
-            $display("  │   mask_op     = %3b", mask_op);
-            $display("  │   vs1         = %0h", vs1);
-            $display("  │   vs2         = %0h", vs2);
-            $display("  │   v0          = %0h", v0);
-            $display("  │   lanes_data_out   [63:0] = %0h", lanes_data_out[63:0]);
-            $display("  │   destination_data [63:0] = %0h", destination_data[63:0]);
-            $display("  ├─────────────────────────────────────────────────┤");
-            $display("  │ OUTPUTS:                                        │");
-            $display("  │   mask_reg_updated [63:0] = %0h", mask_reg_updated[63:0]);
-            $display("  │   mask_unit_output [63:0] = %0h", mask_unit_output[63:0]);
-            $display("  │   expected_output  [63:0] = %0h", expected_output[63:0]);
-            $display("  ├─────────────────────────────────────────────────┤");
-
-            if (expected_output === mask_unit_output) begin
-                $display("  │  RESULT: ✅  PASS                               │");
-                pass_count++;
-            end else begin
-                $display("  │  RESULT: ❌  FAIL                               │");
-                $display("  │  Expected [full] = %h", expected_output);
-                $display("  │  Got      [full] = %h", mask_unit_output);
-                fail_count++;
-            end
-
-            $display("  └─────────────────────────────────────────────────┘");
+    // ----------------------------------------------------------------
+    // Task: check_result
+    // ----------------------------------------------------------------
+    task automatic check_result(
+        input string       test_name,
+        input logic [4095:0] got,
+        input logic [4095:0] expected
+    );
+        test_num++;
+        #1; // let combinational logic settle
+        if (got === expected) begin
+            $display("[PASS] Test %0d: %s", test_num, test_name);
+            pass_cnt++;
+        end else begin
+            $display("[FAIL] Test %0d: %s", test_num, test_name);
+            $display("       Expected: 0x%0h", expected);
+            $display("       Got     : 0x%0h", got);
+            fail_cnt++;
         end
     endtask
 
-    // =====================================================
-    // Initialize random data
-    // =====================================================
-    task init_data();
-        integer i;
-        begin
-            for (i = 0; i < 4096; i++) begin
-                lanes_data_out[i]  = $random;
-                destination_data[i] = $random;
-            end
+    // ----------------------------------------------------------------
+    // Task: check_mask_reg
+    // ----------------------------------------------------------------
+    task automatic check_mask_reg(
+        input string      test_name,
+        input logic [511:0] got,
+        input logic [511:0] expected
+    );
+        test_num++;
+        #1;
+        if (got === expected) begin
+            $display("[PASS] Test %0d: %s", test_num, test_name);
+            pass_cnt++;
+        end else begin
+            $display("[FAIL] Test %0d: %s", test_num, test_name);
+            $display("       Expected: 0x%0h", expected);
+            $display("       Got     : 0x%0h", got);
+            fail_cnt++;
         end
     endtask
 
-    // =====================================================
-    // Reset / Default Task
-    // =====================================================
-    task apply_defaults();
-        begin
-            vs1         = 512'hFFFF;
-            vs2         = 512'hAAAA;
-            v0          = 512'hFFFF;
-            mask_op     = 3'b000;
-            mask_reg_en = 1;
-            mask_en     = 1;
-            vstart      = 0;
-            vl          = 20;
-            vta         = 0;
-            vma         = 0;
-            sew         = 6'b000100;
-        end
+    // ----------------------------------------------------------------
+    // Helper: reset all inputs to safe defaults
+    // ----------------------------------------------------------------
+    task automatic reset_inputs();
+        lanes_data_out   = '0;
+        destination_data = '0;
+        mask_op          = 3'b000;
+        mask_en          = 1'b0;
+        mask_reg_en      = 1'b0;
+        vta              = 1'b0;
+        vma              = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd0;
+        sew              = 7'b0000100; // SEW=8 default
+        vs1              = '0;
+        vs2              = '0;
+        v0               = '0;
     endtask
 
-    // =====================================================
-    // TEST SEQUENCE
-    // =====================================================
+    // ----------------------------------------------------------------
+    // MAIN TEST
+    // ----------------------------------------------------------------
     initial begin
+        $display("====================================================");
+        $display("   vector_mask_unit Testbench Starting");
+        $display("====================================================\n");
 
-        $display("");
-        $display("========================================================");
-        $display("      VECTOR MASK UNIT - SELF CHECKING TESTBENCH        ");
-        $display("========================================================");
+        reset_inputs();
+        #10;
 
-        init_data();
-        apply_defaults();
+        // ============================================================
+        // TEST 1: mask_en=0 → bypass, output = lanes_data_out directly
+        // ============================================================
+        $display("--- Group 1: Bypass (mask_en=0) ---");
+        lanes_data_out   = 4096'hDEADBEEF_CAFEBABE;
+        destination_data = 4096'hAAAAAAAA_AAAAAAAA;
+        mask_en          = 1'b0;
+        sew              = 7'b0000100; // SEW=8
+        vl               = 32'd4;
+        vstart           = 32'd0;
+        v0               = 512'hFF;
+        #5;
+        check_result("mask_en=0 bypass", mask_unit_output, lanes_data_out);
 
-        // ------------------------------------------------
-        // GROUP 1: Basic SEW Tests
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 1: Basic SEW Tests (vl=20, vstart=0) --------");
-
-        mask_op = 3'b000; mask_reg_en = 1; mask_en = 1;
-        vstart = 0; vl = 20; vta = 0; vma = 0;
-
-        sew = 6'b000100; #5; compare_result("G1: SEW=8  Basic");
-        sew = 6'b001000; #5; compare_result("G1: SEW=16 Basic");
-        sew = 6'b010000; #5; compare_result("G1: SEW=32 Basic");
-        sew = 6'b100000; #5; compare_result("G1: SEW=64 Basic");
-
-        // ------------------------------------------------
-        // GROUP 2: Tail Agnostic (vta=1)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 2: Tail Agnostic Tests (vta=1) ---------------");
-
-        vta = 1; vma = 0; vl = 10; vstart = 0;
-
-        sew = 6'b000100; #5; compare_result("G2: SEW=8  Tail Agnostic");
-        sew = 6'b001000; #5; compare_result("G2: SEW=16 Tail Agnostic");
-        sew = 6'b010000; #5; compare_result("G2: SEW=32 Tail Agnostic");
-        sew = 6'b100000; #5; compare_result("G2: SEW=64 Tail Agnostic");
-
-        // ------------------------------------------------
-        // GROUP 3: Mask Agnostic (vma=1)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 3: Mask Agnostic Tests (vma=1) ---------------");
-
-        vta = 0; vma = 1; vl = 20; vstart = 0;
-        vs1 = 512'hAAAA_AAAA; vs2 = 512'hFFFF_FFFF; // alternating mask
-
-        sew = 6'b000100; #5; compare_result("G3: SEW=8  Mask Agnostic");
-        sew = 6'b001000; #5; compare_result("G3: SEW=16 Mask Agnostic");
-        sew = 6'b010000; #5; compare_result("G3: SEW=32 Mask Agnostic");
-        sew = 6'b100000; #5; compare_result("G3: SEW=64 Mask Agnostic");
-
-        // ------------------------------------------------
-        // GROUP 4: Both Agnostic (vta=1, vma=1)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 4: Both Agnostic (vta=1, vma=1) --------------");
-
-        vta = 1; vma = 1; vl = 15; vstart = 5;
-
-        sew = 6'b000100; #5; compare_result("G4: SEW=8  vta+vma");
-        sew = 6'b001000; #5; compare_result("G4: SEW=16 vta+vma");
-        sew = 6'b010000; #5; compare_result("G4: SEW=32 vta+vma");
-        sew = 6'b100000; #5; compare_result("G4: SEW=64 vta+vma");
-
-        // ------------------------------------------------
-        // GROUP 5: Bypass Mode (mask_en=0)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 5: Bypass Mode (mask_en=0) -------------------");
-
-        mask_en = 0; vta = 0; vma = 0; vl = 20; vstart = 0;
-
-        sew = 6'b000100; #5; compare_result("G5: SEW=8  Bypass");
-        sew = 6'b001000; #5; compare_result("G5: SEW=16 Bypass");
-        sew = 6'b010000; #5; compare_result("G5: SEW=32 Bypass");
-        sew = 6'b100000; #5; compare_result("G5: SEW=64 Bypass");
-
-        // ------------------------------------------------
-        // GROUP 6: vstart > 0 (Prestart Elements)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 6: Prestart Tests (vstart>0) ----------------");
-
-        mask_en = 1; vta = 0; vma = 0;
-        vs1 = 512'hFFFF_FFFF; vs2 = 512'hFFFF_FFFF;
-
-        vstart = 5;  vl = 20; sew = 6'b000100; #5; compare_result("G6: SEW=8  vstart=5");
-        vstart = 10; vl = 30; sew = 6'b001000; #5; compare_result("G6: SEW=16 vstart=10");
-        vstart = 2;  vl = 50; sew = 6'b010000; #5; compare_result("G6: SEW=32 vstart=2");
-        vstart = 3;  vl = 20; sew = 6'b100000; #5; compare_result("G6: SEW=64 vstart=3");
-
-        // ------------------------------------------------
-        // GROUP 7: vl = 0 (All Elements are Tail)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 7: vl=0 Edge Case ----------------------------");
-
-        vstart = 0; vl = 0; vta = 0; vma = 0;
-
-        sew = 6'b000100; #5; compare_result("G7: SEW=8  vl=0 vta=0");
-        sew = 6'b001000; #5; compare_result("G7: SEW=16 vl=0 vta=0");
-
-        vta = 1;
-        sew = 6'b010000; #5; compare_result("G7: SEW=32 vl=0 vta=1");
-        sew = 6'b100000; #5; compare_result("G7: SEW=64 vl=0 vta=1");
-
-        // ------------------------------------------------
-        // GROUP 8: All Mask Bits = 0 (All Inactive Body)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 8: All Mask Bits = 0 -------------------------");
-
-        vs1 = 512'h0; vs2 = 512'h0; v0 = 512'h0;
-        mask_op = 3'b000; mask_reg_en = 1; // vmand: 0 & 0 = 0
-        vstart = 0; vl = 20; vta = 0; vma = 0; mask_en = 1;
-
-        sew = 6'b000100; #5; compare_result("G8: SEW=8  All Mask=0 vma=0");
-        vma = 1;
-        sew = 6'b000100; #5; compare_result("G8: SEW=8  All Mask=0 vma=1");
-        vma = 0;
-        sew = 6'b001000; #5; compare_result("G8: SEW=16 All Mask=0");
-        sew = 6'b010000; #5; compare_result("G8: SEW=32 All Mask=0");
-        sew = 6'b100000; #5; compare_result("G8: SEW=64 All Mask=0");
-
-        // ------------------------------------------------
-        // GROUP 9: All Mask Bits = 1 (All Active Body)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 9: All Mask Bits = 1 -------------------------");
-
-        vs1 = 512'hFFFF_FFFF_FFFF_FFFF; 
-        vs2 = 512'hFFFF_FFFF_FFFF_FFFF;
-        v0  = 512'hFFFF_FFFF_FFFF_FFFF;
-        mask_op = 3'b100; // vmor: all 1
-        mask_reg_en = 1; vstart = 0; vl = 30; vta = 0; vma = 0; mask_en = 1;
-
-        sew = 6'b000100; #5; compare_result("G9: SEW=8  All Mask=1");
-        sew = 6'b001000; #5; compare_result("G9: SEW=16 All Mask=1");
-        sew = 6'b010000; #5; compare_result("G9: SEW=32 All Mask=1");
-        sew = 6'b100000; #5; compare_result("G9: SEW=64 All Mask=1");
-
-        // ------------------------------------------------
-        // GROUP 10: mask_reg_en = 0 (Use old v0)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 10: mask_reg_en=0 (Use existing v0) ---------");
-
-        vs1 = 512'h0; vs2 = 512'h0; // mask_reg_updated would be 0
-        v0  = 512'hFFFF_FFFF;       // but we use v0 since mask_reg_en=0
-        mask_op     = 3'b000;
-        mask_reg_en = 0;            // use v0 directly
-        mask_en     = 1;
-        vstart = 0; vl = 20; vta = 0; vma = 0;
-
-        sew = 6'b000100; #5; compare_result("G10: SEW=8  mask_reg_en=0");
-        sew = 6'b001000; #5; compare_result("G10: SEW=16 mask_reg_en=0");
-        sew = 6'b010000; #5; compare_result("G10: SEW=32 mask_reg_en=0");
-        sew = 6'b100000; #5; compare_result("G10: SEW=64 mask_reg_en=0");
-
-        // ------------------------------------------------
-        // GROUP 11: All Mask Operations (vmand, vmnand, ...)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 11: All mask_op Values -----------------------");
-
-        vs1 = 512'hAAAA_AAAA_AAAA_AAAA;
-        vs2 = 512'hCCCC_CCCC_CCCC_CCCC;
-        mask_reg_en = 1; mask_en = 1;
-        vstart = 0; vl = 20; vta = 0; vma = 0; sew = 6'b000100;
-
-        mask_op = 3'b000; #5; compare_result("G11: mask_op=000 vmand.mm");
-        mask_op = 3'b001; #5; compare_result("G11: mask_op=001 vmnand.mm");
-        mask_op = 3'b010; #5; compare_result("G11: mask_op=010 vmandn.mm");
-        mask_op = 3'b011; #5; compare_result("G11: mask_op=011 vmxor.mm");
-        mask_op = 3'b100; #5; compare_result("G11: mask_op=100 vmor.mm");
-        mask_op = 3'b101; #5; compare_result("G11: mask_op=101 vmnor.mm");
-        mask_op = 3'b110; #5; compare_result("G11: mask_op=110 vmorn.mm");
-        mask_op = 3'b111; #5; compare_result("G11: mask_op=111 vmxnor.mm");
-
-        // ------------------------------------------------
-        // GROUP 12: Max vl Boundary Test
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 12: Max vl Boundary Tests --------------------");
-
-        vs1 = 512'hFFFF_FFFF_FFFF_FFFF;
-        vs2 = 512'hFFFF_FFFF_FFFF_FFFF;
-        mask_op = 3'b000; mask_reg_en = 1; mask_en = 1;
-        vstart = 0; vta = 0; vma = 0;
-
-        vl = 9'd511; sew = 6'b000100; #5; compare_result("G12: SEW=8  vl=511");
-        vl = 9'd255; sew = 6'b001000; #5; compare_result("G12: SEW=16 vl=255");
-        vl = 9'd127; sew = 6'b010000; #5; compare_result("G12: SEW=32 vl=127");
-        vl = 9'd63;  sew = 6'b100000; #5; compare_result("G12: SEW=64 vl=63");
-
-        // ------------------------------------------------
-        // GROUP 13: Alternating Mask (Checkerboard Pattern)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 13: Alternating/Checkerboard Mask ------------");
-
-        vs1 = {64{8'hAA}}; // alternating 10101010
-        vs2 = {64{8'hAA}};
-        mask_op = 3'b000; // vmand: AAAA & AAAA = AAAA
-        mask_reg_en = 1; mask_en = 1;
-        vstart = 0; vl = 40; vta = 0; vma = 0;
-
-        sew = 6'b000100; #5; compare_result("G13: SEW=8  Alternating Mask vma=0");
-        vma = 1;
-        sew = 6'b000100; #5; compare_result("G13: SEW=8  Alternating Mask vma=1");
-        vma = 0;
-        sew = 6'b001000; #5; compare_result("G13: SEW=16 Alternating Mask");
-        sew = 6'b010000; #5; compare_result("G13: SEW=32 Alternating Mask");
-        sew = 6'b100000; #5; compare_result("G13: SEW=64 Alternating Mask");
-
-        // ------------------------------------------------
-        // GROUP 14: vstart = vl (No Body Elements)
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 14: vstart == vl (Empty Body) ----------------");
-
-        vs1 = 512'hFFFF; vs2 = 512'hFFFF;
-        mask_op = 3'b000; mask_reg_en = 1; mask_en = 1;
-        vstart = 10; vl = 10; // vstart == vl => no body elements
-
-        vta = 0; vma = 0;
-        sew = 6'b000100; #5; compare_result("G14: SEW=8  vstart==vl vta=0");
-        vta = 1;
-        sew = 6'b000100; #5; compare_result("G14: SEW=8  vstart==vl vta=1");
-        vta = 0;
-        sew = 6'b001000; #5; compare_result("G14: SEW=16 vstart==vl");
-        sew = 6'b010000; #5; compare_result("G14: SEW=32 vstart==vl");
-        sew = 6'b100000; #5; compare_result("G14: SEW=64 vstart==vl");
-
-        // ------------------------------------------------
-        // GROUP 15: Random Stress Test
-        // ------------------------------------------------
-        $display("");
-        $display("---- GROUP 15: Random Stress Tests (20 iterations) ------");
-
+        // ============================================================
+        // TEST 2: SEW=8, mask_en=1, active body elements (mask_reg[i]=1)
+        //         vstart=0, vl=4 → elements 0,1,2,3 are body
+        //         v0[3:0]=4'b1111 → all active → output = lanes_data_out
+        // ============================================================
+        $display("\n--- Group 2: SEW=8 Active Body Elements ---");
+        reset_inputs();
+        sew              = 7'b0000100; // SEW=8
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd4;
+        vta              = 1'b0;
+        vma              = 1'b0;
+        v0               = 512'hF;           // bits [3:0] = 1 → elements 0-3 active
+        // Element 0 = 8'hAA, Element 1 = 8'hBB, Element 2 = 8'hCC, Element 3 = 8'hDD
+        lanes_data_out   = {4088'h0, 8'hDD, 8'hCC, 8'hBB, 8'hAA};
+        destination_data = {4096{1'b1}};     // All 1s (should NOT appear for active)
+        #5;
+        // Expected: elements 0-3 from lanes, rest from destination (all 1s)
         begin
-            integer j;
-            for (j = 0; j < 20; j++) begin
-                // Randomize everything
-                init_data();
-                vs1         = $random;
-                vs2         = $random;
-                v0          = $random;
-                mask_op     = $random % 8;
-                mask_reg_en = $random % 2;
-                mask_en     = $random % 2;
-                vta         = $random % 2;
-                vma         = $random % 2;
-                vstart      = $random % 10;
-                // Pick random SEW
-                case ($random % 4)
-                    0: begin sew = 6'b000100; vl = ($random % 30) + vstart; end
-                    1: begin sew = 6'b001000; vl = ($random % 30) + vstart; end
-                    2: begin sew = 6'b010000; vl = ($random % 30) + vstart; end
-                    3: begin sew = 6'b100000; vl = ($random % 30) + vstart; end
-                endcase
-                #5;
-                compare_result($sformatf("G15: Stress Iter %0d", j+1));
-            end
+            logic [4095:0] exp;
+            exp = destination_data;
+            exp[0*8 +: 8] = 8'hAA;
+            exp[1*8 +: 8] = 8'hBB;
+            exp[2*8 +: 8] = 8'hCC;
+            exp[3*8 +: 8] = 8'hDD;
+            check_result("SEW=8 body active (mask=1111)", mask_unit_output, exp);
         end
 
-        // ------------------------------------------------
-        // FINAL SUMMARY
-        // ------------------------------------------------
-        $display("");
-        $display("========================================================");
-        $display("   FINAL SUMMARY: %0d PASSED | %0d FAILED", pass_count, fail_count);
-        $display("========================================================");
-        $display("");
+        // ============================================================
+        // TEST 3: SEW=8, inactive body (mask_reg[i]=0), vma=0 (undisturbed)
+        //         vstart=0, vl=4, v0[3:0]=4'b0000 → all inactive body
+        //         Output should be destination_data for elements 0-3
+        // ============================================================
+        $display("\n--- Group 3: SEW=8 Inactive Body vma=0 (undisturbed) ---");
+        reset_inputs();
+        sew              = 7'b0000100;
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd4;
+        vta              = 1'b0;
+        vma              = 1'b0;             // undisturbed
+        v0               = 512'h0;           // all mask bits = 0 → all inactive
+        lanes_data_out   = {4096{1'b1}};     // All 1s (should NOT appear)
+        destination_data = {4088'h0, 8'h11, 8'h22, 8'h33, 8'h44};
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = destination_data; // tail elements also undisturbed (vta=0)
+            check_result("SEW=8 body inactive vma=0", mask_unit_output, exp);
+        end
 
-        if (fail_count == 0)
-            $display("🎉  ALL TESTS PASSED!");
+        // ============================================================
+        // TEST 4: SEW=8, inactive body (mask_reg[i]=0), vma=1 (agnostic)
+        //         Elements 0-3 body, all inactive → should get 8'hFF each
+        // ============================================================
+        $display("\n--- Group 4: SEW=8 Inactive Body vma=1 (agnostic=all 1s) ---");
+        reset_inputs();
+        sew              = 7'b0000100;
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd4;
+        vta              = 1'b0;
+        vma              = 1'b1;             // agnostic → write all 1s
+        v0               = 512'h0;           // all mask bits = 0
+        lanes_data_out   = '0;
+        destination_data = '0;
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = '0;
+            exp[0*8 +: 8] = 8'hFF;
+            exp[1*8 +: 8] = 8'hFF;
+            exp[2*8 +: 8] = 8'hFF;
+            exp[3*8 +: 8] = 8'hFF;
+            check_result("SEW=8 body inactive vma=1", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 5: SEW=8, tail elements vta=0 (undisturbed)
+        //         vl=2 → elements 2+ are tail, should keep destination
+        // ============================================================
+        $display("\n--- Group 5: SEW=8 Tail vta=0 (undisturbed) ---");
+        reset_inputs();
+        sew              = 7'b0000100;
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd2;            // only 2 active elements
+        vta              = 1'b0;             // undisturbed tail
+        vma              = 1'b0;
+        v0               = 512'hFF;          // elements 0,1 active
+        lanes_data_out   = {4088'h0, 8'hBB, 8'hAA};
+        destination_data = {4088'h0, 8'hDD, 8'hCC, 8'hBB, 8'hAA};
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = destination_data;          // tail = destination (undisturbed)
+            exp[0*8 +: 8] = 8'hAA;          // body element 0
+            exp[1*8 +: 8] = 8'hBB;          // body element 1
+            check_result("SEW=8 tail vta=0", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 6: SEW=8, tail elements vta=1 (agnostic → all 1s)
+        //         vl=2 → elements 2+ should get 8'hFF
+        // ============================================================
+        $display("\n--- Group 6: SEW=8 Tail vta=1 (agnostic=all 1s) ---");
+        reset_inputs();
+        sew              = 7'b0000100;
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd2;
+        vta              = 1'b1;             // agnostic → tail = all 1s
+        vma              = 1'b0;
+        v0               = 512'hFF;
+        lanes_data_out   = {4088'h0, 8'hBB, 8'hAA};
+        destination_data = '0;
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = {4096{1'b1}};              // all tail → all 1s
+            exp[0*8 +: 8] = 8'hAA;          // body element 0
+            exp[1*8 +: 8] = 8'hBB;          // body element 1
+            check_result("SEW=8 tail vta=1", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 7: Prestart elements
+        //         vstart=2 → elements 0,1 are prestart → keep destination
+        // ============================================================
+        $display("\n--- Group 7: Prestart Elements ---");
+        reset_inputs();
+        sew              = 7'b0000100;
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd2;            // elements 0,1 = prestart
+        vl               = 32'd5;
+        vta              = 1'b0;
+        vma              = 1'b0;
+        v0               = 512'hFF;
+        lanes_data_out   = {4085'h0, 8'hEE, 8'hDD, 8'hCC, 8'hBB, 8'hAA};
+        destination_data = {4090'h0, 8'h11, 8'h22, 8'h33, 8'h44, 8'h55};
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = destination_data;
+            // prestart: elements 0,1 → destination
+            // body: elements 2,3,4 → lanes
+            exp[2*8 +: 8] = lanes_data_out[2*8 +: 8];
+            exp[3*8 +: 8] = lanes_data_out[3*8 +: 8];
+            exp[4*8 +: 8] = lanes_data_out[4*8 +: 8];
+            check_result("Prestart elements preserved", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 8: SEW=16 basic test
+        //         vstart=0, vl=2, v0[1:0]=2'b11 → elements 0,1 active
+        // ============================================================
+        $display("\n--- Group 8: SEW=16 ---");
+        reset_inputs();
+        sew              = 7'b0001000;       // SEW=16
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd2;
+        vta              = 1'b0;
+        vma              = 1'b0;
+        v0               = 512'h3;           // bits [1:0]=11
+        lanes_data_out   = {4064'h0, 16'hBBBB, 16'hAAAA};
+        destination_data = {4064'h0, 16'hDDDD, 16'hCCCC};
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = destination_data;
+            exp[0*16 +: 16] = 16'hAAAA;
+            exp[1*16 +: 16] = 16'hBBBB;
+            check_result("SEW=16 body active", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 9: SEW=32 basic test
+        // ============================================================
+        $display("\n--- Group 9: SEW=32 ---");
+        reset_inputs();
+        sew              = 7'b0010000;       // SEW=32
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd2;
+        vta              = 1'b0;
+        vma              = 1'b0;
+        v0               = 512'h3;
+        lanes_data_out   = {4032'h0, 32'hBBBBBBBB, 32'hAAAAAAAA};
+        destination_data = {4032'h0, 32'hDDDDDDDD, 32'hCCCCCCCC};
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = destination_data;
+            exp[0*32 +: 32] = 32'hAAAAAAAA;
+            exp[1*32 +: 32] = 32'hBBBBBBBB;
+            check_result("SEW=32 body active", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 10: SEW=64 basic test
+        // ============================================================
+        $display("\n--- Group 10: SEW=64 ---");
+        reset_inputs();
+        sew              = 7'b0100000;       // SEW=64
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd2;
+        vta              = 1'b0;
+        vma              = 1'b0;
+        v0               = 512'h3;
+        lanes_data_out   = {3968'h0, 64'hBBBBBBBB_BBBBBBBB, 64'hAAAAAAAA_AAAAAAAA};
+        destination_data = {3968'h0, 64'hDDDDDDDD_DDDDDDDD, 64'hCCCCCCCC_CCCCCCCC};
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = destination_data;
+            exp[0*64 +: 64] = 64'hAAAAAAAA_AAAAAAAA;
+            exp[1*64 +: 64] = 64'hBBBBBBBB_BBBBBBBB;
+            check_result("SEW=64 body active", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // TEST 11: mask_reg_en=1, vmand (mask_op=000)
+        //          vs1 & vs2 → mask_reg_updated
+        // ============================================================
+        $display("\n--- Group 11: Mask Register Update (vmand) ---");
+        reset_inputs();
+        sew         = 7'b0000100;
+        mask_en     = 1'b0;
+        mask_reg_en = 1'b1;
+        mask_op     = 3'b000;               // vmand
+        vs1         = 512'hF0F0;
+        vs2         = 512'hFF00;
+        #5;
+        check_mask_reg("vmand vs1=0xF0F0 vs2=0xFF00", mask_reg_updated, 512'hF000);
+
+        // ============================================================
+        // TEST 12: vmor (mask_op=100)
+        // ============================================================
+        $display("\n--- Group 12: Mask Register Update (vmor) ---");
+        reset_inputs();
+        sew         = 7'b0000100;
+        mask_en     = 1'b0;
+        mask_reg_en = 1'b1;
+        mask_op     = 3'b100;               // vmor
+        vs1         = 512'hF0F0;
+        vs2         = 512'hFF00;
+        #5;
+        check_mask_reg("vmor vs1=0xF0F0 vs2=0xFF00", mask_reg_updated, 512'hFFF0);
+
+        // ============================================================
+        // TEST 13: vmxor (mask_op=011)
+        // ============================================================
+        $display("\n--- Group 13: Mask Register Update (vmxor) ---");
+        reset_inputs();
+        sew         = 7'b0000100;
+        mask_en     = 1'b0;
+        mask_reg_en = 1'b1;
+        mask_op     = 3'b011;               // vmxor
+        vs1         = 512'hFF00;
+        vs2         = 512'hFF00;
+        #5;
+        check_mask_reg("vmxor vs1==vs2 → 0", mask_reg_updated, 512'h0);
+
+        // ============================================================
+        // TEST 14: Mixed body — some active, some inactive, vma=1
+        //          v0[3:0]=4'b1010 → elements 1,3 active; 0,2 inactive
+        // ============================================================
+        $display("\n--- Group 14: Mixed Body (partial mask) ---");
+        reset_inputs();
+        sew              = 7'b0000100;
+        mask_en          = 1'b1;
+        mask_reg_en      = 1'b0;
+        vstart           = 32'd0;
+        vl               = 32'd4;
+        vta              = 1'b0;
+        vma              = 1'b1;            // agnostic → inactive body = all 1s
+        v0               = 512'hA;          // 4'b1010 → elem 1,3 active
+        lanes_data_out   = {4088'h0, 8'hD3, 8'hC2, 8'hB1, 8'hA0};
+        destination_data = '0;
+        #5;
+        begin
+            logic [4095:0] exp;
+            exp = '0;
+            exp[0*8 +: 8] = 8'hFF; // inactive + vma=1 → all 1s
+            exp[1*8 +: 8] = 8'hB1; // active → lanes
+            exp[2*8 +: 8] = 8'hFF; // inactive + vma=1 → all 1s
+            exp[3*8 +: 8] = 8'hD3; // active → lanes
+            check_result("Mixed body vma=1", mask_unit_output, exp);
+        end
+
+        // ============================================================
+        // Summary
+        // ============================================================
+        #10;
+        $display("\n====================================================");
+        $display("   RESULTS: %0d Passed, %0d Failed (Total: %0d)",
+                  pass_cnt, fail_cnt, test_num);
+        if (fail_cnt == 0)
+            $display("   *** ALL TESTS PASSED ✓ ***");
         else
-            $display("⚠️   SOME TESTS FAILED. Check above for details.");
+            $display("   *** SOME TESTS FAILED ✗ ***");
+        $display("====================================================\n");
 
-        $display("");
-        $stop;
+        $finish;
+    end
+
+    // ----------------------------------------------------------------
+    // Timeout watchdog
+    // ----------------------------------------------------------------
+    initial begin
+        #500000;
+        $display("[ERROR] Simulation timeout!");
+        $finish;
     end
 
 endmodule

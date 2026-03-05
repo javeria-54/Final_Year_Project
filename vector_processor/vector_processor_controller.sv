@@ -46,7 +46,7 @@ module vector_processor_controller (
     output  logic [2:0]          cmp_op, 
     output  logic [2:0]          accum_op,
     output  logic [2:0]          shift_op,
-    output  logic [2:0]          mask_op,
+    output  logic [3:0]          mask_op,
 
     output  logic                add_inst, sub_inst, reverse_sub_inst, 
 
@@ -203,7 +203,7 @@ always_comb begin
     shift_op                    = 3'b000;
     execution_op                = 'b0;
     accum_op                    = 3'b000;
-    mask_op                     = 'b0; 
+    mask_op                     = 4'b0; 
     start                       = 1'b0;
     
     case (vopcode)

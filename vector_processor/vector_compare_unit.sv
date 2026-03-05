@@ -163,6 +163,7 @@ module vector_compare_unit (
 
                     // Pack result: cmp bit in LSB, upper 7 bits zero
                     raw_result[i*8 +: 8] = {7'b0, cmp};
+                    compare_done   = 1'b1;
                 end
             end
 
@@ -200,6 +201,7 @@ module vector_compare_unit (
 
                     // Pack result: cmp bit in LSB, upper 15 bits zero
                     raw_result[i*16 +: 16] = {15'b0, cmp};
+                    compare_done   = 1'b1;
                 end
             end
 
@@ -237,6 +239,7 @@ module vector_compare_unit (
 
                     // Pack result: cmp bit in LSB, upper 31 bits zero
                     raw_result[i*32 +: 32] = {31'b0, cmp};
+                    compare_done   = 1'b1;
                 end
             end
 
@@ -253,7 +256,5 @@ module vector_compare_unit (
     // Forward raw_result to output port
     assign compare_result = raw_result;
 
-    // Always 1: purely combinational, result is always ready
-    assign compare_done   = 1'b1;
 
 endmodule

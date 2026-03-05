@@ -73,22 +73,29 @@ module vector_scalar_top (
     logic             lsu_flush;
     logic             dmem_sel;
 
+
+    logic [`XLEN-1:0]    inst_reg_instruction;     // Output instruction
+    logic [`XLEN-1:0]    inst_reg_rs1_data;        // Output RS1 data
+    logic [`XLEN-1:0]    inst_reg_rs2_data;         // Output RS2 data
+
+    logic [`XLEN-1:0]    inst_reg_instruction_d;     // Output instruction
+    logic [`XLEN-1:0]    inst_reg_rs1_data_d;        // Output RS1 data
+    logic [`XLEN-1:0]    inst_reg_rs2_data_d;         // Output RS2 data
+
+    logic [`XLEN-1:0]    instruction_o;     // Output instruction
+
     //==========================================================================
     // 1 Cycle Delay Register — bas itna hi chahiye
     //==========================================================================
-    always_comb begin 
-        if(vec_pro_ack) begin
-            instruction_d = instruction;
-            rs1_data_d    = rs1_data;
-            rs2_data_d    = rs2_data;
+    always_ff @(posedge clk) begin 
+        if(vec_pro_ready) begin
+            inst_reg_instruction_d  <= inst_reg_instruction;
+            inst_reg_rs1_data_d     <= inst_reg_rs1_data;
+            inst_reg_rs2_data_d     <= inst_reg_rs2_data;
         end 
-        else begin
-            instruction_d = 'b0;
-            rs1_data_d    = 'b0;
-            rs2_data_d    = 'b0;
-        end 
-        
     end
+
+    assign inst_valid = is_vec;
 
     //==========================================================================
     // VECTOR PROCESSOR
@@ -97,9 +104,9 @@ module vector_scalar_top (
     vector_processor VECTOR (
         .clk               (clk),
         .reset             (rst_n),
-        .instruction       (instruction_d),   // 1 cycle delayed
-        .rs1_data          (rs1_data_d),      // 1 cycle delayed
-        .rs2_data          (rs2_data_d),      // 1 cycle delayed
+        .instruction        (inst_reg_instruction_d),      
+        .rs1_data           (inst_reg_rs1_data_d   ),
+        .rs2_data           (inst_reg_rs2_data_d   ),
         .inst_valid        (inst_valid),
         .scalar_pro_ready  (scalar_pro_ready),
         .is_vec            (is_vec),
@@ -166,7 +173,7 @@ module vector_scalar_top (
         .lsu_flush_o    (lsu_flush),
 
         .clint2csr_i    (clint2csr),
-        .instr_o        (instruction),     // direct — register mein jata hai upar
+        .instr_o        (instruction_o),     // direct — register mein jata hai upar
         .rs1_data_o     (rs1_data),
         .rs2_data_o     (rs2_data),
         .core2pipe_i    (core2pipe)
@@ -188,4 +195,159 @@ module vector_scalar_top (
         .mem2wrb_o  (mem2dbus)
     );
 
-endmodule : vector_scalar_top
+    instruction_data_queue INS_DATA_QUEUE(
+        .clk                    (clk                ),
+        .reset                  (reset              ),
+        // Scaler Processor --> Queue 
+        .inst_valid             (inst_valid         ), 
+        .instruction            (instruction_o      ), 
+        .rs1_data               (rs1_data           ), 
+        .rs2_data               (rs2_data           ),  
+        
+        // VAL_READY_Controller --> Queue
+        .vec_pro_ready          (vec_pro_ready      ),  
+        
+        // Queue --> Vector Processor
+        .inst_reg_instruction   (inst_reg_instruction), 
+        .inst_reg_rs1_data      (inst_reg_rs1_data   ), 
+        .inst_reg_rs2_data      (inst_reg_rs2_data   )  
+    );
+
+endmodule
+
+module instruction_data_queue #(
+
+    parameter DEPTH = 5    // Queue depth
+) (
+    input  logic                clk,
+    input  logic                reset,
+    // Scaler Processor --> Queue 
+    input  logic                inst_valid,       // Instruction valid
+    input  logic [`XLEN-1:0]    instruction,      // Instruction input
+    input  logic [`XLEN-1:0]    rs1_data,         // RS1 data
+    input  logic [`XLEN-1:0]    rs2_data,         // RS2 data
+    
+     // VAL_READY_Controller --> Queue
+    input  logic                 vec_pro_ready,   // Vector processor ready
+    
+    // Queue --> Vector Processor
+    output logic [`XLEN-1:0]    inst_reg_instruction,     // Output instruction
+    output logic [`XLEN-1:0]    inst_reg_rs1_data,        // Output RS1 data
+    output logic [`XLEN-1:0]    inst_reg_rs2_data         // Output RS2 data
+);
+
+    logic [`XLEN-1:0]    inst_out_instruction;     // Dummy Output instruction
+    logic [`XLEN-1:0]    inst_out_rs1_data;        // Dummy Output RS1 data
+    logic [`XLEN-1:0]    inst_out_rs2_data;        // Dummy Output RS2 data
+
+    // FIFO storage for instructions and data
+    typedef struct packed {
+        logic [`XLEN-1:0] instruction;
+        logic [`XLEN-1:0] rs1_data;
+        logic [`XLEN-1:0] rs2_data;
+    } queue_entry_t;
+
+    queue_entry_t fifo [DEPTH-1:0];
+
+    logic [$clog2(DEPTH):0] write_ptr, read_ptr;
+    logic [$clog2(DEPTH+1):0] count;
+
+    // Status flags
+    logic  full  = (count == DEPTH);
+    logic  empty = (count == 0);
+
+    // Handshake signal
+    logic inst_accepted;
+    logic inst_ready;
+
+     // Bypass signals
+    logic bypass;
+    logic inst_valid_seen;  // Tracks whether inst_valid has been asserted
+
+    always_ff @( posedge clk or negedge clk ) begin 
+        if (!reset)begin
+            inst_valid_seen <= 1'b0;
+        end
+        else begin
+            if (inst_valid && !vec_pro_ready)begin
+                inst_valid_seen <= 1'b1;
+            end
+            else begin
+                inst_valid_seen <= 1'b0;
+            end
+        end
+        
+    end
+
+
+    assign bypass = (inst_valid && vec_pro_ready && !inst_valid_seen);
+
+    // Output logic with bypass handling
+   always_ff @(posedge clk or negedge reset) begin
+        if (!reset) begin
+            inst_out_instruction <= 0;
+            inst_out_rs1_data    <= 0;
+            inst_out_rs2_data    <= 0;
+            read_ptr             <= 0;
+            write_ptr <= 0;
+            count <= 0;
+            inst_accepted <= 0;
+        end else if (bypass) begin
+            // Directly bypass the input instruction and data to output
+            inst_out_instruction <= instruction;
+            inst_out_rs1_data    <= rs1_data;
+            inst_out_rs2_data    <= rs2_data;
+        end else if (!empty && vec_pro_ready) begin
+            // Update read pointer and prepare for next cycle
+            read_ptr <= read_ptr + 1;
+            count    <= count - 1;
+        end else begin
+            if (inst_valid && inst_ready && !inst_accepted) begin
+                // Store the instruction and data in the queue
+                fifo[write_ptr].instruction <= instruction;
+                fifo[write_ptr].rs1_data    <= rs1_data;
+                fifo[write_ptr].rs2_data    <= rs2_data;
+                write_ptr <= write_ptr + 1;
+                count <= count + 1;
+
+                // Mark instruction as accepted
+                inst_accepted <= 1;
+            end else if (!inst_valid) begin
+                // Reset the accepted flag when inst_valid deasserts
+                inst_accepted <= 0;
+            end
+        end
+    end
+
+    // Combinational output logic for immediate dequeued data
+    always_comb begin
+        if (bypass) begin
+            // Directly pass the input instruction and data to the output
+            inst_reg_instruction = instruction;
+            inst_reg_rs1_data    = rs1_data;
+            inst_reg_rs2_data    = rs2_data;
+        end else if (!empty && vec_pro_ready) begin
+            // Directly use the data from the queue for immediate output
+            inst_reg_instruction = fifo[read_ptr].instruction;
+            inst_reg_rs1_data    = fifo[read_ptr].rs1_data;
+            inst_reg_rs2_data    = fifo[read_ptr].rs2_data;
+        end else begin
+            // Hold the current values
+            inst_reg_instruction = inst_out_instruction;
+            inst_reg_rs1_data    = inst_out_rs1_data;
+            inst_reg_rs2_data    = inst_out_rs2_data;
+        end
+    end
+
+    assign inst_ready = !full && !vec_pro_ready;
+    
+endmodule
+
+
+
+
+
+
+
+
+

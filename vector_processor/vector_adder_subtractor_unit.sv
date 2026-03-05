@@ -181,13 +181,14 @@ endmodule
 //    sum_done  : Indicates valid output (1 = result ready)
 //////////////////////////////////////////////////////////////////////////////////
 module adder_subtractor_32bit (
-    input  logic        Ctrl,              // Operation: 0=Add, 1=Subtract
-    input  logic        sew_16_32,         // 1=16 or 32-bit mode, 0=8-bit mode
-    input  logic        sew_32,            // 1=32-bit mode
-    input  logic signed [31:0] A,          // First 32-bit operand
-    input  logic signed [31:0] B,          // Second 32-bit operand
-    output logic signed [31:0] Sum,        // 32-bit result
-    output logic               sum_done    // 1 when result is valid
+    input  logic                Ctrl,              // Operation: 0=Add, 1=Subtract
+    input  logic                sew_16_32,         // 1=16 or 32-bit mode, 0=8-bit mode
+    input  logic                sew_32,            // 1=32-bit mode
+    input  logic signed [31:0]  A,          // First 32-bit operand
+    input  logic signed [31:0]  B,          // Second 32-bit operand
+    output logic signed [31:0]  Sum,        // 32-bit result
+    output logic  [3:0]         carry_out,          // Carry output from each adder8 instance
+    output logic                sum_done    // 1 when result is valid
 );
 
     // --------------------------------------------------------
@@ -197,8 +198,7 @@ module adder_subtractor_32bit (
     logic [7:0] B_seg[0:3];        // Byte slices of B
     logic [7:0] B_xor[0:3];        // B after optional XOR with Ctrl (for subtraction)
     logic [7:0] Sum_seg[0:3];      // Output sum from each 8-bit adder
-
-    logic [3:0] carry_out;          // Carry output from each adder8 instance
+   
     logic [3:0] carry_ctrl;         // Carry-in from mux_ctr (0 or 1 based on Ctrl)
     logic [3:0] selected_carry;     // Final carry-in fed into each adder8
 
@@ -230,7 +230,7 @@ module adder_subtractor_32bit (
                 // No previous adder to chain from
                 assign selected_carry[i] = carry_ctrl[i];
 
-            end else if (i == 1) begin
+            end else if (i == 1 | i == 3) begin
                 // Segment 1 (bits 15:8): byte boundary between seg0 and seg1
                 // mux_sew_16_32 decides if carry propagates (16/32-bit) or resets (8-bit)
                 mux_sew_16_32 mux16 (
@@ -330,13 +330,14 @@ endmodule
 //    sum_done  : 1 when all slices have valid outputs
 //////////////////////////////////////////////////////////////////////////////////
 module vector_adder_subtractor (
-    input  logic                          Ctrl,       // 0=Add, 1=Subtract
-    input  logic                          sew_16_32,  // 1=16 or 32-bit, 0=8-bit
-    input  logic                          sew_32,     // 1=32-bit mode
-    input  logic signed [`VLEN-1:0]   A,          // Full vector operand A
-    input  logic signed [`VLEN-1:0]   B,          // Full vector operand B
-    output logic signed [`VLEN-1:0]   Sum,        // Full vector result
-    output logic                          sum_done    // All slices valid
+    input  logic                            Ctrl,       // 0=Add, 1=Subtract
+    input  logic                            sew_16_32,  // 1=16 or 32-bit, 0=8-bit
+    input  logic                            sew_32,     // 1=32-bit mode
+    input  logic signed [`VLEN-1:0]         A,          // Full vector operand A
+    input  logic signed [`VLEN-1:0]         B,          // Full vector operand B
+    output logic signed [`VLEN-1:0]         Sum,        // Full vector result
+    output logic        [63:0]              carry_out,
+    output logic                            sum_done    // All slices valid
 );
 
     // Number of 32-bit slices needed to cover the full vector width
@@ -359,6 +360,7 @@ module vector_adder_subtractor (
                 .A         (A[i*32 +: 32]),         // 32-bit slice of A
                 .B         (B[i*32 +: 32]),         // 32-bit slice of B
                 .Sum       (Sum[i*32 +: 32]),       // 32-bit result slice
+                .carry_out (carry_out[i*4 +:4]),
                 .sum_done  (sum_done_array[i])      // Per-slice valid flag
             );
         end

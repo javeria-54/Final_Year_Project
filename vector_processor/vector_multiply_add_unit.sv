@@ -29,6 +29,7 @@ module vector_multiply_add_unit (
     logic [`VLEN-1:0] product_selected;
     logic                 mult_done;
     logic [`VLEN-1:0] product_1,product_2;
+    logic [63:0] carry_out;
 
     typedef enum logic [2:0] {
         VMACC_VV   = 3'b000,  // vd = +(vs1 * vs2) + vd
@@ -144,6 +145,7 @@ module vector_multiply_add_unit (
         .Ctrl           (Ctrl),
         .sew_16_32      (sew_16_32),
         .sew_32         (sew_32),
+        .carry_out      (carry_out),
         .Sum            (sum_product_result),
         .sum_done       (sum_done)
     );

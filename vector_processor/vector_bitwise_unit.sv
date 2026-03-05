@@ -153,6 +153,7 @@ module vector_bitwise_unit (
 
                     // Write result back to correct position in output vector
                     raw_result[i*8 +: 8] = res;
+                    bitwise_done   = 1'b1;
                 end
             end
 
@@ -182,6 +183,7 @@ module vector_bitwise_unit (
                     endcase
 
                     raw_result[i*16 +: 16] = res;
+                    bitwise_done   = 1'b1;
                 end
             end
 
@@ -211,6 +213,7 @@ module vector_bitwise_unit (
                     endcase
 
                     raw_result[i*32 +: 32] = res;
+                    bitwise_done   = 1'b1;
                 end
             end
 
@@ -240,7 +243,9 @@ module vector_bitwise_unit (
                     endcase
 
                     raw_result[i*64 +: 64] = res;
+                    bitwise_done   = 1'b1;
                 end
+                
             end
 
             // Invalid SEW: zero output
@@ -257,6 +262,6 @@ module vector_bitwise_unit (
     assign bitwise_result = raw_result;
 
     // Always 1: this module is purely combinational, no latency
-    assign bitwise_done   = 1'b1;
+    
 
 endmodule

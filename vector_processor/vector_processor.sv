@@ -154,7 +154,8 @@ logic                               sat_add_signed_inst, sat_add_unsigned_inst, 
 logic                               and_inst, or_inst, xor_inst;
 
 logic   [4:0]                       bitwise_op;
-logic   [2:0]                       mask_op,cmp_op,accum_op,shift_op;
+logic   [3:0]                       mask_op;
+logic   [2:0] cmp_op,accum_op,shift_op;
 logic   [1:0]                       op_type; 
 
 
@@ -236,6 +237,8 @@ logic   [1:0]                       op_type;
         .mul_low            (mul_low),
         .execution_inst     (execution_inst),
         .reverse_sub_inst   (reverse_sub_inst),
+        .add_inst           (add_inst),
+        .sub_inst           (sub_inst),
         .signed_mode        (signed_mode),
         .bitwise_op         (bitwise_op),
         .op_type            (op_type),
