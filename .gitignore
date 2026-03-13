@@ -248,6 +248,7 @@ test_results/
 *.pcf
 *.ut
 *.xst
+*.pub
 
 # Keep these files (exceptions)
 !.gitkeep
