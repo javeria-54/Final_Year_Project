@@ -18,6 +18,7 @@ module memory(
       // Instruction memory fetch stage
     input  wire type_if2imem_s                   if2mem_i,  // Bus interface from IF to mem 
     output type_imem2if_s                        mem2if_o,  // From mem to IF
+    output logic [`XLEN-1:0]                     instr_read,
 
   // Data memory
     input  logic                                 dmem_sel,
@@ -27,7 +28,7 @@ module memory(
     //============================= Main memory and its memory interface =============================//
 logic                                 instr_req;
 logic [`XLEN-3:0]                     instr_address;
-logic [`XLEN-1:0]                     instr_read;
+
 logic                                 instr_ack;
 logic                                 load_req;
 logic                                 store_req;
@@ -122,13 +123,13 @@ always_ff @(posedge clk) begin
         instr_read <= `INSTR_NOP;
         instr_ack  <= 1'b0;
     end else begin
-        if (instr_req & (!instr_ack | !vec_pro_ack)) begin
+        if (instr_req & !instr_ack) begin
             instr_read <= {mem_bank_3[instr_address],
                            mem_bank_2[instr_address],
                            mem_bank_1[instr_address],
                            mem_bank_0[instr_address] };
             instr_ack    <= 1'b1;
-        end else if (instr_req & (instr_ack | vec_pro_ack))
+        end else if (instr_req & instr_ack)
             instr_ack <= 1'b0;
         else begin
             instr_read <= `INSTR_NOP;

@@ -1079,7 +1079,7 @@ module vector_multiplier(
     input  logic                signed_mode,
     output logic                count_0,
     output logic                mult_done,
-    output logic signed [`VLEN*2+1:0] product       // 1024-bit result
+    output logic signed [`VLEN*2-1:0] product       // 1024-bit result
 );
 
     // Number of 32-bit processing elements

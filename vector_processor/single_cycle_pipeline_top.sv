@@ -120,7 +120,7 @@ type_fwd2ptop_s                         fwd2ptop;
 // Inputs assignment to local signals
 assign dbus2lsu  = dbus2lsu_i; 
 assign mem2if = mem2if_i;
-assign instr_o    = if2id_data.instr;
+assign instr_o    = id2exe_data.instr;
 assign rs1_data_o = id2exe_data.rs1_data;
 assign rs2_data_o = id2exe_data.rs2_data;
 

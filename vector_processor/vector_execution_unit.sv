@@ -23,7 +23,9 @@ module vector_execution_unit(
     input   logic                               reverse_sub_inst,add_inst,sub_inst,
     input   logic [4:0]                         bitwise_op, 
     input   logic [2:0]                         cmp_op,accum_op,shift_op, 
+    input   logic [511:0] mask_reg_updated,
 
+    output  logic [63:0] carry_out_mask,
     output  logic [`MAX_VLEN-1:0]               execution_result,
     output  logic                               execution_done,
     output  logic [63:0]                        carry_out,
@@ -39,7 +41,7 @@ module vector_execution_unit(
                                         mult_add_en;
     logic                               sum_done, shift_done, mult_done, compare_done, bitwise_done, product_sum_done, move_done, sum_mask_done;
     logic                               sum_done_internal, shift_done_internal, mult_done_internal, compare_done_internal, sum_mask_done_internal,
-                                        bitwise_done_internal, product_sum_done_internal, move_done_internal;
+                                        bitwise_done_internal, product_sum_done_internal;
     logic [`VLEN-1:0]                   adder_data_1, adder_data_2;
     logic [`VLEN-1:0]                   mult_data_1, mult_data_2;
     logic [`VLEN-1:0]                   shift_data_1, shift_data_2 ;
@@ -51,9 +53,9 @@ module vector_execution_unit(
 
     logic [`VLEN-1:0]                   sum_result, compare_result, bitwise_result, shift_result, move_result, sum_mask_result, 
                                         sum_product_result; 
-    logic [`VLEN*2+1:0]                 product_result;
+    logic [`VLEN*2-1:0]                 product_result;
 
-    logic count_0_exe;
+    logic count_0_mult_add;
     
 
     // SEW decoding
@@ -66,63 +68,43 @@ module vector_execution_unit(
         endcase
     end
 
-    // Execution unit enable logic
     always_comb begin
-        if (!reset) begin
-            add_en = 1'b0;
-            shift_en = 1'b0;
-            mult_en  = 1'b0;
-            bitwise_en = 1'b0;
-            compare_en = 1'b0;
-            move_en = 1'b0;
-            mult_add_en = 1'b0;
-            reverse_sub_en = 1'b0;
-            mask_add_en = 1'b0;   
-        end
-        else begin 
-            if (execution_op == 3'b000 ) begin
-                if (add_inst | sub_inst) begin   
-                    add_en = 1'b1;
-                end 
-                else if (reverse_sub_inst) begin
-                    reverse_sub_en = 1'b1;
+        // Default sab zero
+        add_en         = 1'b0;
+        shift_en       = 1'b0;
+        mult_en        = 1'b0;
+        bitwise_en     = 1'b0;
+        compare_en     = 1'b0;
+        move_en        = 1'b0;
+        mult_add_en    = 1'b0;
+        reverse_sub_en = 1'b0;
+        mask_add_en    = 1'b0;
+
+        if (reset) begin
+            case (execution_op)
+                3'b000  : begin
+                    if      (add_inst | sub_inst)  add_en         = 1'b1;
+                    else if (reverse_sub_inst)     reverse_sub_en = 1'b1;
                 end
-                else begin
-                    add_en = 1'b0;
+                3'b001  :   shift_en    = 1'b1;
+                3'b010  :   mask_add_en = 1'b1;
+                3'b011  :   mult_en     = 1'b1;
+                3'b100  :   bitwise_en  = 1'b1;
+                3'b101  :   compare_en  = 1'b1;
+                3'b110  :   move_en     = 1'b1;
+                3'b111  :   mult_add_en = 1'b1;
+                default : begin  
+                    add_en         = 1'b0;
+                    shift_en       = 1'b0;
+                    mult_en        = 1'b0;
+                    bitwise_en     = 1'b0;
+                    compare_en     = 1'b0;
+                    move_en        = 1'b0;
+                    mult_add_en    = 1'b0;
                     reverse_sub_en = 1'b0;
+                    mask_add_en    = 1'b0; // sab already zero hain
                 end
-            end  
-            else if (execution_op == 3'b001) begin
-                shift_en = 1'b1;
-            end
-            else if (execution_op == 3'b010) begin
-                mask_add_en = 1'b1;
-            end
-            else if (execution_op == 3'b011) begin 
-                mult_en = 1'b1;
-            end
-            else if (execution_op == 3'b100) begin 
-                bitwise_en = 1'b1;    
-                end
-            else if (execution_op == 3'b101) begin
-                compare_en = 1'b1;
-            end
-            else if (execution_op == 3'b110 ) begin
-                move_en = 1'b1;
-            end
-            else if (execution_op == 3'b111) begin
-                mult_add_en = 1'b1;
-            end
-            else begin
-                add_en = 1'b0;
-                shift_en = 1'b0;
-                mult_en  = 1'b0;
-                bitwise_en = 1'b0;
-                compare_en = 1'b0;
-                move_en = 1'b0;
-                mult_add_en = 1'b0;
-                mask_add_en = 1'b0;
-            end
+            endcase
         end
     end
 
@@ -171,32 +153,95 @@ module vector_execution_unit(
                     end
                     execution_result = sum_result;
                     sum_done = sum_done_internal;
+                    shift_done = 1'b0;
+                    mult_done = 1'b0;
+                    compare_done = 1'b0;
+                    bitwise_done = 1'b0;
+                    move_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
+                    sum_mask_done = 1'b0;
                 end 
                 else if (shift_en) begin
                     execution_result = shift_result;
                     shift_done = shift_done_internal;
+                    sum_done = 1'b0;
+                    mult_done = 1'b0;
+                    compare_done = 1'b0;
+                    bitwise_done = 1'b0;
+                    move_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
+                    sum_mask_done = 1'b0;
                 end
                 else if (compare_en) begin
                     execution_result = compare_result;
                     compare_done = compare_done_internal;
+                    sum_done = 1'b0;
+                    shift_done = 1'b0;
+                    mult_done = 1'b0;
+                    bitwise_done = 1'b0;
+                    move_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
+                    sum_mask_done = 1'b0;
                 end
                 else if (bitwise_en) begin
                     execution_result = bitwise_result;
                     bitwise_done = bitwise_done_internal;
+                    sum_done = 1'b0;
+                    shift_done = 1'b0;
+                    mult_done = 1'b0;
+                    compare_done = 1'b0;
+                    move_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
+                    sum_mask_done = 1'b0;
                 end
                 else if (move_en) begin
                     execution_result = move_result;
                     move_done = 1'b1;  
+                    sum_done = 1'b0;
+                    shift_done = 1'b0;
+                    mult_done = 1'b0;
+                    compare_done = 1'b0;
+                    bitwise_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
+                    sum_mask_done = 1'b0;
                 end
                 else if (mask_add_en) begin
                     execution_result = sum_mask_result;
-                    sum_mask_done = 1'b1;
+                    sum_mask_done = sum_mask_done_internal;
+                    sum_done = 1'b0;
+                    shift_done = 1'b0;
+                    mult_done = 1'b0;
+                    compare_done = 1'b0;
+                    bitwise_done = 1'b0;
+                    move_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
                 end
                 else if (mult_en) begin
                     mult_done = mult_done_internal;
+                    sum_done = 1'b0;
+                    shift_done = 1'b0;
+                    mult_done = 1'b0;
+                    compare_done = 1'b0;
+                    bitwise_done = 1'b0;
+                    product_sum_done = 1'b0;
+                    sew_16_32 = 1'b0;
+                    sew_32 = 1'b0;
+                    sum_mask_done = 1'b0;
                     case (sew)
                         2'b00: begin // 8-bit elements → 16-bit products
-                            for (int i = 0; i < `MAX_VLEN/8; i++) begin
+                            for (int i = 0; i < `VLEN/8; i++) begin
                                 if (mul_high)
                                     execution_result[i*8 +: 8] = product_result[i*16 + 8 +: 8]; // Upper 8 bits
                                 else if (mul_low) 
@@ -206,7 +251,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b01: begin // 16-bit elements → 32-bit products
-                            for (int i = 0; i < `MAX_VLEN/16; i++) begin
+                            for (int i = 0; i < `VLEN/16; i++) begin
                                 if (mul_high)
                                     execution_result[i*16 +: 16] = product_result[i*32 + 16 +: 16]; // Upper 16 bits
                                 else if (mul_low)
@@ -216,7 +261,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b10: begin // 32-bit elements → 64-bit products
-                            for (int i = 0; i < `MAX_VLEN/32; i++) begin
+                            for (int i = 0; i < `VLEN/32; i++) begin
                                 if (mul_high)
                                     execution_result[i*32 +: 32] = product_result[i*64 + 32 +: 32]; // Upper 32 bits
                                 else if (mul_low)
@@ -234,7 +279,7 @@ module vector_execution_unit(
                     product_sum_done = product_sum_done_internal;
                     case (sew)
                         2'b00: begin // 8-bit elements → 16-bit products
-                            for (int i = 0; i < `MAX_VLEN/8; i++) begin
+                            for (int i = 0; i < `VLEN/8; i++) begin
                                 if (mul_high)
                                     execution_result[i*8 +: 8] = sum_product_result[i*16 + 8 +: 8]; // Upper 8 bits
                                 else if (mul_low) 
@@ -244,7 +289,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b01: begin // 16-bit elements → 32-bit products
-                            for (int i = 0; i < `MAX_VLEN/16; i++) begin
+                            for (int i = 0; i < `VLEN/16; i++) begin
                                 if (mul_high)
                                     execution_result[i*16 +: 16] = sum_product_result[i*32 + 16 +: 16]; // Upper 16 bits
                                 else if (mul_low)
@@ -254,7 +299,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b10: begin // 32-bit elements → 64-bit products
-                            for (int i = 0; i < `MAX_VLEN/32; i++) begin
+                            for (int i = 0; i < `VLEN/32; i++) begin
                                 if (mul_high)
                                     execution_result[i*32 +: 32] = sum_product_result[i*64 + 32 +: 32]; // Upper 32 bits
                                 else if (mul_low)
@@ -282,7 +327,6 @@ module vector_execution_unit(
                 sew_32 = 1'b0;
             end
         end
-        assign count_0_exe = count_0;
 
     vector_adder_subtractor adder_inst (
         .A              (adder_data_1),
@@ -348,13 +392,13 @@ module vector_execution_unit(
         .start              (start),
         .sew_16_32          (sew_16_32),
         .sew_32             (sew_32),
-        .count_0_mul_add    (count_0_exe),
+        .count_0_mul_add    (count_0_mult_add),
         .sum_product_result (sum_product_result),
         .product_sum_done   (product_sum_done_internal)
     );
 
-    logic [63:0] carry_out_mask;
-    logic [511:0] mask_reg_updated;
+
+    
 
      // Mask register update logic (for simplicity, directly using data_3 as mask input)
 
@@ -372,6 +416,6 @@ module vector_execution_unit(
     );
     
     assign move_result = move_data_1;
-    assign execution_done = sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done;
+    assign execution_done = sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done | sum_mask_done;
  
 endmodule

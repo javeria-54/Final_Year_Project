@@ -52,7 +52,6 @@ typedef enum logic [5:0] {
     
     VADC    = 6'b010000,
     VMADC   = 6'b010001,
-
     VSBC    = 6'b010010,
     VMSBC   = 6'b010011,
 

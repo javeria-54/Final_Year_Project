@@ -26,7 +26,7 @@ module vector_mask_unit(
     input  logic [511:0]  vs1,
     input  logic [511:0]  vs2,
     input  logic [511:0]  v0,
-    input  logic [1:0]    sew_sel,
+    output  logic [1:0]   sew_sel,
     input  logic [63:0]   carry_out,
 
     output logic [4095:0] mask_unit_output,
@@ -46,14 +46,6 @@ module vector_mask_unit(
     logic [4095:0] mask_output_03;
     logic [4095:0] mask_output_04;
     logic [4095:0] selected_output;
-
-    logic [`VLEN-1:0]  adder_data_1;
-    logic [`VLEN-1:0]  adder_data_2;
-    logic              Ctrl;
-    logic [1:0]        sew_mask_add;
-    logic [`VLEN-1:0]  sum_mask_result;  // FIX: was missing semicolon (comma used)
-    logic              sum_mask_done;    // FIX: was missing semicolon
-    logic              sew_16_32,sew_32;
 
     // ----------------------------------------------------------
     // Submodule Instantiations
@@ -152,19 +144,6 @@ module vector_mask_unit(
         .prestart_check(prestart_check),
         .body_check    (body_check),
         .tail_check    (tail_check)
-    );
-
-    vector_mask_add_sub mask_add_sub(
-        .adder_data_1   (adder_data_1),
-        .adder_data_2   (adder_data_2),
-        .mask_reg       (mask_reg),
-        .Ctrl           (Ctrl),
-        .sew_16_32      (sew_16_32),
-        .sew_32         (sew_32),
-        .sew            (sew_mask_add),
-        .carry_out      (carry_out),
-        .sum_mask_result(sum_mask_result),
-        .sum_mask_done  (sum_mask_done)
     );
     
 endmodule

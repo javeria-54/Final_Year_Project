@@ -329,7 +329,65 @@ always_comb begin
                         move_inst = 1'b1;
                         execution_op = 3'b110;
                     end 
-                            
+
+                    VMAND: begin
+                        mask_and_inst = 1'b1;
+                        mask_op = 4'b0000;
+                    end
+                    VMNAND: begin
+                        mask_nand_inst = 1'b1;
+                        mask_op = 4'b0001;  
+                    end
+                    VMANDNOT: begin
+                        mask_and_not_inst = 1'b1;
+                        mask_op = 4'b0010;
+                    end
+                    VMXOR: begin
+                        mask_xor_inst = 1'b1;
+                        mask_op = 4'b0011;    
+                    end
+                    VMOR: begin
+                        mask_or_inst = 1'b1;
+                        mask_op = 4'b0100;  
+                    end
+                    VMNOR: begin
+                        mask_nor_inst = 1'b1;
+                        mask_op = 4'b0101;    
+                    end
+                    VMORNOT: begin
+                        mask_or_not_inst = 1'b1;
+                        mask_op = 4'b0110; 
+                    end
+                    VMXNOR: begin
+                        mask_xnor_inst = 1'b1;
+                        mask_op = 4'b0111;   
+                    end
+
+                    VADC: begin
+                        add_carry_inst_inst = 1'b1;
+                        mask_op = 4'b1000; 
+                        Ctrl = 1'b0;
+                        execution_op = 3'b010;
+                    end
+                    VMADC: begin
+                        add_carry_masked_inst = 1'b1;
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b0;
+                        execution_op = 3'b010;
+                    end
+                    VSBC: begin
+                        sub_borrow_inst = 1'b1;
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b1; 
+                        execution_op = 3'b010;
+                    end
+                    VMSBC: begin
+                        sub_borrow_masked_inst = 1'b1; 
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b1;
+                        execution_op = 3'b010;
+                    end
+
                 endcase
             end
 
@@ -467,6 +525,65 @@ always_comb begin
                         move_inst = 1'b1;
                         execution_op = 3'b110;
                     end
+
+                    VMAND: begin
+                        mask_and_inst = 1'b1;
+                        mask_op = 3'b000;
+                    end
+                    VMNAND: begin
+                        mask_nand_inst = 1'b1;
+                        mask_op = 3'b001;  
+                    end
+                    VMANDNOT: begin
+                        mask_and_not_inst = 1'b1;
+                        mask_op = 3'b010;
+                    end
+                    VMXOR: begin
+                        mask_xor_inst = 1'b1;
+                        mask_op = 3'b011;    
+                    end
+                    VMOR: begin
+                        mask_or_inst = 1'b1;
+                        mask_op = 3'b100;  
+                    end
+                    VMNOR: begin
+                        mask_nor_inst = 1'b1;
+                        mask_op = 3'b101;    
+                    end
+                    VMORNOT: begin
+                        mask_or_not_inst = 1'b1;
+                        mask_op = 3'b110; 
+                    end
+                    VMXNOR: begin
+                        mask_xnor_inst = 1'b1;
+                        mask_op = 3'b111;   
+                    end
+
+                    VADC: begin
+                        add_carry_inst_inst = 1'b1;
+                        mask_op = 4'b1000; 
+                        Ctrl = 1'b0;
+                        execution_op = 3'b010;
+                    end
+                    VMADC: begin
+                        add_carry_masked_inst = 1'b1;
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b0;
+                        execution_op = 3'b010;
+                    end
+                    VSBC: begin
+                        sub_borrow_inst = 1'b1;
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b1; 
+                        execution_op = 3'b010;
+                    end
+                    VMSBC: begin
+                        sub_borrow_masked_inst = 1'b1; 
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b1;
+                        execution_op = 3'b010;
+                    end
+
                 endcase
             end
 
@@ -550,7 +667,65 @@ always_comb begin
                     VMV: begin
                         move_inst = 1'b1;
                         execution_op = 3'b110;
-                    end  
+                    end 
+
+                    VMAND: begin
+                        mask_and_inst = 1'b1;
+                        mask_op = 3'b000;
+                    end
+                    VMNAND: begin
+                        mask_nand_inst = 1'b1;
+                        mask_op = 3'b001;  
+                    end
+                    VMANDNOT: begin
+                        mask_and_not_inst = 1'b1;
+                        mask_op = 3'b010;
+                    end
+                    VMXOR: begin
+                        mask_xor_inst = 1'b1;
+                        mask_op = 3'b011;    
+                    end
+                    VMOR: begin
+                        mask_or_inst = 1'b1;
+                        mask_op = 3'b100;  
+                    end
+                    VMNOR: begin
+                        mask_nor_inst = 1'b1;
+                        mask_op = 3'b101;    
+                    end
+                    VMORNOT: begin
+                        mask_or_not_inst = 1'b1;
+                        mask_op = 3'b110; 
+                    end
+                    VMXNOR: begin
+                        mask_xnor_inst = 1'b1;
+                        mask_op = 3'b111;   
+                    end 
+
+                    VADC: begin
+                        add_carry_inst_inst = 1'b1;
+                        mask_op = 4'b1000; 
+                        Ctrl = 1'b0;
+                        execution_op = 3'b010;
+                    end
+                    VMADC: begin
+                        add_carry_masked_inst = 1'b1;
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b0;
+                        execution_op = 3'b010;
+                    end
+                    VSBC: begin
+                        sub_borrow_inst = 1'b1;
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b1; 
+                        execution_op = 3'b010;
+                    end
+                    VMSBC: begin
+                        sub_borrow_masked_inst = 1'b1; 
+                        mask_op = 4'b1000;
+                        Ctrl = 1'b1;
+                        execution_op = 3'b010;
+                    end
                 endcase
             end
             
@@ -624,38 +799,6 @@ always_comb begin
                         Ctrl = 1'b1;
                     end
 
-                    VMAND: begin
-                        mask_and_inst = 1'b1;
-                        mask_op = 3'b000;
-                    end
-                    VMNAND: begin
-                        mask_nand_inst = 1'b1;
-                        mask_op = 3'b001;  
-                    end
-                    VMANDNOT: begin
-                        mask_and_not_inst = 1'b1;
-                        mask_op = 3'b010;
-                    end
-                    VMXOR: begin
-                        mask_xor_inst = 1'b1;
-                        mask_op = 3'b011;    
-                    end
-                    VMOR: begin
-                        mask_or_inst = 1'b1;
-                        mask_op = 3'b100;  
-                    end
-                    VMNOR: begin
-                        mask_nor_inst = 1'b1;
-                        mask_op = 3'b101;    
-                    end
-                    VMORNOT: begin
-                        mask_or_not_inst = 1'b1;
-                        mask_op = 3'b110; 
-                    end
-                    VMXNOR: begin
-                        mask_xnor_inst = 1'b1;
-                        mask_op = 3'b111;   
-                    end
                 endcase 
             end
 

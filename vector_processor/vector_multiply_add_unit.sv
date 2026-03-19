@@ -25,7 +25,7 @@ module vector_multiply_add_unit (
     logic [`VLEN-1:0] mult_operand_1;
     logic [`VLEN-1:0] mult_operand_2;
     logic [`VLEN-1:0] add_operand_1,add_operand_2,add_operand;
-    logic [`VLEN*2+1:0] product_result;
+    logic [`VLEN*2-1:0] product_result;
     logic [`VLEN-1:0] product_selected;
     logic                 mult_done;
     logic [`VLEN-1:0] product_1,product_2;

@@ -77,7 +77,8 @@ module vector_processor_datapth (
     input   logic   [2:0]                       execution_op,
     input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,add_inst, sub_inst,
     input   logic                               signed_mode,
-    input   logic   [4:0]                       bitwise_op,
+    input   logic   [4:0]                       bitwise_op, 
+    input   logic   [3:0]                       mask_op,
     input   logic   [2:0]                       cmp_op, accum_op,shift_op,
     input   logic   [1:0]                       op_type
 );
@@ -162,8 +163,9 @@ logic                       execution_done;
 logic   [`VLEN-1:0]         vs1,vs2;
 logic   [4095:0]            mask_unit_output;
 logic   [511:0]             mask_reg_updated;
-logic   [3:0]               mask_op; 
 logic   [63:0]              adder_carry_out;
+logic [1:0] sew_sel;
+logic [63:0] carry_out_mask;
 
 assign inst_done = data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
@@ -495,7 +497,9 @@ logic [`XLEN-1:0] vector_write_address;
         .sew                (sew_execution),  
         .carry_out          (adder_carry_out),                 
         .start              (start),
-        .execution_done(execution_done)
+        .mask_reg_updated   (mask_reg_updated),
+        .carry_out_mask     (carry_out_mask),
+        .execution_done     (execution_done)
 );
 
     // vs1 mux — mask_operation ho to lower 512 bits, warna poora data
@@ -504,8 +508,7 @@ logic [`XLEN-1:0] vector_write_address;
     // vs2 mux — mask_operation ho to lower 512 bits, warna poora data  
     assign vs2 = mask_operation ? vec_data_2[`VLEN-1:0] : 'b0;
 
-    logic [1:0] sew_sel;
-    logic [63:0] carry_out_mask;
+    
 
     vector_mask_unit MASK_UNIT(
         .lanes_data_out     (execution_result),

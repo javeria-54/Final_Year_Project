@@ -112,7 +112,7 @@ module vector_processor_tb();
         begin
             for (int i = 0; i < 512; i++) inst_mem[i] = 32'h0;
             
-            file_handle = $fopen("/home/javeria/Documents/Final_Year_Project/rtl/vector_processor/instruction_mem.txt", "r");
+            file_handle = $fopen("C:/Users/User/Downloads/final_Year_Project/Final_Year_Project/vector_processor/instruction_mem.txt", "r");
             if (file_handle == 0) begin
                 $display("ERROR: Cannot open file!");
                 $finish;

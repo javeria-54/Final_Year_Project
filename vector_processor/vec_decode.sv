@@ -133,7 +133,7 @@ always_comb begin : vec_decode
                         case (vfunc6_vix)
                                 VADD , VRSUB ,  VAND , VOR , VXOR,
                                 VADC , VMADC , VMSEQ , VMSNE ,  VMSLEU, VMSLE , VMSGTU , VMSGT ,
-                                VSLL , VSRL , VSRA  :
+                                VSLL , VSRL , VSRA , VSBC, VMSBC  :
                                 is_valid_vix = 1'b1;  // ← Set flag if valid
                             default:
                                 is_valid_vix = 1'b0;
