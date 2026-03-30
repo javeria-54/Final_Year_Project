@@ -4,7 +4,6 @@
 
 `include "vector_processor_defs.svh"
 `include "axi_4_defs.svh"
-import axi_4_pkg::*;
 
 module vector_processor(
     
@@ -30,38 +29,9 @@ module vector_processor(
     output  logic                           vec_pro_ack,            // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
 
     // val_ready_controller --> scaler_processor
-    output  logic                           vec_pro_ready,          // tells that vector processor is ready to take the instruction
+    output  logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
 
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AXI 4 SIGNALS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
-
-    // READ ADDRESS CHANNEL 
-    input   logic                           s_arready,
-    output  logic                           m_arvalid,
-    
-    // READ DATA CHANNEL
-    input   logic                           s_rvalid,
-    output  logic                           m_rready,
-
-    // WRITE ADRRESS CHANNEL 
-    input   logic                           s_awready,
-    output  logic                           m_awvalid,
-
-    // WRITE DATA CHANNEL
-    input   logic                           s_wready,
-    output  logic                           m_wvalid,
-
-    // WRITE RESPONSE CHANNEL 
-    input   logic                           s_bvalid,
-    output  logic                           m_bready,
-    
-    // AXI 4 MASTER --> AXI4_SLAVE(MEMORY)  
-    output  logic                           ld_req_reg ,st_req_reg,
-    output  read_write_address_channel_t    re_wr_addr_channel,
-    output  write_data_channel_t            wr_data_channel,
-
-    // SLAVE(MEMORY) --> AXI 4 MASTER  
-    input  wire read_data_channel_t              re_data_channel,
-    input  wire write_response_channel_t         wr_resp_channel
+   
 );
 
 
@@ -96,20 +66,25 @@ logic                               inst_done;
 // val_ready_controller --> datapath
 //logic                               inst_reg_en;
 
-//vector processor lsu --> AXI 4 MASTER
-logic   [`XLEN-1:0]                 lsu2mem_addr;           // Gives the memory address to load or store data
+//vector processor lsu --> AXI 4 MASTE
 logic                               ld_req;                 // load request signal to the AXI 4 MASTER
 logic                               st_req;                 // store request signal to the AXI 4 MASTER
-logic   [`DATA_BUS*`BURST_MAX-1:0]  lsu2mem_data;           // Data to be stored
-logic   [WR_STROB*`BURST_MAX-1:0]   wr_strobe;              // THE bytes of the DATA_BUS that contains the actual data 
-logic   [7:0]                       burst_len;
-logic   [2:0]                       burst_size;
-logic   [1:0]                       burst_type;
+logic [31:0]                         mem_addr;
+logic                                mem_addr_valid;
+logic                                mem_addr_ready;
 
-// AXI 4 MASTER  -->  VLSU 
-logic   [`DATA_BUS*`BURST_MAX-1:0]  mem2lsu_data;
-logic                               burst_valid_data;
-logic                               burst_wr_valid;
+logic [511:0]                        mem_wdata;
+logic [63:0]                         mem_byte_en;
+logic                                mem_wdata_valid;
+logic                                mem_wdata_ready;
+
+logic [511:0]                        mem_rdata;
+logic                                mem_rdata_valid;
+logic                                mem_rdata_ready;
+
+logic                                mem_write_done;
+logic                                mem_write_valid;
+logic                                mem_write_ready;
 
 // Instruction Register --> datapath
 logic   [`XLEN-1:0]                 inst_reg_instruction;            // The instruction that is to be executed by the vector processor
@@ -177,22 +152,25 @@ logic   [1:0]                       op_type;
         .is_vec             (is_vec              ),
         .error              (error               ),
         
-        // Output from vector processor lsu --> AXI 4 MASTER
-        .lsu2mem_addr       (lsu2mem_addr        ),
-        .lsu2mem_data       (lsu2mem_data        ),
-        .ld_req             (ld_req              ),
-        .st_req             (st_req              ),
-        .wr_strobe          (wr_strobe           ),
-        .burst_len          (burst_len           ),
-        .burst_size         (burst_size          ),
-        .burst_type         (burst_type          ),
 
-        
-        //Inputs from main_memory -> vec_lsu
-        // AXI 4 MASTER  -->  VLSU 
-        .mem2lsu_data      (mem2lsu_data         ),
-        .burst_valid_data  (burst_valid_data     ),
-        .burst_wr_valid    (burst_wr_valid       ),
+        .st_req(st_req),
+        .ld_req(ld_req),
+        .mem_addr           (mem_addr                   ),
+        .mem_addr_valid     (mem_addr_valid             ),
+        .mem_addr_ready     (mem_addr_ready             ),
+
+        .mem_wdata          (mem_wdata                  ),
+        .mem_byte_en        (mem_byte_en                ),
+        .mem_wdata_valid    (mem_wdata_valid            ),
+        .mem_wdata_ready    (mem_wdata_ready            ),
+
+        .mem_rdata          (mem_rdata                  ),
+        .mem_rdata_valid    (mem_rdata_valid            ),
+        .mem_rdata_ready    (mem_rdata_ready            ),
+
+        .mem_write_done     (mem_write_done             ),
+        .mem_write_valid    (mem_write_valid            ),
+        .mem_write_ready    (mem_write_ready            ),
 
        
         // csr_regfile -> scalar_processor
@@ -383,62 +361,6 @@ logic   [1:0]                       op_type;
 
         // datapath -->   val_ready_controller 
         .inst_done          (inst_done          )
-    );
-
-    //==========================================================================//
-    //                      AXI-4 MASTER INSTANTIATION                          //
-    //==========================================================================//
-
-    axi_4_master u_axi_4_master (
-        .clk                    (clk                ),
-        .reset                  (reset              ),
-
-        // vector_processor vlsu  --> axi_4_master_controller
-        .ld_req                 (ld_req             ),
-        .st_req                 (st_req             ),
-
-        //===================== axi_4 read address channel signals =========================//
-        .s_arready              (s_arready          ),
-        .m_arvalid              (m_arvalid          ),
-
-        //===================== axi_4 read data channel signals =========================//
-        .s_rvalid               (s_rvalid           ),
-        .m_rready               (m_rready           ),
-
-        //===================== axi_4 write address channel signals =========================//
-        .s_awready              (s_awready          ),
-        .m_awvalid              (m_awvalid          ),
-
-        //===================== axi_4 write data channel signals =========================//
-        .s_wready               (s_wready           ),
-        .m_wvalid               (m_wvalid           ),
-
-        //===================== axi_4 write response channel signals =========================//
-        .s_bvalid               (s_bvalid           ),
-        .m_bready               (m_bready           ),
-
-        // VLSU -->   AXI 4 MASTER
-        .base_addr              (lsu2mem_addr       ),
-        .vlsu_wdata             (lsu2mem_data       ),
-        .write_strobe           (wr_strobe          ),
-        .burst_len              (burst_len          ),
-        .burst_size             (burst_size         ),
-        .burst_type             (burst_type         ),
-
-        // AXI 4 MASTER  -->  VLSU 
-        .burst_rdata_array      (mem2lsu_data       ),
-        .burst_valid_data       (burst_valid_data   ),
-        .burst_wr_valid         (burst_wr_valid     ),
-
-        // AXI 4 MASTER --> AXI4_SLAVE  
-        .ld_req_reg             (ld_req_reg         ),
-        .st_req_reg             (st_req_reg         ),
-        .re_wr_addr_channel     (re_wr_addr_channel ),
-        .wr_data_channel        (wr_data_channel    ),
-
-        // SLAVE(MEMORY) --> AXI 4 MASTER  
-        .re_data_channel        (re_data_channel    ),
-        .wr_resp_channel        (wr_resp_channel    )
     );
 
 endmodule

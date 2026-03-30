@@ -1,4 +1,4 @@
-`include "vec_regfile_defs.svh"
+`include "vector_regfile_defs.svh"
 `include "vector_processor_defs.svh"
 
 //////////////////////////////////////////////////////////////////////////////////

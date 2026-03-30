@@ -2,13 +2,11 @@
 // Vector + Scalar Top Module
 // ============================================================
 
-import axi_4_pkg::*;
-
 `include "vector_processor_defs.svh"
 `include "axi_4_defs.svh"
-`include "single_cycle_m_ext_defs.svh"
-`include "single_cycle_a_ext_defs.svh"
-`include "single_cycle_pcore_interface_defs.svh"
+`include "scalar_m_ext_defs.svh"
+`include "scalar_a_ext_defs.svh"
+`include "scalar_pcore_interface_defs.svh"
 
 `default_nettype wire
 
@@ -45,21 +43,6 @@ module vector_scalar_top (
     logic [31:0] csr_out;
 
     //==========================================================================
-    // AXI Signals
-    //==========================================================================
-    logic s_arready, m_arvalid;
-    logic s_rvalid,  m_rready;
-    logic s_awready, m_awvalid;
-    logic s_wready,  m_wvalid;
-    logic s_bvalid,  m_bready;
-    logic ld_req_reg, st_req_reg;
-
-    read_write_address_channel_t  re_wr_addr_channel;
-    write_data_channel_t          wr_data_channel;
-    read_data_channel_t           re_data_channel;
-    write_response_channel_t      wr_resp_channel;
-
-    //==========================================================================
     // Memory Interface Signals
     //==========================================================================
     type_if2imem_s    if2mem;
@@ -92,49 +75,10 @@ module vector_scalar_top (
         .error             (error),
         .csr_out           (csr_out),
         .vec_pro_ack       (vec_pro_ack),
-        .vec_pro_ready     (vec_pro_ready),
-        .s_arready         (s_arready),
-        .m_arvalid         (m_arvalid),
-        .s_rvalid          (s_rvalid),
-        .m_rready          (m_rready),
-        .s_awready         (s_awready),
-        .m_awvalid         (m_awvalid),
-        .s_wready          (s_wready),
-        .m_wvalid          (m_wvalid),
-        .s_bvalid          (s_bvalid),
-        .m_bready          (m_bready),
-        .ld_req_reg        (ld_req_reg),
-        .st_req_reg        (st_req_reg),
-        .re_wr_addr_channel(re_wr_addr_channel),
-        .wr_data_channel   (wr_data_channel),
-        .re_data_channel   (re_data_channel),
-        .wr_resp_channel   (wr_resp_channel)
+        .vec_pro_ready     (vec_pro_ready)
     );
 
-    //==========================================================================
-    // AXI SLAVE MEMORY
-    //==========================================================================
-    axi4_slave_mem AXI_SLAVE (
-        .clk               (clk),
-        .reset             (rst_n),
-        .ld_req            (ld_req_reg),
-        .st_req            (st_req_reg),
-        .s_arready         (s_arready),
-        .m_arvalid         (m_arvalid),
-        .s_rvalid          (s_rvalid),
-        .m_rready          (m_rready),
-        .s_awready         (s_awready),
-        .m_awvalid         (m_awvalid),
-        .s_wready          (s_wready),
-        .m_wvalid          (m_wvalid),
-        .s_bvalid          (s_bvalid),
-        .m_bready          (m_bready),
-        .re_wr_addr_channel(re_wr_addr_channel),
-        .wr_data_channel   (wr_data_channel),
-        .re_data_channel   (re_data_channel),
-        .wr_resp_channel   (wr_resp_channel)
-    );
-
+   
     //==========================================================================
     // SCALAR PIPELINE
     //==========================================================================

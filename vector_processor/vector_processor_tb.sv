@@ -1,9 +1,7 @@
 // Automatic Testbench - Handles all handshaking automatically
 
-import axi_4_pkg::*;
-
 `include "vector_processor_defs.svh"
-`include "vec_de_csr_defs.svh"
+`include "vector_de_csr_defs.svh"
 `include "axi_4_defs.svh"
 
 `timescale 1ns/1ps
@@ -21,26 +19,15 @@ module vector_processor_tb();
     logic [31:0]    csr_out;
     logic           vec_pro_ack;
     logic           vec_pro_ready;
-    
-    logic s_arready, m_arvalid;
-    logic s_rvalid, m_rready;
-    logic s_awready, m_awvalid;
-    logic s_wready, m_wvalid;
-    logic s_bvalid, m_bready;
-    logic ld_req_reg, st_req_reg;
-    
-    read_write_address_channel_t    re_wr_addr_channel;
-    write_data_channel_t            wr_data_channel;
-    read_data_channel_t             re_data_channel;
-    write_response_channel_t        wr_resp_channel;
-    
+
     logic [31:0] inst_mem [0:511];
     int inst_count;
     int file_handle;
     int scan_result;
 
     vector_processor VECTOR_PROCESSOR(
-        .clk(clk), .reset(reset),
+        .clk(clk), 
+        .reset(reset),
         .instruction(instruction),
         .rs1_data(rs1_data),
         .rs2_data(rs2_data),
@@ -50,33 +37,10 @@ module vector_processor_tb();
         .error(error),
         .csr_out(csr_out),
         .vec_pro_ack(vec_pro_ack),
-        .vec_pro_ready(vec_pro_ready),
-        .s_arready(s_arready), .m_arvalid(m_arvalid),
-        .s_rvalid(s_rvalid), .m_rready(m_rready),
-        .s_awready(s_awready), .m_awvalid(m_awvalid),
-        .s_wready(s_wready), .m_wvalid(m_wvalid),
-        .s_bvalid(s_bvalid), .m_bready(m_bready),
-        .ld_req_reg(ld_req_reg), .st_req_reg(st_req_reg),
-        .re_wr_addr_channel(re_wr_addr_channel),
-        .wr_data_channel(wr_data_channel),
-        .re_data_channel(re_data_channel),
-        .wr_resp_channel(wr_resp_channel)
+        .vec_pro_ready(vec_pro_ready)
     );
 
-    axi4_slave_mem u_axi_slave (
-        .clk(clk), .reset(reset),
-        .ld_req(ld_req_reg), .st_req(st_req_reg),
-        .s_arready(s_arready), .m_arvalid(m_arvalid),
-        .s_rvalid(s_rvalid), .m_rready(m_rready),
-        .s_awready(s_awready), .m_awvalid(m_awvalid),
-        .s_wready(s_wready), .m_wvalid(m_wvalid),
-        .s_bvalid(s_bvalid), .m_bready(m_bready),
-        .re_wr_addr_channel(re_wr_addr_channel),
-        .wr_data_channel(wr_data_channel),
-        .re_data_channel(re_data_channel),
-        .wr_resp_channel(wr_resp_channel)
-    );
-
+   
     // Clock generation
     initial begin
         clk = 0;

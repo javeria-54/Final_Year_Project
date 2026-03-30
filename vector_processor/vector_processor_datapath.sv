@@ -3,7 +3,7 @@
 // Description  : This file contains the  datapath of the vector_processor where different units are connnected together 
 
 `include "vector_processor_defs.svh"
-`include "vec_regfile_defs.svh"
+`include "vector_regfile_defs.svh"
 `include "axi_4_defs.svh"
 
 module vector_processor_datapth (
@@ -14,28 +14,32 @@ module vector_processor_datapth (
     input   logic   [`XLEN-1:0]                 instruction,        // The instruction that is to be executed by the vector processor
     input   logic   [`XLEN-1:0]                 rs1_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs1 address
     input   logic   [`XLEN-1:0]                 rs2_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs2 address
-
-    //Inputs from AXI 4 MASTER-> vec_lsu
-    input   logic   [`DATA_BUS*`BURST_MAX-1:0]  mem2lsu_data,
-    input   logic                               burst_valid_data,
-    input   logic                               burst_wr_valid,
-
     
-    // Output from  vec_lsu -> AXI4 MASTER
-    output  logic   [`XLEN-1:0]                 lsu2mem_addr,           // Gives the memory address to load or store data
+    // Output from  vec_lsu -> 
     output  logic                               ld_req,                 // load request signal to the AXI 4 MASTER
     output  logic                               st_req,                 // store request signal to the AXI 4 MASTER
-    output  logic   [`DATA_BUS*`BURST_MAX-1:0]  lsu2mem_data,           // Data to be stored
-    output  logic   [WR_STROB*`BURST_MAX-1:0]   wr_strobe,              // THE bytes of the DATA_BUS that contains the actual data 
-    output  logic   [7:0]                       burst_len,
-    output  logic   [2:0]                       burst_size,
-    output  logic   [1:0]                       burst_type,
 
+    output logic [31:0]                         mem_addr,
+    output logic                                mem_addr_valid,
+    input  logic                                mem_addr_ready,
+
+    output logic [511:0]                        mem_wdata,
+    output logic [63:0]                         mem_byte_en,
+    output logic                                mem_wdata_valid,
+    input  logic                                mem_wdata_ready,
+
+    input  logic [511:0]                        mem_rdata,
+    input  logic                                mem_rdata_valid,
+    output logic                                mem_rdata_ready,
+
+    input  logic                                mem_write_done,
+    input  logic                                mem_write_valid,
+    output logic                                mem_write_ready,
+    
 
     // Outputs from vector rocessor --> scaler processor
     input  logic                                is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                               error,              // error has occure due to invalid configurations
-
     
     // csr_regfile -> scalar_processor
     output  logic   [`XLEN-1:0]                 csr_out,            
@@ -406,7 +410,8 @@ logic [`XLEN-1:0] vector_write_address;
             //      VLSU        //
            //////////////////////          
 
-
+    logic elem_mode;
+ 
     vec_lsu VLSU(
         .clk                (clk                        ),
         .n_rst              (reset                      ),
@@ -437,20 +442,22 @@ logic [`XLEN-1:0] vector_write_address;
         // datapath -->  vec_lsu        
         .inst_done          (inst_done                  ),
 
-        // vec_lsu -> AXI 4 MASTER
-        .lsu2mem_addr       (lsu2mem_addr               ),
-        .lsu2mem_data       (lsu2mem_data               ),
-        .ld_req             (ld_req                     ),
-        .st_req             (st_req                     ),
-        .wr_strobe          (wr_strobe                  ),
-        .burst_len          (burst_len                  ),
-        .burst_size         (burst_size                 ),
-        .burst_type         (burst_type                 ),
+        .mem_addr           (mem_addr                   ),
+        .mem_addr_valid     (mem_addr_valid             ),
+        .mem_addr_ready     (mem_addr_ready             ),
 
-        // AXI 4 MASTER -> vec_lsu
-        .mem2lsu_data       (mem2lsu_data               ),
-        .burst_valid_data   (burst_valid_data           ),
-        .burst_wr_valid     (burst_wr_valid             ),
+        .mem_wdata          (mem_wdata                  ),
+        .mem_byte_en        (mem_byte_en                ),
+        .mem_wdata_valid    (mem_wdata_valid            ),
+        .mem_wdata_ready    (mem_wdata_ready            ),
+
+        .mem_rdata          (mem_rdata                  ),
+        .mem_rdata_valid    (mem_rdata_valid            ),
+        .mem_rdata_ready    (mem_rdata_ready            ),
+
+        .mem_write_done     (mem_write_done             ),
+        .mem_write_valid    (mem_write_valid            ),
+        .mem_write_ready    (mem_write_ready            ),
 
         // vec_lsu  -> vec_register_file
         .vd_data            (vd_data                    ), 
@@ -507,8 +514,6 @@ logic [`XLEN-1:0] vector_write_address;
 
     // vs2 mux — mask_operation ho to lower 512 bits, warna poora data  
     assign vs2 = mask_operation ? vec_data_2[`VLEN-1:0] : 'b0;
-
-    
 
     vector_mask_unit MASK_UNIT(
         .lanes_data_out     (execution_result),

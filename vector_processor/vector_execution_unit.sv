@@ -1,4 +1,4 @@
-`include "vec_de_csr_defs.svh"
+`include "vector_de_csr_defs.svh"
 `include "vector_processor_defs.svh"
 `include "vector_bitwise_unit.sv"
 `include "vector_compare_unit.sv"

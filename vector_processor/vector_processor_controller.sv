@@ -1,4 +1,4 @@
-`include "vec_de_csr_defs.svh"
+`include "vector_de_csr_defs.svh"
 `include "vector_processor_defs.svh"
 
 module vector_processor_controller (

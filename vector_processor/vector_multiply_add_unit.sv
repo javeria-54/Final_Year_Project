@@ -1,5 +1,5 @@
 
-`include "vec_regfile_defs.svh"
+`include "vector_regfile_defs.svh"
 
 module vector_multiply_add_unit (
     input  logic                 clk,

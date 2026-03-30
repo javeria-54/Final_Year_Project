@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-`include "vec_de_csr_defs.svh"
+`include "vector_de_csr_defs.svh"
 `include "vector_processor_defs.svh"
 
 module tb_vector_processor_controller;
