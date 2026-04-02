@@ -41,7 +41,7 @@ module vector_shift_unit (
 
         case (sew)
             2'b00: begin // 8-bit elements
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 64; i++) begin
                     logic [7:0] a, b, res;
                     a = dataA[i*8 +: 8]; // shift amount
                     b = dataB[i*8 +: 8]; // value
@@ -59,7 +59,7 @@ module vector_shift_unit (
             end
 
             2'b01: begin // 16-bit elements
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 32; i++) begin
                     logic [15:0] a, b, res;
                     a = dataA[i*16 +: 16];
                     b = dataB[i*16 +: 16];
@@ -77,7 +77,7 @@ module vector_shift_unit (
             end
 
             2'b10: begin // 32-bit elements
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 16; i++) begin
                     logic [31:0] a, b, res;
                     a = dataA[i*32 +: 32];
                     b = dataB[i*32 +: 32];
@@ -95,7 +95,7 @@ module vector_shift_unit (
             end
 
             2'b11: begin // 64-bit elements
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 8; i++) begin
                     logic [63:0] a, b, res;
                     a = dataA[i*64 +: 64];
                     b = dataB[i*64 +: 64];

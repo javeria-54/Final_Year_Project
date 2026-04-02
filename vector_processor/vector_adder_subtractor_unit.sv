@@ -349,7 +349,7 @@ module vector_adder_subtractor (
 
     genvar i;
     generate
-        for (i = 0; i < NUM_SLICES; i++) begin : units
+        for (i = 0; i < 16; i++) begin : units
 
             // Instantiate one 32-bit adder/subtractor per slice
             // Each slice handles 32 bits of A and B independently

@@ -94,7 +94,7 @@ module vector_multiply_add_unit (
         
         case (sew)
             2'b00: begin // 8-bit elements → 16-bit products
-                for (int i = 0; i < `VLEN/8; i++) begin
+                for (int i = 0; i < 64; i++) begin
                     if (mult_done) 
                         product_selected[i*8 +: 8] = product_result[i*16 +: 8];     // Lower 8 bits
                     else 
@@ -103,7 +103,7 @@ module vector_multiply_add_unit (
             end
             
             2'b01: begin // 16-bit elements → 32-bit products
-                for (int i = 0; i < `VLEN/16; i++) begin
+                for (int i = 0; i < 32; i++) begin
                     if (mult_done)
                         product_selected[i*16 +: 16] = product_result[i*32 +: 16];      // Lower 16 bits
                     else 
@@ -112,7 +112,7 @@ module vector_multiply_add_unit (
             end
             
             2'b10: begin // 32-bit elements → 64-bit products
-                for (int i = 0; i < `VLEN/32; i++) begin
+                for (int i = 0; i < 16; i++) begin
                     if (mult_done)
                         product_selected[i*32 +: 32] = product_result[i*64 +: 32];      // Lower 32 bits
                     else 

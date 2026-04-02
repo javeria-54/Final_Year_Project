@@ -19,23 +19,15 @@ module vector_processor_datapth (
     output  logic                               ld_req,                 // load request signal to the AXI 4 MASTER
     output  logic                               st_req,                 // store request signal to the AXI 4 MASTER
 
-    output logic [31:0]                         mem_addr,
-    output logic                                mem_addr_valid,
-    input  logic                                mem_addr_ready,
-
-    output logic [511:0]                        mem_wdata,
-    output logic [63:0]                         mem_byte_en,
-    output logic                                mem_wdata_valid,
-    input  logic                                mem_wdata_ready,
-
-    input  logic [511:0]                        mem_rdata,
-    input  logic                                mem_rdata_valid,
-    output logic                                mem_rdata_ready,
-
-    input  logic                                mem_write_done,
-    input  logic                                mem_write_valid,
-    output logic                                mem_write_ready,
-    
+    output logic [31:0]             mem_addr,
+    output logic [511:0]            mem_wdata,
+    output logic [511:0]            mem_wdata_unit,
+    output logic [63:0]             mem_byte_en,
+    output logic                    mem_wen,
+    output logic                    mem_ren,
+    output logic                    mem_elem_mode,
+    output logic [1:0]              mem_sew_enc,
+    input  logic [511:0]            mem_rdata,
 
     // Outputs from vector rocessor --> scaler processor
     input  logic                                is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
@@ -411,7 +403,8 @@ logic [`XLEN-1:0] vector_write_address;
            //////////////////////          
 
     logic elem_mode;
- 
+
+
     vec_lsu VLSU(
         .clk                (clk                        ),
         .n_rst              (reset                      ),
@@ -443,21 +436,15 @@ logic [`XLEN-1:0] vector_write_address;
         .inst_done          (inst_done                  ),
 
         .mem_addr           (mem_addr                   ),
-        .mem_addr_valid     (mem_addr_valid             ),
-        .mem_addr_ready     (mem_addr_ready             ),
-
         .mem_wdata          (mem_wdata                  ),
+        .mem_wdata_unit     (mem_wdata_unit             ),
         .mem_byte_en        (mem_byte_en                ),
-        .mem_wdata_valid    (mem_wdata_valid            ),
-        .mem_wdata_ready    (mem_wdata_ready            ),
-
+        .mem_wen            (mem_wen                    ),
+        .mem_ren            (mem_ren                    ),
+        .mem_elem_mode      (mem_elem_mode              ),
+        .mem_sew_enc        (mem_sew_enc                ),
         .mem_rdata          (mem_rdata                  ),
-        .mem_rdata_valid    (mem_rdata_valid            ),
-        .mem_rdata_ready    (mem_rdata_ready            ),
-
-        .mem_write_done     (mem_write_done             ),
-        .mem_write_valid    (mem_write_valid            ),
-        .mem_write_ready    (mem_write_ready            ),
+ 
 
         // vec_lsu  -> vec_register_file
         .vd_data            (vd_data                    ), 

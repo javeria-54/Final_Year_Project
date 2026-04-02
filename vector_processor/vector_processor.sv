@@ -27,13 +27,20 @@ module vector_processor(
 
     // valready_controller  --> scaler_processor 
     output  logic                           vec_pro_ack,            // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
+    
+    output logic [31:0]                     mem_addr,
+    output logic [511:0]                    mem_wdata,
+    output logic [511:0]                    mem_wdata_unit,
+    output logic [63:0]                     mem_byte_en,
+    output logic                            mem_wen,
+    output logic                            mem_ren,
+    output logic                            mem_elem_mode,
+    output logic [1:0]                      mem_sew_enc,
+    input  logic [511:0]                    mem_rdata,
 
     // val_ready_controller --> scaler_processor
     output  logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
-
-   
 );
-
 
 // vec_control_signals -> vec_decode
 logic                               vl_sel;             // selection for rs1_data or uimm
@@ -69,28 +76,6 @@ logic                               inst_done;
 //vector processor lsu --> AXI 4 MASTE
 logic                               ld_req;                 // load request signal to the AXI 4 MASTER
 logic                               st_req;                 // store request signal to the AXI 4 MASTER
-logic [31:0]                         mem_addr;
-logic                                mem_addr_valid;
-logic                                mem_addr_ready;
-
-logic [511:0]                        mem_wdata;
-logic [63:0]                         mem_byte_en;
-logic                                mem_wdata_valid;
-logic                                mem_wdata_ready;
-
-logic [511:0]                        mem_rdata;
-logic                                mem_rdata_valid;
-logic                                mem_rdata_ready;
-
-logic                                mem_write_done;
-logic                                mem_write_valid;
-logic                                mem_write_ready;
-
-// Instruction Register --> datapath
-logic   [`XLEN-1:0]                 inst_reg_instruction;            // The instruction that is to be executed by the vector processor
-logic   [`XLEN-1:0]                 inst_reg_rs1_data;               // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs1 address
-logic   [`XLEN-1:0]                 inst_reg_rs2_data;               // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs2 address
-
 
 logic   [2:0]                       execution_op;
 logic                               signed_mode;
@@ -155,22 +140,16 @@ logic   [1:0]                       op_type;
 
         .st_req(st_req),
         .ld_req(ld_req),
+        
         .mem_addr           (mem_addr                   ),
-        .mem_addr_valid     (mem_addr_valid             ),
-        .mem_addr_ready     (mem_addr_ready             ),
-
         .mem_wdata          (mem_wdata                  ),
+        .mem_wdata_unit     (mem_wdata_unit             ),
         .mem_byte_en        (mem_byte_en                ),
-        .mem_wdata_valid    (mem_wdata_valid            ),
-        .mem_wdata_ready    (mem_wdata_ready            ),
-
+        .mem_wen            (mem_wen                    ),
+        .mem_ren            (mem_ren                    ),
+        .mem_elem_mode      (mem_elem_mode              ),
+        .mem_sew_enc        (mem_sew_enc                ),
         .mem_rdata          (mem_rdata                  ),
-        .mem_rdata_valid    (mem_rdata_valid            ),
-        .mem_rdata_ready    (mem_rdata_ready            ),
-
-        .mem_write_done     (mem_write_done             ),
-        .mem_write_valid    (mem_write_valid            ),
-        .mem_write_ready    (mem_write_ready            ),
 
        
         // csr_regfile -> scalar_processor

@@ -59,6 +59,16 @@ module vector_scalar_top (
     assign inst_valid = is_vec;
     logic [31:0]  instr_read, instruction_o;
 
+    logic [31:0]  addr_a;
+    logic [511:0] wdata_a;
+    logic [511:0] rdata_a;
+    logic         wen_a;
+    logic         ren_a;
+    logic [63:0]  byte_en_a;
+
+    logic        elem_mode_a;
+    logic [1:0]  sew_a;
+
     //==========================================================================
     // VECTOR PROCESSOR
     // instruction_d, rs1_data_d, rs2_data_d — 1 cycle delayed values
@@ -105,7 +115,7 @@ module vector_scalar_top (
     //==========================================================================
     // INSTRUCTION MEMORY
     //==========================================================================
-    memory mem_module (
+    memory memory (
         .rst_n      (rst_n),
         .clk        (clk),
         .vec_pro_ack(vec_pro_ack),
@@ -116,7 +126,15 @@ module vector_scalar_top (
 
         .dmem_sel   (dmem_sel),
         .exe2mem_i  (dbus2mem),
-        .mem2wrb_o  (mem2dbus)
+        .mem2wrb_o  (mem2dbus),
+        .addr_a(addr_a),
+        .wdata_a(wdata_a),
+        .rdata_a(rdata_a),
+        .wen_a(wen_a),
+        .ren_a(ren_a),
+        .byte_en_a(byte_en_a),
+        .elem_mode_a(elem_mode_a),
+        .sew_a(sew_a)
     );
 
 endmodule

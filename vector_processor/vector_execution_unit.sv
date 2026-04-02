@@ -241,7 +241,7 @@ module vector_execution_unit(
                     sum_mask_done = 1'b0;
                     case (sew)
                         2'b00: begin // 8-bit elements → 16-bit products
-                            for (int i = 0; i < `VLEN/8; i++) begin
+                            for (int i = 0; i < 64; i++) begin
                                 if (mul_high)
                                     execution_result[i*8 +: 8] = product_result[i*16 + 8 +: 8]; // Upper 8 bits
                                 else if (mul_low) 
@@ -251,7 +251,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b01: begin // 16-bit elements → 32-bit products
-                            for (int i = 0; i < `VLEN/16; i++) begin
+                            for (int i = 0; i < 32; i++) begin
                                 if (mul_high)
                                     execution_result[i*16 +: 16] = product_result[i*32 + 16 +: 16]; // Upper 16 bits
                                 else if (mul_low)
@@ -261,7 +261,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b10: begin // 32-bit elements → 64-bit products
-                            for (int i = 0; i < `VLEN/32; i++) begin
+                            for (int i = 0; i < 16; i++) begin
                                 if (mul_high)
                                     execution_result[i*32 +: 32] = product_result[i*64 + 32 +: 32]; // Upper 32 bits
                                 else if (mul_low)
@@ -277,42 +277,45 @@ module vector_execution_unit(
                 end
                 else if (mult_add_en) begin
                     product_sum_done = product_sum_done_internal;
-                    case (sew)
-                        2'b00: begin // 8-bit elements → 16-bit products
-                            for (int i = 0; i < `VLEN/8; i++) begin
-                                if (mul_high)
-                                    execution_result[i*8 +: 8] = sum_product_result[i*16 + 8 +: 8]; // Upper 8 bits
-                                else if (mul_low) 
-                                    execution_result[i*8 +: 8] = sum_product_result[i*16 +: 8];     // Lower 8 bits
-                                else 
-                                    execution_result = '0; 
+                        case (sew)
+                            2'b00: begin // 8-bit elements → 16-bit products
+                                // sum_product_result mein max 512/16 = 32 products fit hote hain
+                                for (int i = 0; i < 32; i++) begin
+                                    if (i < 32) begin
+                                        if (mul_high)
+                                            execution_result[i*8 +: 8] = sum_product_result[i*16 + 8 +: 8];
+                                        else if (mul_low)
+                                            execution_result[i*8 +: 8] = sum_product_result[i*16 +: 8];
+                                    end
+                                end
                             end
-                        end
-                        2'b01: begin // 16-bit elements → 32-bit products
-                            for (int i = 0; i < `VLEN/16; i++) begin
-                                if (mul_high)
-                                    execution_result[i*16 +: 16] = sum_product_result[i*32 + 16 +: 16]; // Upper 16 bits
-                                else if (mul_low)
-                                    execution_result[i*16 +: 16] = sum_product_result[i*32 +: 16];      // Lower 16 bits
-                                else 
-                                    execution_result = '0; 
+                            2'b01: begin // 16-bit elements → 32-bit products
+                                // sum_product_result mein max 512/32 = 16 products fit hote hain
+                                for (int i = 0; i < 16; i++) begin
+                                    if (i < 16) begin
+                                        if (mul_high)
+                                            execution_result[i*16 +: 16] = sum_product_result[i*32 + 16 +: 16];
+                                        else if (mul_low)
+                                            execution_result[i*16 +: 16] = sum_product_result[i*32 +: 16];
+                                    end
+                                end
                             end
-                        end
-                        2'b10: begin // 32-bit elements → 64-bit products
-                            for (int i = 0; i < `VLEN/32; i++) begin
-                                if (mul_high)
-                                    execution_result[i*32 +: 32] = sum_product_result[i*64 + 32 +: 32]; // Upper 32 bits
-                                else if (mul_low)
-                                    execution_result[i*32 +: 32] = sum_product_result[i*64 +: 32];      // Lower 32 bits
-                                else 
-                                    execution_result = '0; 
+                            2'b10: begin // 32-bit elements → 64-bit products
+                                // sum_product_result mein max 512/64 = 8 products fit hote hain
+                                for (int i = 0; i < 8; i++) begin
+                                    if (i < 8) begin
+                                        if (mul_high)
+                                            execution_result[i*32 +: 32] = sum_product_result[i*64 + 32 +: 32];
+                                        else if (mul_low)
+                                            execution_result[i*32 +: 32] = sum_product_result[i*64 +: 32];
+                                    end
+                                end
                             end
-                        end
-                        default: begin
-                            execution_result = '0;
-                        end 
-                    endcase
-                end
+                            default: begin
+                                execution_result = '0;
+                            end
+                        endcase
+                    end
             end
             else begin 
                 execution_result = '0;

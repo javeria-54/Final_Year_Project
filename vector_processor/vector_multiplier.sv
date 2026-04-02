@@ -1093,7 +1093,7 @@ module vector_multiplier(
     // Generate 16 processing elements
     genvar i;
     generate
-        for (i = 0; i < NUM_PES; i++) begin : gen_processing_elements
+        for (i = 0; i < 16; i++) begin : gen_processing_elements
             // Extract 32-bit slices for each PE
             localparam BASE = i * 32;
             

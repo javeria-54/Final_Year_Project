@@ -393,7 +393,6 @@ forward_stall forward_stall_module (
     .fwd2ptop_o                 (fwd2ptop)
 );
 
-
 //============================ divtiply/divide moulde for M-extension ============================//
 divide divide_module(
     .rst_n                      (rst_n        ),            // reset

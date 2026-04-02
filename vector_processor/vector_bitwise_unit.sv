@@ -131,7 +131,7 @@ module vector_bitwise_unit (
             // Loop iterates num_elements = VLEN/8 times
             // ==================================================
             2'b00: begin
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 64; i++) begin
                     logic [7:0] a, b, res;
 
                     // Extract 8-bit element i from each operand
@@ -163,7 +163,7 @@ module vector_bitwise_unit (
             // Loop iterates num_elements = VLEN/16 times
             // ==================================================
             2'b01: begin
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 32; i++) begin
                     logic [15:0] a, b, res;
 
                     // Extract 16-bit element i from each operand
@@ -193,7 +193,7 @@ module vector_bitwise_unit (
             // Loop iterates num_elements = VLEN/32 times
             // ==================================================
             2'b10: begin
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 16; i++) begin
                     logic [31:0] a, b, res;
 
                     // Extract 32-bit element i from each operand
@@ -223,7 +223,7 @@ module vector_bitwise_unit (
             // Loop iterates num_elements = VLEN/64 times
             // ==================================================
             2'b11: begin
-                for (int i = 0; i < num_elements; i++) begin
+                for (int i = 0; i < 8; i++) begin
                     logic [63:0] a, b, res;
 
                     // Extract 64-bit element i from each operand
