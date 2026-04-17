@@ -34,6 +34,7 @@ module vector_scalar_top (
     logic        scalar_pro_ready;
     logic        vec_pro_ready;
     logic        vec_pro_ack;
+    logic        scalar_pro_ack;
 
     //==========================================================================
     // Vector Processor Output Signals
@@ -56,8 +57,7 @@ module vector_scalar_top (
     logic             lsu_flush;
     logic             dmem_sel;
 
-    assign inst_valid = is_vec;
-    logic [31:0]  instr_read, instruction_o;
+    logic [31:0]  instr_read, instruction_o, instruction_read;
 
     logic [31:0]  addr_a;
     logic [511:0] wdata_a;
@@ -69,23 +69,51 @@ module vector_scalar_top (
     logic        elem_mode_a;
     logic [1:0]  sew_a;
 
+    logic [31:0]                     vec_mem_addr;
+    logic [511:0]                    vec_mem_wdata;
+    logic [511:0]                    vec_mem_wdata_unit;
+    logic [63:0]                     vec_mem_byte_en;
+    logic                            vec_mem_wen;
+    logic                            vec_mem_ren;
+    logic                            vec_mem_elem_mode;
+    logic [1:0]                      vec_mem_sew_enc;
+    logic [511:0]                    vec_mem_rdata;
+
+    always_comb begin
+        if (is_vec) begin
+            instruction_read = instruction_o;
+        end
+        else 
+            instruction_read = 32'b0;
+    end
+
     //==========================================================================
     // VECTOR PROCESSOR
     // instruction_d, rs1_data_d, rs2_data_d — 1 cycle delayed values
     //==========================================================================
     vector_processor VECTOR (
-        .clk               (clk),
-        .reset             (rst_n),
-        .instruction        (instr_read),      
+        .clk                (clk),
+        .reset              (rst_n),
+        .instruction        (instruction_read),      
         .rs1_data           (rs1_data   ),
         .rs2_data           (rs2_data   ),
-        .inst_valid        (inst_valid),
-        .scalar_pro_ready  (scalar_pro_ready),
-        .is_vec            (is_vec),
-        .error             (error),
-        .csr_out           (csr_out),
-        .vec_pro_ack       (vec_pro_ack),
-        .vec_pro_ready     (vec_pro_ready)
+        .inst_valid         (inst_valid),
+        .scalar_pro_ready   (scalar_pro_ready),
+        .is_vec             (is_vec),
+        .error              (error),
+        .csr_out            (csr_out),
+        .vec_pro_ack        (vec_pro_ack),
+        .vec_pro_ready      (vec_pro_ready),
+         // Memory Port B — vector exclusive
+        .mem_addr               (vec_mem_addr),
+        .mem_wdata              (vec_mem_wdata),
+        .mem_wdata_unit         (vec_mem_wdata_unit),
+        .mem_byte_en            (vec_mem_byte_en),
+        .mem_wen                (vec_mem_wen),
+        .mem_ren                (vec_mem_ren),
+        .mem_elem_mode          (vec_mem_elem_mode),
+        .mem_sew_enc            (vec_mem_sew_enc),
+        .mem_rdata              (vec_mem_rdata)
     );
 
    
@@ -93,10 +121,14 @@ module vector_scalar_top (
     // SCALAR PIPELINE
     //==========================================================================
     pipeline_top SCALAR (
-        .rst_n          (rst_n),
-        .clk            (clk),
-        .is_vector      (is_vec),
-        .scalar_pro_ready(scalar_pro_ready),
+        .rst_n              (rst_n),
+        .clk                (clk),
+
+        .is_vector          (is_vec),
+        .vec_pro_ack        (vec_pro_ack), 
+        .scalar_pro_ready   (scalar_pro_ready),
+        .inst_valid         (inst_valid),          
+        .scalar_pro_ack     (scalar_pro_ack),  
 
         .if2mem_o       (if2mem),
         .mem2if_i       (mem2if),
@@ -106,6 +138,7 @@ module vector_scalar_top (
         .lsu_flush_o    (lsu_flush),
 
         .clint2csr_i    (clint2csr),
+
         .instr_o        (instruction_o),     // direct — register mein jata hai upar
         .rs1_data_o     (rs1_data),
         .rs2_data_o     (rs2_data),
@@ -127,14 +160,14 @@ module vector_scalar_top (
         .dmem_sel   (dmem_sel),
         .exe2mem_i  (dbus2mem),
         .mem2wrb_o  (mem2dbus),
-        .addr_a(addr_a),
-        .wdata_a(wdata_a),
-        .rdata_a(rdata_a),
-        .wen_a(wen_a),
-        .ren_a(ren_a),
-        .byte_en_a(byte_en_a),
+        .addr_a     (addr_a),
+        .wdata_a    (wdata_a),
+        .rdata_a    (rdata_a),
+        .wen_a      (wen_a),
+        .ren_a      (ren_a),
+        .byte_en_a  (byte_en_a),
         .elem_mode_a(elem_mode_a),
-        .sew_a(sew_a)
+        .sew_a      (sew_a)
     );
 
 endmodule

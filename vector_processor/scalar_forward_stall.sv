@@ -202,4 +202,3 @@ assign fwd2lsu_o  = fwd2lsu;
 assign fwd2ptop_o = fwd2ptop;     
 
 endmodule : forward_stall
-

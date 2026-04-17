@@ -5,6 +5,7 @@
 `include "vector_multiplier.sv"
 `include "vector_shift_module.sv"
 `include "vector_adder_subtractor_unit.sv"
+`include "vector_execution_unit.svh"
 
 module vector_execution_unit(
     input   logic                               clk,
@@ -129,8 +130,17 @@ module vector_execution_unit(
     assign  mask_add_data_1         = mask_add_en           ? data_1[511:0] :  `VLEN'b0;
     assign  mask_add_data_2         = mask_add_en           ? data_2[511:0] :  `VLEN'b0;
 
-    
     always_comb begin
+        sum_done = 1'b0;
+        shift_done = 1'b0;
+        mult_done = 1'b0;
+        compare_done = 1'b0;
+        bitwise_done = 1'b0;
+        move_done = 1'b0;
+        product_sum_done = 1'b0;
+        sew_16_32 = 1'b0;
+        sew_32 = 1'b0;
+        sum_mask_done = 1'b0;
             if (reset) begin  
                 sew_16_32 = 1'b0;
                 sew_32 = 1'b0;  
@@ -241,7 +251,7 @@ module vector_execution_unit(
                     sum_mask_done = 1'b0;
                     case (sew)
                         2'b00: begin // 8-bit elements → 16-bit products
-                            for (int i = 0; i < 64; i++) begin
+                            for (int i = 0; i < `NUM_ELEMENT_SEW8 ; i++) begin
                                 if (mul_high)
                                     execution_result[i*8 +: 8] = product_result[i*16 + 8 +: 8]; // Upper 8 bits
                                 else if (mul_low) 
@@ -251,7 +261,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b01: begin // 16-bit elements → 32-bit products
-                            for (int i = 0; i < 32; i++) begin
+                            for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
                                 if (mul_high)
                                     execution_result[i*16 +: 16] = product_result[i*32 + 16 +: 16]; // Upper 16 bits
                                 else if (mul_low)
@@ -261,7 +271,7 @@ module vector_execution_unit(
                             end
                         end
                         2'b10: begin // 32-bit elements → 64-bit products
-                            for (int i = 0; i < 16; i++) begin
+                            for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
                                 if (mul_high)
                                     execution_result[i*32 +: 32] = product_result[i*64 + 32 +: 32]; // Upper 32 bits
                                 else if (mul_low)
@@ -280,7 +290,7 @@ module vector_execution_unit(
                         case (sew)
                             2'b00: begin // 8-bit elements → 16-bit products
                                 // sum_product_result mein max 512/16 = 32 products fit hote hain
-                                for (int i = 0; i < 32; i++) begin
+                                for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
                                     if (i < 32) begin
                                         if (mul_high)
                                             execution_result[i*8 +: 8] = sum_product_result[i*16 + 8 +: 8];
@@ -291,7 +301,7 @@ module vector_execution_unit(
                             end
                             2'b01: begin // 16-bit elements → 32-bit products
                                 // sum_product_result mein max 512/32 = 16 products fit hote hain
-                                for (int i = 0; i < 16; i++) begin
+                                for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
                                     if (i < 16) begin
                                         if (mul_high)
                                             execution_result[i*16 +: 16] = sum_product_result[i*32 + 16 +: 16];
@@ -302,7 +312,7 @@ module vector_execution_unit(
                             end
                             2'b10: begin // 32-bit elements → 64-bit products
                                 // sum_product_result mein max 512/64 = 8 products fit hote hain
-                                for (int i = 0; i < 8; i++) begin
+                                for (int i = 0; i < `NUM_ELEMENT_SEW32; i++) begin
                                     if (i < 8) begin
                                         if (mul_high)
                                             execution_result[i*32 +: 32] = sum_product_result[i*64 + 32 +: 32];

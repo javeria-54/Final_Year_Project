@@ -1,6 +1,7 @@
 // vec_compare_execution_unit.sv
 `include "vector_regfile_defs.svh"
 `include "vector_processor_defs.svh"
+`include "vector_execution_unit.svh"
 
 //////////////////////////////////////////////////////////////////////////////////
 // Design Name: Vector Compare Unit
@@ -133,7 +134,7 @@ module vector_compare_unit (
             // Loop runs MAX_VLEN/8 times
             // ==================================================
             2'b00: begin
-                for (int i = 0; i < 64; i++) begin
+                for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
                     logic [7:0] a, b;   // Local 8-bit operands for this element
                     logic cmp;          // 1-bit comparison result
 
@@ -173,7 +174,7 @@ module vector_compare_unit (
             // Loop runs MAX_VLEN/16 times
             // ==================================================
             2'b01: begin
-                for (int i = 0; i < 32; i++) begin
+                for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
                     logic [15:0] a, b;  // Local 16-bit operands for this element
                     logic cmp;          // 1-bit comparison result
 
@@ -211,7 +212,7 @@ module vector_compare_unit (
             // Loop runs MAX_VLEN/32 times
             // ==================================================
             2'b10: begin
-                for (int i = 0; i < 16; i++) begin
+                for (int i = 0; i < `NUM_ELEMENT_SEW32 ; i++) begin
                     logic [31:0] a, b;  // Local 32-bit operands for this element
                     logic cmp;          // 1-bit comparison result
 

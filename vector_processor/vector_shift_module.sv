@@ -1,5 +1,6 @@
 `include "vector_regfile_defs.svh"
 `include "vector_processor_defs.svh"
+`include "vector_execution_unit.svh"
 
 module vector_shift_unit (
     // Prepared operands
@@ -41,7 +42,7 @@ module vector_shift_unit (
 
         case (sew)
             2'b00: begin // 8-bit elements
-                for (int i = 0; i < 64; i++) begin
+                for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
                     logic [7:0] a, b, res;
                     a = dataA[i*8 +: 8]; // shift amount
                     b = dataB[i*8 +: 8]; // value
@@ -59,7 +60,7 @@ module vector_shift_unit (
             end
 
             2'b01: begin // 16-bit elements
-                for (int i = 0; i < 32; i++) begin
+                for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
                     logic [15:0] a, b, res;
                     a = dataA[i*16 +: 16];
                     b = dataB[i*16 +: 16];
@@ -77,7 +78,7 @@ module vector_shift_unit (
             end
 
             2'b10: begin // 32-bit elements
-                for (int i = 0; i < 16; i++) begin
+                for (int i = 0; i < `NUM_ELEMENT_SEW32; i++) begin
                     logic [31:0] a, b, res;
                     a = dataA[i*32 +: 32];
                     b = dataB[i*32 +: 32];

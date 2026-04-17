@@ -2,7 +2,7 @@
 `include "scalar_pcore_interface_defs.svh"
 
 module memory #(
-    parameter D = 2,
+    parameter D = 1024,
     parameter ROW_W = $clog2(D)
 )(
     input  logic clk,
@@ -36,9 +36,19 @@ module memory #(
     logic [ROW_W-1:0] row_a;
     logic [1:0]       bank_sel_a_elem;
     logic [3:0]       byte_off_a_elem;
+
+    // Scalar address breakdown — yeh declarations ke section mein add karo
     logic [ROW_W-1:0] row_b;
     logic [1:0]       bank_sel_b;
-    logic [3:0]       byte_off_b;
+    logic [1:0]       byte_off_b;
+
+    assign row_a           = addr_a[ROW_W+5 : 6];
+    assign bank_sel_a_elem = addr_a[5:4];
+    assign byte_off_a_elem = addr_a[3:0];
+
+    assign row_b      = exe2mem_i.addr[ROW_W+3 : 4];
+    assign bank_sel_b = exe2mem_i.addr[3:2];
+    assign byte_off_b = exe2mem_i.addr[1:0];
 
     // Scalar/Instr interface signals
     logic                 instr_req;
@@ -64,9 +74,7 @@ module memory #(
     assign instr_req        = if2mem_i.req;
     assign instr_address    = if2mem_i.addr[`XLEN-1:2];
 
-    assign row_a           = addr_a[ROW_W+5 : 6];
-    assign bank_sel_a_elem = addr_a[5:4];
-    assign byte_off_a_elem = addr_a[3:0];
+    
 
     // =====================================================
     // Memory Banks (4 x 128-bit)
@@ -196,23 +204,28 @@ module memory #(
             // ---- PORT B : Scalar Store ----
             else if (store_req) begin
                 case (write_sel_byte)
-                    4'b0001: mem_bank_0[mem_address][7:0]   <= write_data[7:0];
-                    4'b0010: mem_bank_1[mem_address][7:0]   <= write_data[15:8];
-                    4'b0100: mem_bank_2[mem_address][7:0]   <= write_data[23:16];
-                    4'b1000: mem_bank_3[mem_address][7:0]   <= write_data[31:24];
+                    // Byte store — sirf ek bank, sahi slot
+                    4'b0001: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                    4'b0010: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[15:8];
+                    4'b0100: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[23:16];
+                    4'b1000: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[31:24];
+
+                    // Halfword store — 2 consecutive bytes, same bank
                     4'b0011: begin
-                        mem_bank_0[mem_address][7:0] <= write_data[7:0];
-                        mem_bank_1[mem_address][7:0] <= write_data[15:8];
+                        mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
                     end
                     4'b1100: begin
-                        mem_bank_2[mem_address][7:0] <= write_data[23:16];
-                        mem_bank_3[mem_address][7:0] <= write_data[31:24];
+                        mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[23:16];
+                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[31:24];
                     end
+
+                    // Word store — 4 bytes, same row, consecutive byte offsets
                     4'b1111: begin
-                        mem_bank_0[mem_address][7:0] <= write_data[7:0];
-                        mem_bank_1[mem_address][7:0] <= write_data[15:8];
-                        mem_bank_2[mem_address][7:0] <= write_data[23:16];
-                        mem_bank_3[mem_address][7:0] <= write_data[31:24];
+                        mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                        mem_bank_0[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                        mem_bank_0[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
                     end
                     default: ;
                 endcase
@@ -221,24 +234,27 @@ module memory #(
 
             // ---- PORT B : Scalar Load ----
             else if (load_req) begin
-                read_data <= { mem_bank_3[mem_address],
-                               mem_bank_2[mem_address],
-                               mem_bank_1[mem_address],
-                               mem_bank_0[mem_address] };
+                read_data <= {  mem_bank_0[row_b][(byte_off_b+3)*8 +: 8],
+                                mem_bank_0[row_b][(byte_off_b+2)*8 +: 8],
+                                mem_bank_0[row_b][(byte_off_b+1)*8 +: 8],
+                                mem_bank_0[row_b][byte_off_b*8     +: 8] };
                 read_ack  <= 1'b1;
             end
-
-            // ---- Instruction Fetch ----
-            if (instr_req && !instr_ack) begin
-                instr_read <= { mem_bank_3[instr_address],
-                                mem_bank_2[instr_address],
-                                mem_bank_1[instr_address],
-                                mem_bank_0[instr_address] };
-                instr_ack  <= 1'b1;
-            end else if (instr_req && instr_ack) begin
+          
+            if (instr_req & !instr_ack) begin
+                instr_read <= {
+                                mem_bank_3[instr_address][7:0],
+                                mem_bank_2[instr_address][7:0],
+                                mem_bank_1[instr_address][7:0],
+                                mem_bank_0[instr_address][7:0]
+                            };
+                instr_ack    <= 1'b1;
+            end else if (instr_req & instr_ack)
+                instr_ack <= 1'b0;
+            else begin
+                instr_read <= `INSTR_NOP;
                 instr_ack  <= 1'b0;
             end
-
+            end
         end 
-    end 
 endmodule

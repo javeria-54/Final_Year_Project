@@ -1,6 +1,7 @@
 `include "vector_de_csr_defs.svh"
 `include "vector_processor_defs.svh"
 `include "vector_regfile_defs.svh"
+`include "vector_execution_unit.svh"
 
 // =============================================================================
 // FILE: vector_multiplier.sv
@@ -1083,7 +1084,7 @@ module vector_multiplier(
 );
 
     // Number of 32-bit processing elements
-    localparam NUM_PES = 16;  // 512 / 32 = 16 PEs
+    localparam NUM_PES = `NUM_ELEMENT_SEW32;  // 512 / 32 = 16 PEs
     
     // Per-PE signals
     logic [NUM_PES-1:0] pe_count_0;

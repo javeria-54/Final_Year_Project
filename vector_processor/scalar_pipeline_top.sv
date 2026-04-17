@@ -18,8 +18,7 @@ module pipeline_top (
 
     input   wire                        rst_n,                    // reset
     input   wire                        clk,                      // clock
-    output  logic                       is_vector, 
-    output  logic                       scalar_pro_ready,
+    
 
    // IF <---> IMEM interface
     output type_if2imem_s                if2mem_o,              // Instruction memory request
@@ -33,10 +32,16 @@ module pipeline_top (
    // Memory mapped timer interface
    input wire type_clint2csr_s          clint2csr_i,
 
-        // pipeline_top.sv mein add karo ports mein:
-    output logic [31:0]   instr_o,      // fetch stage se
-    output logic [31:0]   rs1_data_o,   // decode stage se  
-    output logic [31:0]   rs2_data_o,    // decode stage se
+    // pipeline_top.sv mein add karo ports mein:
+    output logic [31:0]     instr_o,      // fetch stage se
+    output logic [31:0]     rs1_data_o,   // decode stage se  
+    output logic [31:0]     rs2_data_o,    // decode stage se
+
+    input  logic                        vec_pro_ack,
+    output  logic                       is_vector, 
+    output  logic                       scalar_pro_ready,
+    output  logic                       inst_valid,          
+    output  logic                       scalar_pro_ack,  
 
    // IRQ interface
    input wire type_pipe2csr_s           core2pipe_i
@@ -189,7 +194,6 @@ decode decode_module (
     .rst_n                      (rst_n),
     .clk                        (clk),
     .is_vector                  (is_vector),
-    .scalar_pro_ready           (scalar_pro_ready),
 
     // ID module interface signals 
 `ifdef IF2ID_PIPELINE_STAGE
@@ -428,8 +432,23 @@ amo amo_module (
 
 );
 
+
+
+single_cycle_val_ready_controller scalar_valid_ready(
+    
+    .clk(clk),
+    .reset(rst_n),
+
+    .is_vector(is_vector),
+
+    .inst_valid(inst_valid),        
+    .vec_pro_ack(vec_pro_ack),      
+    
+    .scalar_pro_ready(scalar_pro_ready),         
+    .scalar_pro_ack(scalar_pro_ack)           
+);
+
 assign lsu2dbus_o   = lsu2dbus;
 assign if2mem_o     = if2mem;
 
 endmodule : pipeline_top
-

@@ -1,4 +1,5 @@
 `include "vector_processor_defs.svh"
+`include "vector_execution_unit.svh"
 
 //////////////////////////////////////////////////////////////////////////////////
 // Design Name: Vector Adder/Subtractor
@@ -349,7 +350,7 @@ module vector_adder_subtractor (
 
     genvar i;
     generate
-        for (i = 0; i < 16; i++) begin : units
+        for (i = 0; i < `NUM_ELEMENT_SEW32; i++) begin : units
 
             // Instantiate one 32-bit adder/subtractor per slice
             // Each slice handles 32 bits of A and B independently

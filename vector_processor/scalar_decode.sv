@@ -25,7 +25,6 @@ module decode (
 
     // Decode <---> Vector_processor
     output logic                              is_vector,
-    output logic                              scalar_pro_ready,
 
     // CSR <---> Decode feedback interface
     input wire type_csr2id_fb_s               csr2id_fb_i,
@@ -548,21 +547,17 @@ always_comb begin
 
             OPCODE_VECTOR_ARITH_INST : begin
                 is_vector = 1'b1;
-                scalar_pro_ready = 1'b1;
             end
             OPCODE_VECTOR_LOAD_INST : begin
                 is_vector = 1'b1;
-                scalar_pro_ready = 1'b1;
             end   
             OPCODE_VECTOR_STORE_INST : begin
                 is_vector = 1'b1;
-                scalar_pro_ready = 1'b1;
             end
 
             default : begin
                 illegal_instr = 1'b1;
                 is_vector     = 1'b0;
-                scalar_pro_ready = 1'b0;
             end
         endcase // instr_opcode (Instruction opcode) 
   //  end // no instruction memory fault

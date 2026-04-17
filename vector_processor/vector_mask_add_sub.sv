@@ -1,4 +1,5 @@
 `include "vector_processor_defs.svh"
+`include "vector_execution_unit.svh"
 
 module vector_mask_add_sub (
     input  logic [`VLEN-1:0]  adder_data_1,
@@ -22,15 +23,15 @@ module vector_mask_add_sub (
         mask_extended = '0;
         
         if (!sew_32 && !sew_16_32) begin        // SEW=8
-            for (int i = 0; i < 64; i++)
+            for (int i = 0; i < `NUM_ELEMENT_SEW8; i++)
                 mask_extended[i*8 +: 8] = {{7{1'b0}}, mask_reg[i]};
         end
         else if (!sew_32 && sew_16_32) begin    // SEW=16
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < `NUM_ELEMENT_SEW16; i++)
                 mask_extended[i*16 +: 16] = {{15{1'b0}}, mask_reg[i]};
         end
         else begin                              // SEW=32
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < `NUM_ELEMENT_SEW32; i++)
                 mask_extended[i*32 +: 32] = {{31{1'b0}}, mask_reg[i]};
         end
     end
