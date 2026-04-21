@@ -74,8 +74,6 @@ module memory #(
     assign instr_req        = if2mem_i.req;
     assign instr_address    = if2mem_i.addr[`XLEN-1:2];
 
-    
-
     // =====================================================
     // Memory Banks (4 x 128-bit)
     // =====================================================

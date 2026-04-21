@@ -42,6 +42,8 @@ module lsu (
     output type_lsu2fwd_s                   lsu2fwd_o,
     input wire type_fwd2lsu_s               fwd2lsu_i,
 
+    output logic                            lsu_done_o, 
+
     // LSU <---> Data Bus (dbus) interface
     input  wire type_dbus2lsu_s             dbus2lsu_i,
     output type_lsu2dbus_s                  lsu2dbus_o,                // Signal to data bus 
@@ -179,6 +181,8 @@ end
 
 //=================================== Output signals update =====================================//
 
+assign lsu2wrb_data.seq_num = exe2lsu_data.seq_num;
+
 assign ld_st_addr = exe2lsu_data.alu_result;
 
 // Feedback signals to EXE module
@@ -243,5 +247,7 @@ assign lsu2amo_ctrl_o = lsu2amo_ctrl;
 
 assign lsu2dbus_o     = lsu2dbus; 
 assign lsu2fwd_o      = lsu2fwd;
+
+assign lsu_done_o = lsu_amo_ack | (!ld_req & !st_req & !is_amo);
 
 endmodule : lsu

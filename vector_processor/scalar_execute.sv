@@ -35,7 +35,7 @@ module execute (
     input wire type_fwd2exe_s            fwd2exe_i,
     output type_exe2fwd_s                exe2fwd_o,    
 
-    
+    output logic exe_done_o,
     // EXE <---> IF feedback interface
     output type_exe2if_fb_s              exe2if_fb_o,
 
@@ -528,6 +528,40 @@ assign exe2div_o       = exe2div;
 
 // Update the feedback signals from EXE to IF stage                         
 assign exe2if_fb.pc_new       = {alu_result[31:2], 2'b0};                         
-assign exe2if_fb_o            = exe2if_fb;                  
+assign exe2if_fb_o            = exe2if_fb; 
+
+/////////////////////////////////////////////////////////////////////////////////////////
+logic exe_done;
+logic div_cmd;
+logic alu_cmd;
+logic csr_cmd;
+logic branch_cmd;
+logic any_valid_cmd;
+
+// Division
+assign div_cmd = |id2exe_ctrl.alu_d_ops;
+
+// ALU - koi arithmetic instruction hai?
+assign alu_cmd = (alu_i_operator != ALU_I_OPS_NOP); // ya jo bhi NOP value ho
+
+// CSR - koi CSR operation hai?
+assign csr_cmd = |id2exe_ctrl.csr_ops;
+
+// Branch ya Jump
+assign branch_cmd = id2exe_ctrl.branch_req | id2exe_ctrl.jump_req;
+
+// Koi bhi valid operation chal rahi hai?
+assign any_valid_cmd = alu_cmd 
+                     | mul_cmd        // already code mein hai
+                     | bitmanip_cmd   // already code mein hai
+                     | csr_cmd 
+                     | branch_cmd;
+
+// Done signal:
+// 1. Koi valid instruction ho
+// 2. Division na ho rahi ho
+assign exe_done = any_valid_cmd & ~div_cmd;
+
+assign exe_done_o = exe_done;
 
 endmodule : execute

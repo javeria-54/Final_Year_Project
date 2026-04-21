@@ -19,12 +19,19 @@ module decode (
     input wire type_if2id_data_s              if2id_data_i,
     input wire type_if2id_ctrl_s              if2id_ctrl_i,
 
+    input logic rob_instr,
+    input logic rob_seq_num,
+    output logic de_valid_o,
+    input logic rob_full,
+    
     // Decode <---> Execute interface
     output type_id2exe_data_s                 id2exe_data_o,
     output type_id2exe_ctrl_s                 id2exe_ctrl_o,          // Structure for control signals  
 
     // Decode <---> Vector_processor
     output logic                              is_vector,
+    output logic                              is_scalar_store, is_scalar_load,  // scalar store instruction
+    output  logic                             is_vector_store, is_vector_load, // vector store instruction
 
     // CSR <---> Decode feedback interface
     input wire type_csr2id_fb_s               csr2id_fb_i,
@@ -69,7 +76,7 @@ assign if2id_data = if2id_data_i;
 assign csr2id_fb  = csr2id_fb_i;
 
 // Instruction opcodes
-assign instr_codeword = if2id_data.instr;
+assign instr_codeword = rob_instr //if2id_data.instr;
 assign instr_opcode   = type_rv_opcode_e'(instr_codeword[6:2]); 
 assign funct7_opcode  = instr_codeword[31:25];
 assign funct3_opcode  = instr_codeword[14:12];
@@ -121,7 +128,10 @@ always_comb begin
     id2exe_data.pc_next  = if2id_data.pc_next;
     id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
     id2exe_data.instr_flushed = if2id_data.instr_flushed;
+    id2exe_data.seq_num      = rob_seq_num;
     
+    de_valid_o     = ~rob_full_i & (if2id_ctrl.exc_req | if2id_ctrl.irq_req);
+
     // Default values for local signals
     illegal_instr       = 1'b0;
     is_vector           = 1'b0;
@@ -350,6 +360,7 @@ always_comb begin
                 id2exe_ctrl.alu_opr2_sel = ALU_OPR2_IMM;
                 id2exe_ctrl.alu_i_ops    = ALU_I_OPS_ADD;
                 id2exe_ctrl.rd_wr_req    = 1'b1;
+                is_scalar_load = 1'b1;
                 case (funct3_opcode)
                     3'b000  : id2exe_ctrl.ld_ops = LD_OPS_LB;            // Load byte signed
                     3'b001  : id2exe_ctrl.ld_ops = LD_OPS_LH;            // Load halfword signed 
@@ -366,6 +377,7 @@ always_comb begin
                 id2exe_ctrl.alu_opr2_sel = ALU_OPR2_IMM;
                 id2exe_ctrl.alu_i_ops    = ALU_I_OPS_ADD;
                 id2exe_data.imm          = {{21{instr_codeword[31]}}, instr_codeword[30:25], instr_codeword[11:7]};
+                is_scalar_store = 1'b1;
                 case (funct3_opcode)
                     3'b000  : id2exe_ctrl.st_ops = ST_OPS_SB;            // Store byte signed
                     3'b001  : id2exe_ctrl.st_ops = ST_OPS_SH;            // Store halfword signed 
@@ -550,9 +562,11 @@ always_comb begin
             end
             OPCODE_VECTOR_LOAD_INST : begin
                 is_vector = 1'b1;
+                is_vec_load = 1'b1;
             end   
             OPCODE_VECTOR_STORE_INST : begin
                 is_vector = 1'b1;
+                is_vec_store = 1'b1;
             end
 
             default : begin

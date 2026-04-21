@@ -34,6 +34,8 @@ module vec_lsu (
     output logic [1:0]              mem_sew_enc,
     input  logic [511:0]            mem_rdata,
 
+    input  logic [$clog2(ROB_DEPTH)-1:0] seq_num,
+
     output logic [`MAX_VLEN-1:0]    vd_data,
     output logic                    is_loaded,
     output logic                    is_stored,

@@ -226,6 +226,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                rs1_data;     
     logic [`XLEN-1:0]                rs2_data;
     logic [`XLEN-1:0]                instr;
+    logic [$clog2(ROB_DEPTH)-1:0]    seq_num;
     logic [`XLEN-1:0]                pc;
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                imm;  
@@ -263,6 +264,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                alu_result;
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                rs2_data;
+    logic [$clog2(ROB_DEPTH)-1:0]    seq_num;
 } type_exe2lsu_data_s;
 
 typedef struct packed {  
@@ -331,7 +333,8 @@ typedef struct packed {
     logic [`XLEN-1:0]                alu_result;
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                r_data;  
-    logic [`RF_AWIDTH-1:0]           rd_addr; 
+    logic [`RF_AWIDTH-1:0]           rd_addr;
+    logic [$clog2(ROB_DEPTH)-1:0]    seq_num; 
 } type_lsu2wrb_data_s;
 
 typedef struct packed {                           

@@ -15,6 +15,8 @@ module vector_execution_unit(
     input   logic [`MAX_VLEN-1:0]               data_2, 
     input   logic [`MAX_VLEN-1:0]               data_3,
 
+    input  logic [$clog2(ROB_DEPTH)-1:0] seq_num,
+
     input   logic                               Ctrl,start,
     input   logic [6:0]                         sew_eew_mux_out,
     input   logic [2:0]                         execution_op,

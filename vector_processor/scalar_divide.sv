@@ -22,6 +22,7 @@ module divide (
 
     // M-extension <---> Forward-stall interface
     output type_div2fwd_s                div2fwd_o,
+    input  logic                         div_done,
 
     output type_div2wrb_s                div2wrb_o
 );
@@ -50,7 +51,7 @@ logic  [`XLEN-1:0]                   div_u;
 logic  [`XLEN-1:0]                   rem;
 logic  [`XLEN-1:0]                   rem_u;
 
-logic                                div_done;
+
 logic                                div_valid;
 
 

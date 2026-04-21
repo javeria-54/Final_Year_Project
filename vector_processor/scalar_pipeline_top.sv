@@ -194,6 +194,8 @@ decode decode_module (
     .rst_n                      (rst_n),
     .clk                        (clk),
     .is_vector                  (is_vector),
+    .rob_instr(rob_instr),
+    .rob_seq_num(rob_seq_num),
 
     // ID module interface signals 
 `ifdef IF2ID_PIPELINE_STAGE
@@ -411,6 +413,7 @@ divide divide_module(
 
     // M-extension <---> Forward-stall interface
     .div2fwd_o                  (div2fwd),
+    .div_done                   (div_done),
 
     // M-extension <---> Writeback interface
     .div2wrb_o                  (div2wrb)
@@ -432,8 +435,6 @@ amo amo_module (
 
 );
 
-
-
 single_cycle_val_ready_controller scalar_valid_ready(
     
     .clk(clk),
@@ -447,6 +448,355 @@ single_cycle_val_ready_controller scalar_valid_ready(
     .scalar_pro_ready(scalar_pro_ready),         
     .scalar_pro_ack(scalar_pro_ack)           
 );
+
+rob rob(
+    .clk                        (clk),
+    .rst_n                      (rst_n),
+
+    .fetch_instr_i              (mem2if.rdata),
+    .fetch_valid_i              (mem2if.ack), 
+
+    .rob_full_o                 (rob_full_o),         
+    .rob_seq_num_o              (rob_seq_num), 
+
+    .rob_instr_o                (rob_instr),
+    .de_valid_i                 (de_valid),
+    .de_seq_num_i               (id2exe_data.seq_num),       
+    .de_is_vector_i             (is_vector),     
+    .de_scalar_store_i          (is_scalar_store),  
+    .de_vector_store_i          (is_vector_store), 
+    .de_scalar_load_i           (is_scalar_load),  
+    .de_vector_load_i           (is_vector_load), 
+    .de_rs1_data_i              (id2exe_data.rs1_data),      
+    .de_rs2_data_i              (id2exe_data.rs2_data),      
+    .de_instr_i                 (id2exe_data.instr),  
+
+    .fwd_rs1_hit_o              (fwd_rs1_hit_o),      
+    .fwd_rs1_val_o              (fwd_rs1_val_o),      
+    .fwd_rs2_hit_o              (fwd_rs2_hit_o),     
+    .fwd_rs2_val_o              (fwd_rs2_hit_o), 
+
+    .fwd_vs1_hit_o              (fwd_vs1_hit_o),      
+    .fwd_vs1_val_o              (fwd_vs1_val_o),      
+    .fwd_vs2_hit_o              (fwd_vs2_hit_o),      
+    .fwd_vs2_val_o              (fwd_vs2_val_o), 
+
+    .fwd_rs1_data_o             (fwd_rs1_data_o),     
+    .fwd_rs2_data_o             (fwd_rs2_data_o), 
+
+    .fwd_vs1_data_o             (fwd_vs1_data_o),     
+    .fwd_vs2_data_o             (fwd_vs2_data_o),
+
+    .scalar_done_i              (div_done | exe_done | lsu_done),
+    .scalar_seq_num_i           (),  
+    .scalar_rd_addr_i           (id2rf_rd_addr_i),   
+    .scalar_result_i            (exe2lsu_data.alu_result),    
+    .scalar_mem_addr_i          (lsu2dbus.addr),    
+    .scalar_mem_data_i          (dbus2lsu.r_data), 
+    .scalar_mem_data_o          (lsu2dbus.wdata),     
+
+    .vector_done_i              (execution_done | is_stored | is loaded ),
+    .vector_seq_num_i           (),   
+    .vector_vd_addr_i           (vec_write_addr),   
+    .vector_result_i            (execution_result),    //checkit
+    .vector_mem_addr_i          (mem_addr),    
+    .vector_mem_data_i          (mem_rdata), 
+    .vector_mem_data_o          (mem_wrdata),   
+
+    .viq_src1_reg_i             (viq_src1_reg_i),
+    .viq_src2_reg_i             (viq_src2_reg_i),
+
+    .stall_vec_raw_o            (stall_vec_raw),    
+    .stall_scalar_mem_o         (stall_scalar_mem), 
+    .stall_vector_mem_o         (stall_vector_mem),
+
+    .commit_valid_o             (rob_commit_valid),
+    .commit_vector_seq_num_o    (rob_commit_vector_seq),
+    .commit_scalar_seq_num_o    (rob_commit_scalar_seq),
+    .commit_is_vector_o         (rob_commit_is_vec),
+    .commit_scalar_store_o      (rob_commit_scalar_store),
+    .commit_vector_store_o      (rob_commit_vector_store),
+    .commit_rd_o                (rob_commit_rd),        
+    .commit_vd_o                (rob_commit_vd),        
+    .commit_scalar_result_o     (rob_commit_scalar_result),
+    .commit_vector_result_o     (rob_commit_vector_result),
+    .commit_mem_addr_o          (rob_commit_mem_addr),
+    .commit_mem_data_o          (rob_commit_mem_data),  
+    .commit_scalar_mem_data_o   (rob_commit_scalar_mem_data), 
+
+    .flush_valid_i,
+    .flush_seq_i
+
+);
+
+    viq #(
+        .DEPTH     (VIQ_DEPTH),
+        .SEQ_W     (SEQ_W),
+        .INSTR_W   (INSTR_W),
+        .OPERAND_W (OPERAND_W)
+    ) u_viq (
+        .clk                (clk),
+        .reset              (reset),
+        .vector_instr_valid (viq_instr_valid_i),
+        .instr_seq_i        (viq_instr_seq_i),
+        .instruction_i      (viq_instruction_i),
+        .operand_rs1_i      (viq_operand_rs1_i),
+        .operand_rs2_i      (viq_operand_rs2_i),
+        .instr_is_vecmem_i  (viq_instr_is_vecmem_i),
+        .stall_vec          (viq_stall_o),
+        .num_instr          (viq_num_instr_o),
+        .deq_ready          (viq_deq_ready),
+        .deq_valid          (viq_deq_valid_int),
+        .instr_seq_o        (viq_deq_seq_o),
+        .instruction_o      (viq_deq_instr_o),
+        .operand_rs1_o      (viq_deq_rs1_o),
+        .operand_rs2_o      (viq_deq_rs2_o),
+        .instr_is_vecmem_o  (viq_deq_is_vecmem_int)
+    );
+
+    vector_processor_datapth DATAPATH(
+        
+        .clk                (clk                 ),
+        .reset              (reset               ),
+        
+        // Inputs from the scaler processor  --> vector processor
+        .instruction        (instruction),      
+        .rs1_data           (rs1_data   ),
+        .rs2_data           (rs2_data   ),
+
+        // Outputs from vector rocessor --> scaler processor
+        .is_vec             (is_vec              ),
+        .error              (error               ),
+        
+        .st_req(st_req),
+        .ld_req(ld_req),
+        .seq_num(viq_deq_seq_o),
+        
+        .mem_addr           (mem_addr                   ),
+        .mem_wdata          (mem_wdata                  ),
+        .mem_wdata_unit     (mem_wdata_unit             ),
+        .mem_byte_en        (mem_byte_en                ),
+        .mem_wen            (mem_wen                    ),
+        .mem_ren            (mem_ren                    ),
+        .mem_elem_mode      (mem_elem_mode              ),
+        .mem_sew_enc        (mem_sew_enc                ),
+        .mem_rdata          (mem_rdata                  ),
+      
+        // csr_regfile -> scalar_processor
+        .csr_out            (csr_out             ),
+
+        // datapth  --> val_ready_controller
+        .inst_done          (inst_done           ),            
+
+        // Inputs from the controller --> datapath
+        .sew_eew_sel        (sew_eew_sel         ),
+        .vlmax_evlmax_sel   (vlmax_evlmax_sel    ),
+        .emul_vlmul_sel     (emul_vlmul_sel      ),
+
+        // vec_control_signals -> vec_decode
+        .vl_sel             (vl_sel              ),
+        .vtype_sel          (vtype_sel           ),
+        .lumop_sel          (lumop_sel           ),
+        .rs1rd_de           (rs1rd_de            ),
+        
+        // vec_control_signals -> vec_csr_regs
+        .csrwr_en           (csrwr_en            ),
+
+        // vec_control_signals -> vec_register_file
+        .vec_reg_wr_en      (vec_reg_wr_en       ),
+        .mask_operation     (mask_operation      ),
+        .mask_wr_en         (mask_wr_en          ),
+        .data_mux1_sel      (data_mux1_sel       ),
+        .data_mux2_sel      (data_mux2_sel       ),
+        .data_mux3_sel      (data_mux3_sel       ),
+        .offset_vec_en      (offset_vec_en       ),
+
+        // vec_control_signals -> vec_lsu
+        .stride_sel         (stride_sel          ),
+        .ld_inst            (ld_inst             ),
+        .st_inst            (st_inst             ),
+        .index_str          (index_str           ), 
+        .index_unordered    (index_unordered     ),
+
+        .vec_wr_data        (vec_wr_data),
+        
+        .Ctrl               (Ctrl),
+        .execution_op       (execution_op),
+        .mul_high           (mul_high),
+        .mul_low            (mul_low),
+        .execution_inst     (execution_inst),
+        .reverse_sub_inst   (reverse_sub_inst),
+        .add_inst           (add_inst),
+        .sub_inst           (sub_inst),
+        .signed_mode        (signed_mode),
+        .bitwise_op         (bitwise_op),
+        .op_type            (op_type),
+        .cmp_op             (cmp_op),
+        .accum_op           (accum_op),
+        .mask_op            (mask_op),
+        .start              (start),
+        .shift_op           (shift_op)
+    );
+
+
+    //==========================================================================//
+    //                  MAIN CONTROLLER INSTANTIATION                           //
+    //==========================================================================//
+
+
+    vector_processor_controller CONTROLLER(
+        
+        // scalar_processor -> vector_extension
+        .vec_inst           (instruction),
+
+        // Output from  controller --> datapath
+
+        // vec_control_signals -> vec_decode
+        .vl_sel             (vl_sel         ),
+        .vtype_sel          (vtype_sel      ),
+        .lumop_sel          (lumop_sel      ),
+        
+        // vec_control_signals -> vec_csr_regs
+        .csrwr_en           (csrwr_en        ),
+        .sew_eew_sel        (sew_eew_sel     ),
+        .vlmax_evlmax_sel   (vlmax_evlmax_sel),
+        .emul_vlmul_sel     (emul_vlmul_sel  ),
+        .rs1rd_de           (rs1rd_de       ),
+
+        // vec_control_signals -> vec_register_file
+        .vec_reg_wr_en              (vec_reg_wr_en  ),
+        .mask_operation             (mask_operation ),
+        .mask_wr_en                 (mask_wr_en     ),
+        .data_mux1_sel              (data_mux1_sel  ),
+        .data_mux2_sel              (data_mux2_sel  ),
+        .data_mux3_sel              (data_mux3_sel  ),
+        .offset_vec_en              (offset_vec_en  ),
+
+        // vec_control_signals -> vec_lsu
+        .stride_sel                 (stride_sel     ),
+        .ld_inst                    (ld_inst        ),
+        .st_inst                    (st_inst        ),
+        .index_str                  (index_str      ),
+        .index_unordered            (index_unordered),
+
+        .execution_op               (execution_op),
+        
+        .signed_mode                (signed_mode),
+        .Ctrl                       (Ctrl),
+        .mul_low                    (mul_low), 
+        .mul_high                   (mul_high),
+        .start(start),
+
+        .add_inst                   (add_inst), 
+        .sub_inst                   (sub_inst), 
+        .reverse_sub_inst           (reverse_sub_inst), 
+        .shift_left_logical_inst    (shift_left_logical_inst), 
+        .shift_right_arith_inst     (shift_right_arith_inst), 
+        .shift_right_logical_inst   (shift_right_logical_inst),
+        .execution_inst             (execution_inst),
+        .mul_inst                   (mul_inst),
+        .equal_inst                 (equal_inst), 
+        .not_equal_inst             (not_equal_inst),
+        .less_or_equal_unsigned_inst(less_or_equal_unsigned_inst),
+        .less_or_equal_signed_inst  (less_or_equal_signed_inst), 
+        .less_unsinged_inst         (less_unsinged_inst),
+        .greater_unsigned_inst      (greater_unsigned_inst),
+        .less_signed_inst           (less_signed_inst), 
+        .greater_signed_inst        (greater_signed_inst), 
+        .mul_add_dest_inst          (mul_add_dest_inst), 
+        .mul_sub_dest_inst          (mul_sub_dest_inst), 
+        .mul_add_source_inst        (mul_add_source_inst), 
+        .mul_sub_source_inst        (mul_sub_source_inst),   
+        .mask_and_inst              (mask_and_inst), 
+        .mask_nand_inst             (mask_nand_inst), 
+        .mask_and_not_inst          (mask_and_not_inst), 
+        .mask_xor_inst              (mask_xor_inst), 
+        .mask_or_inst               (mask_or_inst), 
+        .mask_nor_inst              (mask_nor_inst),
+        .mask_or_not_inst           (mask_or_not_inst) , 
+        .mask_xnor_inst             (mask_xnor_inst), 
+        .red_sum_inst               (red_sum_inst), 
+        .red_max_unsigned_inst      (red_max_unsigned_inst), 
+        .red_max_signed_inst        (red_max_signed_inst),
+        .red_min_signed_inst        (red_min_signed_inst), 
+        .red_min_unsigned_inst      (red_min_unsigned_inst), 
+        .red_and_inst               (red_and_inst) , 
+        .red_or_inst                (red_or_inst), 
+        .red_xor_inst               (red_xor_inst),
+        .signed_min_inst            (signed_min_inst),
+        .unsigned_min_inst          (unsigned_min_inst), 
+        .signed_max_inst            (signed_max_inst), 
+        .unsigned_max_inst          (unsigned_max_inst), 
+        .move_inst                  (move_inst), 
+        .wid_add_signed_inst        (wid_add_signed_inst), 
+        .wid_add_unsigned_inst      (wid_add_unsigned_inst), 
+        .wid_sub_signed_inst        (wid_sub_signed_inst), 
+        .wid_sub_unsigned_inst      (wid_sub_unsigned_inst), 
+        .add_carry_inst_inst        (add_carry_inst_inst), 
+        .sub_borrow_inst            (sub_borrow_inst), 
+        .add_carry_masked_inst      (add_carry_masked_inst), 
+        .sub_borrow_masked_inst     (sub_borrow_masked_inst), 
+        .sat_add_signed_inst        (sat_add_signed_inst), 
+        .sat_add_unsigned_inst      (sat_add_unsigned_inst), 
+        .sat_sub_signed_inst        (sat_sub_signed_inst), 
+        .sat_sub_unsigned_inst      (sat_sub_unsigned_inst),
+        .and_inst                   (and_inst), 
+        .or_inst                    (or_inst), 
+        .xor_inst                   (xor_inst),
+        .mask_op                    (mask_op),
+        .bitwise_op                 (bitwise_op),
+        .op_type                    (op_type),
+        .cmp_op                     (cmp_op),
+        .shift_op                   (shift_op),
+        .accum_op                    (accum_op)
+
+    );
+
+    //==========================================================================//
+    //                  VAL READY INTERFACE INSTANTIATION                       //
+    //==========================================================================//
+
+
+    val_ready_controller VAL_READY_INTERFACE(
+        
+        .clk                (clk                ),
+        .reset              (reset              ),
+
+        // scaler_procssor  --> val_ready_controller
+        .inst_valid         (inst_valid         ),             // tells data comming from the saler processor is valid
+        .scalar_pro_ready   (scalar_pro_ready   ),       // tells that scaler processor is ready to take output
+        
+        // val_ready_controller --> scaler_processor
+        .vec_pro_ready      (vec_pro_ready      ),          // tells that vector processor is ready to take the instruction
+        .vec_pro_ack        (vec_pro_ack        ),             // tells that the data comming from the vec_procssor is valid and done with the implementation of instruction 
+
+        // datapath -->   val_ready_controller 
+        .inst_done          (inst_done          )
+    );
+
+    memory memory (
+        .rst_n      (rst_n),
+        .clk        (clk),
+        .vec_pro_ack(vec_pro_ack),
+
+        .if2mem_i   (if2mem),
+        .mem2if_o   (mem2if),
+        .instr_read (instr_read),
+
+        .dmem_sel   (dmem_sel),
+        .exe2mem_i  (dbus2mem),
+        .mem2wrb_o  (mem2dbus),
+        .addr_a     (addr_a),
+        .wdata_a    (wdata_a),
+        .rdata_a    (rdata_a),
+        .wen_a      (wen_a),
+        .ren_a      (ren_a),
+        .byte_en_a  (byte_en_a),
+        .elem_mode_a(elem_mode_a),
+        .sew_a      (sew_a)
+    );
+
+
 
 assign lsu2dbus_o   = lsu2dbus;
 assign if2mem_o     = if2mem;

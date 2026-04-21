@@ -95,24 +95,6 @@ module vector_shift_unit (
                 end
             end
 
-            2'b11: begin // 64-bit elements
-                for (int i = 0; i < 8; i++) begin
-                    logic [63:0] a, b, res;
-                    a = dataA[i*64 +: 64];
-                    b = dataB[i*64 +: 64];
-
-                    case (shift_op_e'(shift_op))
-                        SHIFT_SLL: res = b << a;
-                        SHIFT_SRL: res = b >> a;
-                        SHIFT_SRA: res = $signed(b) >>> a;
-                        default:   res = b;
-                    endcase
-
-                    raw_result[i*64 +: 64] = res;
-                    shift_done   = 1'b1;
-                end
-            end
-
             default: raw_result = '0;
         endcase
     end

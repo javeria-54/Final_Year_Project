@@ -111,8 +111,6 @@ always_comb begin
     endcase
 end
 
-
-
 assign jal_imm = {{12{instr_word[31]}}, instr_word[19:12], instr_word[20], instr_word[30:21], 1'b0};
 
 assign is_jal = if2id_data.instr[6:2] == OPCODE_JAL_INST;

@@ -218,37 +218,6 @@ module vector_bitwise_unit (
                 end
             end
 
-            // ==================================================
-            // SEW = 64-bit elements
-            // Each element is 64 bits wide
-            // Loop iterates num_elements = VLEN/64 times
-            // ==================================================
-            2'b11: begin
-                for (int i = 0; i < 8; i++) begin
-                    logic [63:0] a, b, res;
-
-                    // Extract 64-bit element i from each operand
-                    a = dataA[i*64 +: 64];
-                    b = dataB[i*64 +: 64];
-
-                    case (alu_op_e'(bitwise_op))
-                        ALU_AND:  res = b & a;
-                        ALU_OR:   res = b | a;
-                        ALU_XOR:  res = b ^ a;
-                        ALU_NOT:  res = ~b;
-                        ALU_MINU: res = (b < a) ? b : a;
-                        ALU_MIN:  res = ($signed(b) < $signed(a)) ? b : a;
-                        ALU_MAXU: res = (b > a) ? b : a;
-                        ALU_MAX:  res = ($signed(b) > $signed(a)) ? b : a;
-                        default:  res = b;
-                    endcase
-
-                    raw_result[i*64 +: 64] = res;
-                    bitwise_done   = 1'b1;
-                end
-                
-            end
-
             // Invalid SEW: zero output
             default: raw_result = '0;
 

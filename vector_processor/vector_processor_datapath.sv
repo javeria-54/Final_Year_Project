@@ -69,6 +69,9 @@ module vector_processor_datapth (
     input   logic                               index_str,          // tells about index stride
     input   logic                               index_unordered,     // tells about index unordered stride
 
+    output  logic   [`MAX_VLEN-1:0] vec_wr_data,
+    input   logic   [$clog2(ROB_DEPTH)-1:0] seq_num,
+
     input   logic                               Ctrl,start,
     input   logic   [2:0]                       execution_op,
     input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,add_inst, sub_inst,
@@ -115,7 +118,7 @@ logic               error_flag;             // It tells that wrong configuration
 logic   [`MAX_VLEN-1:0] scaler1_extended ,scaler2_extended; 
 
 // The vector data that is to be written\
-logic   [`MAX_VLEN-1:0] vec_wr_data;
+
 
 // vec_csr_regs ->
 logic   [3:0]                   vlmul,emul;             // Gives the value of the lmul that is to used  in the procesor
@@ -445,7 +448,7 @@ logic [`XLEN-1:0] vector_write_address;
         .mem_sew_enc        (mem_sew_enc                ),
         .mem_rdata          (mem_rdata                  ),
  
-
+        .seq_num(seq_num),
         // vec_lsu  -> vec_register_file
         .vd_data            (vd_data                    ), 
         .is_loaded          (is_loaded                  ),
@@ -474,6 +477,7 @@ logic [`XLEN-1:0] vector_write_address;
         .data_2             (data_mux2_out[`MAX_VLEN-1:0]), 
         .data_3             (vec_data_3),
 
+        .seq_num(seq_num),
         .Ctrl               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
         .execution_op       (execution_op),
