@@ -8,6 +8,7 @@
 // Date: 20.5.2023
 
 `include "scalar_m_ext_defs.svh"
+`include "vector_processor_defs.svh"
 
 module divide (
 
@@ -53,9 +54,11 @@ logic  [`XLEN-1:0]                   rem_u;
 
 
 logic                                div_valid;
-
+logic [`Tag_Width-1:0]        div_seq_num;
 
 assign exe2div = exe2div_i;
+
+assign div_seq_num = exe2div.seq_num;
 
 assign alu_d_ops = type_alu_d_ops_e'(exe2div.alu_d_ops); 
 assign alu_opr_1 = exe2div.alu_operand_1;
@@ -161,7 +164,8 @@ end
 assign div2fwd.div_req = alu_d_req; 
 
 // Response from M-extension
-assign div2wrb.alu_d_result = alu_d_result_next; 
+assign div2wrb.alu_d_result = alu_d_result_next;
+assign div2wrb.seq_num = div_seq_num; 
 assign div2fwd.div_ack      = alu_d_ack_ff;
 
 assign div2fwd_o = div2fwd;

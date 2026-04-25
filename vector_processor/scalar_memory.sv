@@ -9,9 +9,9 @@ module memory #(
     input  logic rst_n,
 
     // ---------- PORT A : 512-bit / Element ----------
-    input  logic [31:0]  addr_a,
-    input  logic [511:0] wdata_a,
-    output logic [511:0] rdata_a,
+    input  logic [`XLEN-1:0]  addr_a,
+    input  logic [`VLEN-1:0] wdata_a,
+    output logic [`VLEN-1:0] rdata_a,
     input  logic         wen_a,
     input  logic         ren_a,
     input  logic [63:0]  byte_en_a,
@@ -23,7 +23,6 @@ module memory #(
     input  logic                     vec_pro_ack,
     input  wire  type_if2imem_s      if2mem_i,
     output type_imem2if_s            mem2if_o,
-    output logic [`XLEN-1:0]         instr_read,
 
     input  logic                     dmem_sel,
     input  type_dbus2peri_s          exe2mem_i,
@@ -46,9 +45,10 @@ module memory #(
     assign bank_sel_a_elem = addr_a[5:4];
     assign byte_off_a_elem = addr_a[3:0];
 
-    assign row_b      = exe2mem_i.addr[ROW_W+3 : 4];
-    assign bank_sel_b = exe2mem_i.addr[3:2];
-    assign byte_off_b = exe2mem_i.addr[1:0];
+    // Scalar address decode — vector ke saath consistent
+    assign row_b      = exe2mem_i.addr[ROW_W+5 : 6];  // same as vector
+    assign bank_sel_b = exe2mem_i.addr[5:4];           // bank 0-3
+    assign byte_off_b = exe2mem_i.addr[3:0];           // byte 0-15 within bank
 
     // Scalar/Instr interface signals
     logic                 instr_req;
@@ -61,6 +61,7 @@ module memory #(
     logic [3:0]           write_sel_byte;
     logic [`XLEN-1:0]     read_data;
     logic                 read_ack;
+    logic [`XLEN-1:0]                     instr_read;
 
     assign load_req       = exe2mem_i.req & dmem_sel & !exe2mem_i.w_en;
     assign store_req      = exe2mem_i.req & dmem_sel &  exe2mem_i.w_en;
@@ -202,41 +203,89 @@ module memory #(
             // ---- PORT B : Scalar Store ----
             else if (store_req) begin
                 case (write_sel_byte)
-                    // Byte store — sirf ek bank, sahi slot
-                    4'b0001: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
-                    4'b0010: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[15:8];
-                    4'b0100: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[23:16];
-                    4'b1000: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[31:24];
-
-                    // Halfword store — 2 consecutive bytes, same bank
-                    4'b0011: begin
-                        mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
-                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
-                    end
-                    4'b1100: begin
-                        mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[23:16];
-                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[31:24];
+                    4'b0001: begin  // Byte store
+                        case (bank_sel_b)
+                            2'd0: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                            2'd1: mem_bank_1[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                            2'd2: mem_bank_2[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                            2'd3: mem_bank_3[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                        endcase
                     end
 
-                    // Word store — 4 bytes, same row, consecutive byte offsets
-                    4'b1111: begin
-                        mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
-                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
-                        mem_bank_0[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                        mem_bank_0[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                    4'b0011: begin  // Halfword store
+                        case (bank_sel_b)
+                            2'd0: begin
+                                mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                            end
+                            2'd1: begin
+                                mem_bank_1[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_1[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                            end
+                            2'd2: begin
+                                mem_bank_2[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_2[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                            end
+                            2'd3: begin
+                                mem_bank_3[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_3[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                            end
+                        endcase
                     end
-                    default: ;
+
+                    4'b1111: begin  // Word store
+                        case (bank_sel_b)
+                            2'd0: begin
+                                mem_bank_0[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_0[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_0[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                            end
+                            2'd1: begin
+                                mem_bank_1[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_1[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_1[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_1[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                            end
+                            2'd2: begin
+                                mem_bank_2[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_2[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_2[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_2[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                            end
+                            2'd3: begin
+                                mem_bank_3[row_b][byte_off_b*8     +: 8] <= write_data[7:0];
+                                mem_bank_3[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_3[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_3[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                            end
+                        endcase
+                    end
                 endcase
                 read_ack <= 1'b1;
             end
 
             // ---- PORT B : Scalar Load ----
             else if (load_req) begin
-                read_data <= {  mem_bank_0[row_b][(byte_off_b+3)*8 +: 8],
-                                mem_bank_0[row_b][(byte_off_b+2)*8 +: 8],
-                                mem_bank_0[row_b][(byte_off_b+1)*8 +: 8],
-                                mem_bank_0[row_b][byte_off_b*8     +: 8] };
-                read_ack  <= 1'b1;
+                case (bank_sel_b)
+                    2'd0: read_data <= {mem_bank_0[row_b][(byte_off_b+3)*8 +: 8],
+                                        mem_bank_0[row_b][(byte_off_b+2)*8 +: 8],
+                                        mem_bank_0[row_b][(byte_off_b+1)*8 +: 8],
+                                        mem_bank_0[row_b][byte_off_b*8     +: 8]};
+                    2'd1: read_data <= {mem_bank_1[row_b][(byte_off_b+3)*8 +: 8],
+                                        mem_bank_1[row_b][(byte_off_b+2)*8 +: 8],
+                                        mem_bank_1[row_b][(byte_off_b+1)*8 +: 8],
+                                        mem_bank_1[row_b][byte_off_b*8     +: 8]};
+                    2'd2: read_data <= {mem_bank_2[row_b][(byte_off_b+3)*8 +: 8],
+                                        mem_bank_2[row_b][(byte_off_b+2)*8 +: 8],
+                                        mem_bank_2[row_b][(byte_off_b+1)*8 +: 8],
+                                        mem_bank_2[row_b][byte_off_b*8     +: 8]};
+                    2'd3: read_data <= {mem_bank_3[row_b][(byte_off_b+3)*8 +: 8],
+                                        mem_bank_3[row_b][(byte_off_b+2)*8 +: 8],
+                                        mem_bank_3[row_b][(byte_off_b+1)*8 +: 8],
+                                        mem_bank_3[row_b][byte_off_b*8     +: 8]};
+                endcase
+                read_ack <= 1'b1;
             end
           
             if (instr_req & !instr_ack) begin

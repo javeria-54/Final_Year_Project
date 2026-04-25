@@ -24,17 +24,17 @@ module vec_lsu (
     input  logic [2:0]              width,
     input  logic                    inst_done,
 
-    output logic [31:0]             mem_addr,
-    output logic [511:0]            mem_wdata,
-    output logic [511:0]            mem_wdata_unit,
+    output logic [`XLEN-1:0]             mem_addr,
+    output logic [`VLEN-1:0]            mem_wdata,
+    output logic [`VLEN-1:0]            mem_wdata_unit,
     output logic [63:0]             mem_byte_en,
     output logic                    mem_wen,
     output logic                    mem_ren,
     output logic                    mem_elem_mode,
     output logic [1:0]              mem_sew_enc,
-    input  logic [511:0]            mem_rdata,
+    input  logic [`VLEN-1:0]            mem_rdata,
 
-    input  logic [$clog2(ROB_DEPTH)-1:0] seq_num,
+    input  logic [`Tag_Width-1:0] seq_num,
 
     output logic [`MAX_VLEN-1:0]    vd_data,
     output logic                    is_loaded,

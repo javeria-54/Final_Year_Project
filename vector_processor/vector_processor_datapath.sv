@@ -69,8 +69,17 @@ module vector_processor_datapth (
     input   logic                               index_str,          // tells about index stride
     input   logic                               index_unordered,     // tells about index unordered stride
 
-    output  logic   [`MAX_VLEN-1:0] vec_wr_data,
-    input   logic   [$clog2(ROB_DEPTH)-1:0] seq_num,
+    output  logic   [`MAX_VLEN-1:0]             vec_wr_data,
+    input   logic   [`Tag_Width-1:0]            seq_num,
+    output  logic                               execution_done,
+    output  logic                               data_written,           // tells that data is written to the register file
+    // Output from csr_reg--> datapath (done signal)
+    output  logic                               csr_done,               // This signal tells that csr instruction has been implemented successfully
+    output logic                                is_stored,              // It tells that data is stored to the memory
+    output logic    [`MAX_VLEN-1:0]     execution_result,
+
+
+    output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
 
     input   logic                               Ctrl,start,
     input   logic   [2:0]                       execution_op,
@@ -84,7 +93,7 @@ module vector_processor_datapth (
 
 
 // Read and Write address from Decode --> Vector Register file 
-logic   [`XLEN-1:0] vec_read_addr_1  , vec_read_addr_2 , vec_write_addr;
+
 
 // Vector Immediate from the decode 
 logic   [`MAX_VLEN-1:0] vec_imm;
@@ -111,7 +120,7 @@ logic   [`XLEN-1:0] scalar2;
 
 // Output from vector processor lsu --> lsu mux
 logic               is_loaded;              // It tells that data is loaded from the memory and ready to be written in register file
-logic               is_stored;              // It tells that data is stored to the memory
+
 logic               error_flag;             // It tells that wrong configurations has occure   
 
 // The extended scaler 1 and scaler 2 upto MAX_VLEN
@@ -129,8 +138,7 @@ logic                           mask_agnostic;          // vector mask agnostic
 logic   [`XLEN-1:0]             vec_length;             // Gives the length of the vector onwhich maskng operation is to performed
 logic   [`XLEN-1:0]             start_element;          // Gives the start elemnet of the vector from where the masking is to be started
 
- // Output from csr_reg--> datapath (done signal)
- logic                          csr_done;               // This signal tells that csr instruction has been implemented successfully
+ 
 
 // vec_registerfile --> next moduels and data selection muxes
 logic   [`MAX_VLEN-1:0]         vec_data_1, vec_data_2, vec_data_3; // The read data from the vector register file
@@ -138,7 +146,7 @@ logic   [`MAX_VLEN-1:0]         dst_vec_data;           // The data of the desti
 logic   [VECTOR_LENGTH-1:0]     vector_length;          // Width of the vector depending on LMUL
 logic                           wrong_addr;             // Signal to indicate an invalid address
 logic   [`VLEN-1:0]             v0_mask_data;           // The data of the mask register that is v0 in register file 
-logic                           data_written;           // tells that data is written to the register file
+
 
 // Outputs of the data selection muxes after register file
 logic   [`MAX_VLEN-1:0]         data_mux1_out;          // selection between the vec_reg_data_1 , vec_imm , scalar1
@@ -155,10 +163,10 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
 
 
-logic   [`MAX_VLEN-1:0]     execution_result;
+
 logic   [1:0]               sew_execution;         
 logic   [`MAX_VLEN-1:0]     vd_data;
-logic                       execution_done;
+
 logic   [`VLEN-1:0]         vs1,vs2;
 logic   [4095:0]            mask_unit_output;
 logic   [511:0]             mask_reg_updated;
@@ -172,7 +180,7 @@ assign error     = error_flag || wrong_addr;
              //////////////////////
             //      DECODE      //
            //////////////////////   
-logic [`XLEN-1:0] vector_write_address;       
+logic [4:0] vector_write_address;       
 
     vec_decode DECODER(
         // scalar_processor -> vec_decode

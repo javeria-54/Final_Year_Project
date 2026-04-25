@@ -15,6 +15,7 @@
 `include "scalar_pcore_config_defs.svh"
 `include "scalar_csr_defs.svh"
 `include "scalar_a_ext_defs.svh"
+`include "vector_processor_defs.svh"
 
 //============================== ISA related definitions ================================//
 
@@ -213,6 +214,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                pc_next;
     type_exc_code_e                  exc_code;
     logic                            instr_flushed;
+    logic [`Tag_Width-1:0]    seq_num;
 } type_if2id_data_s;
 
 // Fetch-2-Decode control signals
@@ -226,7 +228,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                rs1_data;     
     logic [`XLEN-1:0]                rs2_data;
     logic [`XLEN-1:0]                instr;
-    logic [$clog2(ROB_DEPTH)-1:0]    seq_num;
+    logic [`Tag_Width-1:0]           seq_num;
     logic [`XLEN-1:0]                pc;
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                imm;  
@@ -264,7 +266,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                alu_result;
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                rs2_data;
-    logic [$clog2(ROB_DEPTH)-1:0]    seq_num;
+    logic [`Tag_Width-1:0]    seq_num;
 } type_exe2lsu_data_s;
 
 typedef struct packed {  
@@ -286,7 +288,8 @@ typedef struct packed {
     logic [`XLEN-1:0]                instr;
     logic [`XLEN-1:0]                csr_wdata;  
     type_exc_code_e                  exc_code; 
-    logic                            instr_flushed;     
+    logic                            instr_flushed;
+    logic [`Tag_Width-1:0]    seq_num;     
 } type_exe2csr_data_s;
 
 typedef struct packed {                           
@@ -311,9 +314,9 @@ typedef struct packed {
 
 // CSR-2-Writeback data and control signals
 typedef struct packed {                            
-    logic [`XLEN-1:0]                csr_rdata;     
+    logic [`XLEN-1:0]                csr_rdata; 
+    logic [`Tag_Width-1:0]    seq_num;    
 } type_csr2wrb_data_s;
-
 
 // Pipeline-2-CSR IRQ signals
 typedef struct packed { 
@@ -334,7 +337,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                r_data;  
     logic [`RF_AWIDTH-1:0]           rd_addr;
-    logic [$clog2(ROB_DEPTH)-1:0]    seq_num; 
+    logic [`Tag_Width-1:0]    seq_num; 
 } type_lsu2wrb_data_s;
 
 typedef struct packed {                           
@@ -393,7 +396,8 @@ typedef struct packed {
 typedef struct packed {                            
     logic [`XLEN-1:0]                rd_data;
     logic [`RF_AWIDTH-1:0]           rd_addr;
-    logic                            rd_wr_req;  
+    logic                            rd_wr_req; 
+    logic [`Tag_Width-1:0]    seq_num; 
 } type_wrb2id_fb_s;
 
 // LSU-2-Forward_stall interface signals
@@ -417,6 +421,7 @@ typedef struct packed {
     logic                            new_pc_req;  
     logic                            use_rs1;
     logic                            use_rs2; 
+    logic [`Tag_Width-1:0]          seq_num;
 } type_exe2fwd_s;
 
 // CSR-2-Forward interface signals

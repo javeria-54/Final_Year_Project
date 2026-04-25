@@ -10,6 +10,7 @@
 
 `include "scalar_a_ext_defs.svh"
 
+`include "vector_processor_defs.svh"
 
 module amo (
 

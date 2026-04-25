@@ -12,6 +12,8 @@
 `define A_EXT_DEFS
 
 `include "scalar_pcore_config_defs.svh"
+`include "vector_processor_defs.svh"
+
 
 // Atomic memory opertions
  typedef enum logic [3:0] {
@@ -52,7 +54,8 @@ typedef struct packed {
     logic [`XLEN-1:0]                rs2_operand;
 
    // Response from memory load operation
-    logic [`XLEN-1:0]                r_data; 
+    logic [`XLEN-1:0]                r_data;
+    
 } type_lsu2amo_data_s;
 
 typedef struct packed {                      
@@ -65,6 +68,7 @@ typedef struct packed {
 typedef struct packed {                            
     logic [`XLEN-1:0]                w_data; 
     logic [`XLEN-1:0]                amo_wrb_data; 
+    logic [`Tag_Width-1:0]           seq_num; 
 } type_amo2lsu_data_s;
 
 `endif // A_EXT_DEFS

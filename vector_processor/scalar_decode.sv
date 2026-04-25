@@ -9,6 +9,7 @@
 
 
 `include "scalar_pcore_interface_defs.svh"
+`include "vector_processor_defs.svh"
 
 module decode (
 
@@ -19,10 +20,18 @@ module decode (
     input wire type_if2id_data_s              if2id_data_i,
     input wire type_if2id_ctrl_s              if2id_ctrl_i,
 
-    input logic rob_instr,
-    input logic rob_seq_num,
-    output logic de_valid_o,
-    input logic rob_full,
+    input  logic     [`XLEN-1:0]                         rob_instr,
+    input  logic    [`Tag_Width-1:0]          rob_seq_num,
+    // Decode-stage flags driven into ROB
+    output logic                              is_scalar_store,
+    output logic                              is_vector_store,
+    output logic                              is_scalar_load,
+    output logic                              is_vector_load,
+
+    output logic [`RF_AWIDTH-1:0]               id2rf_rs1_addr,            // RF rs1 address
+    output logic [`RF_AWIDTH-1:0]               id2rf_rs2_addr,            // RF rs2 address
+    output logic [`XLEN-1:0]                    rf2id_rs1_data,           // RF rs1 data
+    output logic [`XLEN-1:0]                    rf2id_rs2_data,            // RF rs2 data
     
     // Decode <---> Execute interface
     output type_id2exe_data_s                 id2exe_data_o,
@@ -30,8 +39,6 @@ module decode (
 
     // Decode <---> Vector_processor
     output logic                              is_vector,
-    output logic                              is_scalar_store, is_scalar_load,  // scalar store instruction
-    output  logic                             is_vector_store, is_vector_load, // vector store instruction
 
     // CSR <---> Decode feedback interface
     input wire type_csr2id_fb_s               csr2id_fb_i,
@@ -44,13 +51,12 @@ module decode (
 
 //============================= Local signals and their assignments =============================//
 // Local signals
-logic [`RF_AWIDTH-1:0]               id2rf_rs1_addr;            // RF rs1 address
-logic [`RF_AWIDTH-1:0]               id2rf_rs2_addr;            // RF rs2 address
+//logic [`RF_AWIDTH-1:0]               id2rf_rs1_addr;            // RF rs1 address
+//logic [`RF_AWIDTH-1:0]               id2rf_rs2_addr;            // RF rs2 address
 //logic [`RF_AWIDTH-1:0]               id2exe_rd_addr;            // RF rd address
 
 logic [`XLEN-1:0]                    instr_codeword;
-logic [`XLEN-1:0]                    rf2id_rs1_data;            // RF rs1 data
-logic [`XLEN-1:0]                    rf2id_rs2_data;            // RF rs2 data
+
 
 // 
 logic                                illegal_instr;
@@ -76,7 +82,7 @@ assign if2id_data = if2id_data_i;
 assign csr2id_fb  = csr2id_fb_i;
 
 // Instruction opcodes
-assign instr_codeword = rob_instr //if2id_data.instr;
+assign instr_codeword = rob_instr; //if2id_data.instr;
 assign instr_opcode   = type_rv_opcode_e'(instr_codeword[6:2]); 
 assign funct7_opcode  = instr_codeword[31:25];
 assign funct3_opcode  = instr_codeword[14:12];
@@ -130,18 +136,23 @@ always_comb begin
     id2exe_data.instr_flushed = if2id_data.instr_flushed;
     id2exe_data.seq_num      = rob_seq_num;
     
-    de_valid_o     = ~rob_full_i & (if2id_ctrl.exc_req | if2id_ctrl.irq_req);
 
     // Default values for local signals
     illegal_instr       = 1'b0;
     is_vector           = 1'b0;
+    // always_comb ke start mein defaults add karo:
+    is_scalar_store = 1'b0;   // ← missing hai
+    is_vector_store = 1'b0;   // ← missing hai  
+    is_scalar_load  = 1'b0;   // ← missing hai
+    is_vector_load  = 1'b0;   // ← missing hai
     // Check for instruction memory access fault
  /*   if (if2id_ctrl.exc_req) begin
         id2exe_ctrl.exc_req  = 1'b1;
         id2exe_data.exc_code = if2id_data.exc_code;    
         
     end else begin  // no instruction memory access fault
-  */      case (instr_opcode)
+  */      
+    case (instr_opcode)
             OPCODE_ARITH_INST  : begin
                 
                 id2exe_ctrl.rd_wrb_sel       = RD_WRB_ALU;
@@ -562,16 +573,20 @@ always_comb begin
             end
             OPCODE_VECTOR_LOAD_INST : begin
                 is_vector = 1'b1;
-                is_vec_load = 1'b1;
+                is_vector_load = 1'b1;
+                is_vector_store = 1'b0;
             end   
             OPCODE_VECTOR_STORE_INST : begin
                 is_vector = 1'b1;
-                is_vec_store = 1'b1;
+                is_vector_store = 1'b1;
+                is_vector_load = 1'b0;
             end
 
             default : begin
                 illegal_instr = 1'b1;
                 is_vector     = 1'b0;
+                is_vector_load = 1'b0;
+                is_vector_store = 1'b0;
             end
         endcase // instr_opcode (Instruction opcode) 
   //  end // no instruction memory fault
@@ -624,6 +639,7 @@ reg_file rf_module (
    .rf2id_rs1_data_o     (rf2id_rs1_data),
    .id2rf_rs2_addr_i     (id2rf_rs2_addr),
    .rf2id_rs2_data_o     (rf2id_rs2_data),
+   .id2rf_seq_num_i      (wrb2id_fb_i.seq_num),
    .id2rf_rd_wr_req_i    (wrb2id_fb_i.rd_wr_req),
    .id2rf_rd_addr_i      (wrb2id_fb_i.rd_addr ),
    .id2rf_rd_data_i      (wrb2id_fb_i.rd_data)

@@ -10,10 +10,10 @@ module vec_decode(
     input  logic                   is_vec,
 
     // vec_decode -> vec_regfile
-    output  logic [`XLEN-1:0]       vec_read_addr_1,        // vs1_addr
-    output  logic [`XLEN-1:0]       vec_read_addr_2,        // vs2_addr
-    output  logic [`XLEN-1:0]       vec_read_addr_3,        //read_write_port
-    output  logic [`XLEN-1:0]       vec_write_addr,         // vd_addr
+    output  logic [4:0]       vec_read_addr_1,        // vs1_addr
+    output  logic [4:0]       vec_read_addr_2,        // vs2_addr
+    output  logic [4:0]       vec_read_addr_3,        //read_write_port
+    output  logic [4:0]       vec_write_addr,         // vd_addr
     output  logic [`MAX_VLEN-1:0]   vec_imm,
     output  logic                   vec_mask,
 

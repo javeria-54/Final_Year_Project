@@ -8,7 +8,7 @@
 // Date: 11.8.2022
 
 `include "scalar_pcore_interface_defs.svh"
-
+`include "vector_processor_defs.svh"
 
 module reg_file (
 
@@ -21,6 +21,7 @@ module reg_file (
     output  logic [`XLEN-1:0]          rf2id_rs1_data_o,    // rs1 read data
     output  logic [`XLEN-1:0]          rf2id_rs2_data_o,    // rs2 read data
 
+    input   logic [`Tag_Width-1:0] id2rf_seq_num_i,
     input   logic                      id2rf_rd_wr_req_i,   // write request
     input   logic [`RF_AWIDTH-1:0]     id2rf_rd_addr_i,     // rd write address
     input   logic [`XLEN-1:0]          id2rf_rd_data_i     // rd write data

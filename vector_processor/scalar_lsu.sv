@@ -10,6 +10,7 @@
 
 `include "scalar_pcore_interface_defs.svh"
 `include "scalar_a_ext_defs.svh"
+`include "vector_processor_defs.svh"
 
 
 module lsu (
@@ -82,6 +83,8 @@ logic                        is_amo;
 logic                        lsu_amo_req;
 logic                        lsu_amo_ack; 
 
+logic [`Tag_Width-1:0] lsu_seq_num;
+
 // Signal assignments
 assign exe2lsu_data  = exe2lsu_data_i;
 assign exe2lsu_ctrl  = exe2lsu_ctrl_i;
@@ -95,6 +98,9 @@ assign ld_ops        = exe2lsu_ctrl.ld_ops;
 
 // AMO related signals
 assign is_amo        = |(exe2lsu_ctrl.amo_ops);
+
+assign lsu_seq_num = is_amo ? amo2lsu_data.seq_num  : exe2lsu_data.seq_num;
+
 
 //=================================== Memory load operation =====================================//
 // Extract the right size from the read data  
@@ -181,7 +187,7 @@ end
 
 //=================================== Output signals update =====================================//
 
-assign lsu2wrb_data.seq_num = exe2lsu_data.seq_num;
+assign lsu2wrb_data.seq_num = lsu_seq_num;
 
 assign ld_st_addr = exe2lsu_data.alu_result;
 
@@ -248,6 +254,9 @@ assign lsu2amo_ctrl_o = lsu2amo_ctrl;
 assign lsu2dbus_o     = lsu2dbus; 
 assign lsu2fwd_o      = lsu2fwd;
 
-assign lsu_done_o = lsu_amo_ack | (!ld_req & !st_req & !is_amo);
+//assign lsu_done_o = lsu_amo_ack | (!ld_req & !st_req & !is_amo);
+// Sirf tab done ho jab koi actual operation complete ho
+assign lsu_done_o = lsu_amo_ack  // load/store/AMO complete hua
+                  & (ld_req | st_req | is_amo);  // aur koi operation chal rahi thi
 
 endmodule : lsu

@@ -15,7 +15,7 @@
 
 
 `include "scalar_pcore_interface_defs.svh"
-
+`include "vector_processor_defs.svh"
 
 
 module csr (
@@ -850,6 +850,7 @@ assign csr2fwd.csr_read_req = exe2csr_ctrl.csr_rd_req;
  
 // Prepare the output signal for writeback stage
 assign csr2wrb_data.csr_rdata = csr_rdata;
+assign csr2wrb_data.seq_num   = exe2csr_data.seq_num;
 
 // CSR to LSU signals
 //assign csr2lsu_data.lsu_flush = csr2fwd.new_pc_req | csr2fwd.wfi_req; 

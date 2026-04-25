@@ -9,6 +9,7 @@
 
 
 `include "scalar_m_ext_defs.svh"
+`include "vector_processor_defs.svh"
 
 
 module execute (
@@ -91,7 +92,8 @@ logic  [4:0]                         shift_amt;
 
 logic [`RF_AWIDTH-1:0]               rs1_addr;            
 logic [`RF_AWIDTH-1:0]               rs2_addr;           
-logic [`RF_AWIDTH-1:0]               rd_addr;            
+logic [`RF_AWIDTH-1:0]               rd_addr;
+logic [`Tag_Width-1:0]       exe_seq_num;            
 
 // Instantiate input control and data structures and get the ALU operator
 assign alu_i_operator = type_alu_i_ops_e'(id2exe_ctrl_i.alu_i_ops);
@@ -103,6 +105,7 @@ assign id2exe_data    = id2exe_data_i;
 assign rd_addr  = id2exe_data.instr[11:7];
 assign rs1_addr = id2exe_data.instr[19:15];
 assign rs2_addr = id2exe_data.instr[24:20];
+assign exe_seq_num  = id2exe_data.seq_num;
 
 // Feedback data from LSU and writeback to execute stage
 assign lsu2exe_fb_alu_result = lsu2exe_fb_alu_result_i;
@@ -461,6 +464,7 @@ end
 // Update the output data signals for M-Extension
 assign exe2div.alu_operand_1 = alu_operand_1;
 assign exe2div.alu_operand_2 = alu_operand_2;
+assign exe2div.seq_num       = exe_seq_num;
 
 // Assign the output control signals for M-Extension
 assign exe2div.alu_d_ops  = id2exe_ctrl.alu_d_ops;
@@ -469,6 +473,7 @@ assign exe2div.alu_d_ops  = id2exe_ctrl.alu_d_ops;
 assign exe2lsu_data.alu_result = mul_cmd ? alu_m_result : (bitmanip_cmd ? alu_b_result : alu_result);
 assign exe2lsu_data.pc_next    = id2exe_data.pc_next;
 assign exe2lsu_data.rs2_data   = operand_rs2_data; // MT: This should be verified due to forwarding
+assign exe2lsu_data.seq_num    = exe_seq_num;
 
 // Assign the output control signals for LSU
 assign exe2lsu_ctrl.rd_addr    = id2exe_data.instr[11:7];
@@ -497,6 +502,7 @@ assign exe2csr_data.pc         = id2exe_data.pc;
 assign exe2csr_data.instr      = id2exe_data.instr;
 assign exe2csr_data.exc_code   = id2exe_data.exc_code;
 assign exe2csr_data.instr_flushed = id2exe_data.instr_flushed;
+assign exe2csr_data.seq_num    = exe_seq_num;
 
 // MT: The register operand below can be routed through ALU for optimization purpose. The 
 // immediate operand can be sent as 5-bit field separately along the data path
@@ -507,6 +513,7 @@ assign exe2csr_data.csr_wdata = (id2exe_ctrl.csr_opr_sel == CSR_OPR_REG)
 // Signals from EXE module for forwarding evaluation
 assign exe2fwd.rs1_addr   = rs1_addr;
 assign exe2fwd.rs2_addr   = rs2_addr;
+assign exe2fwd.seq_num    = exe_seq_num;
 assign exe2fwd.new_pc_req = id2exe_ctrl.jump_req || (id2exe_ctrl.branch_req & branch_res);
 
 // The following signals determine whether the two operands are general-purpose registers
@@ -542,7 +549,7 @@ logic any_valid_cmd;
 assign div_cmd = |id2exe_ctrl.alu_d_ops;
 
 // ALU - koi arithmetic instruction hai?
-assign alu_cmd = (alu_i_operator != ALU_I_OPS_NOP); // ya jo bhi NOP value ho
+//assign alu_cmd = (alu_i_operator != ALU_I_OPS_NOP); // ya jo bhi NOP value ho
 
 // CSR - koi CSR operation hai?
 assign csr_cmd = |id2exe_ctrl.csr_ops;
@@ -551,8 +558,7 @@ assign csr_cmd = |id2exe_ctrl.csr_ops;
 assign branch_cmd = id2exe_ctrl.branch_req | id2exe_ctrl.jump_req;
 
 // Koi bhi valid operation chal rahi hai?
-assign any_valid_cmd = alu_cmd 
-                     | mul_cmd        // already code mein hai
+assign any_valid_cmd =  mul_cmd        // already code mein hai
                      | bitmanip_cmd   // already code mein hai
                      | csr_cmd 
                      | branch_cmd;
@@ -560,7 +566,12 @@ assign any_valid_cmd = alu_cmd
 // Done signal:
 // 1. Koi valid instruction ho
 // 2. Division na ho rahi ho
-assign exe_done = any_valid_cmd & ~div_cmd;
+//assign exe_done = any_valid_cmd & ~div_cmd;
+
+// rd_wr_req = 1 matlab execute ne koi result produce kiya
+assign exe_done = id2exe_ctrl.rd_wr_req   // koi register write ho rahi hai
+                & ~div_cmd                 // divide nahi hai
+                & ~id2exe_data.instr_flushed;  // flushed nahi hai
 
 assign exe_done_o = exe_done;
 
