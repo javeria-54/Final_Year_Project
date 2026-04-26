@@ -22,6 +22,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                alu_operand_2; 
     type_alu_d_ops_e                 alu_d_ops;
     logic [`Tag_Width-1:0]    seq_num;
+    logic [`REG_ADDR_W-1:0] rd_addr;
 } type_exe2div_s;
 
 typedef struct packed {                            
@@ -32,7 +33,8 @@ typedef struct packed {
 // M-extension-2-writeback signals
 typedef struct packed {                            
     logic  [`XLEN-1:0]                alu_d_result;
-    logic [`Tag_Width-1:0]   seq_num;   
+    logic [`Tag_Width-1:0]            seq_num;  
+    logic [`REG_ADDR_W-1:0]           rd_addr; 
 } type_div2wrb_s;
 
 typedef enum logic [1:0] {

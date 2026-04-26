@@ -465,6 +465,7 @@ end
 assign exe2div.alu_operand_1 = alu_operand_1;
 assign exe2div.alu_operand_2 = alu_operand_2;
 assign exe2div.seq_num       = exe_seq_num;
+assign exe2div.rd_addr       = rd_addr;
 
 // Assign the output control signals for M-Extension
 assign exe2div.alu_d_ops  = id2exe_ctrl.alu_d_ops;

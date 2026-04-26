@@ -23,7 +23,7 @@ module divide (
 
     // M-extension <---> Forward-stall interface
     output type_div2fwd_s                div2fwd_o,
-    input  logic                         div_done,
+    output  logic                         div_done,
 
     output type_div2wrb_s                div2wrb_o
 );
@@ -84,6 +84,7 @@ always_comb begin
     end
 end
 
+logic [`REG_ADDR_W-1:0]  alu_d_rd_addr_ff, alu_d_rd_addr_next;
 
 always_ff @(negedge rst_n, posedge clk ) begin
 
@@ -93,12 +94,14 @@ always_ff @(negedge rst_n, posedge clk ) begin
         alu_d_opr2_ff      <= '0;
         alu_d_opr1_sign_ff <= '0;
         alu_d_opr2_sign_ff <= '0;
+        alu_d_rd_addr_ff   <= '0;
     end else begin
         alu_d_ops_ff       <= alu_d_ops_next; 
         alu_d_opr1_ff      <= alu_d_opr1_next;
         alu_d_opr2_ff      <= alu_d_opr2_next;
         alu_d_opr1_sign_ff <= alu_d_opr1_sign_next;
         alu_d_opr2_sign_ff <= alu_d_opr2_sign_next;
+        alu_d_rd_addr_ff   <= alu_d_rd_addr_next;
     end 
 end
 
@@ -110,15 +113,16 @@ always_comb begin
         alu_d_opr2_next      = alu_d_opr2_ff;
         alu_d_opr1_sign_next = alu_d_opr1_sign_ff;
         alu_d_opr2_sign_next = alu_d_opr2_sign_ff;
+        alu_d_rd_addr_next   = alu_d_rd_addr_ff;
     end else begin
         alu_d_ops_next       = alu_d_ops;
         alu_d_opr1_next      = alu_d_opr_1;
         alu_d_opr2_next      = alu_d_opr_2;
         alu_d_opr1_sign_next = alu_opr_1[`XLEN-1];
         alu_d_opr2_sign_next = alu_opr_2[`XLEN-1];
+        alu_d_rd_addr_next   = exe2div.rd_addr;
     end
 end
-
 
 always_comb begin
     alu_d_result_next = '0;
@@ -162,7 +166,7 @@ end
 
 // Request from M-extension
 assign div2fwd.div_req = alu_d_req; 
-
+assign div2wrb.rd_addr      = alu_d_rd_addr_ff;
 // Response from M-extension
 assign div2wrb.alu_d_result = alu_d_result_next;
 assign div2wrb.seq_num = div_seq_num; 

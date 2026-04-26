@@ -184,6 +184,7 @@ assign if2id_data.instr         = instr_word;
 assign if2id_data.pc            = pc_ff;
 assign if2id_data.pc_next       = is_jal ? (pc_plus_4) : pc_next;
 assign if2id_data.instr_flushed = 1'b0;
+assign if2id_data.seq_num = 'b0;
 
 assign if2id_data.exc_code      = exc_code_next;
 assign if2id_ctrl.exc_req       = exc_req_next;

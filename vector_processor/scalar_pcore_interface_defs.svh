@@ -214,7 +214,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                pc_next;
     type_exc_code_e                  exc_code;
     logic                            instr_flushed;
-    logic [`Tag_Width-1:0]    seq_num;
+    logic [`Tag_Width-1:0]           seq_num;
 } type_if2id_data_s;
 
 // Fetch-2-Decode control signals
@@ -397,7 +397,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                rd_data;
     logic [`RF_AWIDTH-1:0]           rd_addr;
     logic                            rd_wr_req; 
-    logic [`Tag_Width-1:0]    seq_num; 
+    //logic [`Tag_Width-1:0]    seq_num; 
 } type_wrb2id_fb_s;
 
 // LSU-2-Forward_stall interface signals

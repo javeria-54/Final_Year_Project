@@ -81,9 +81,19 @@ type_fwd2csr_s                          fwd2csr;
 type_fwd2lsu_s                          fwd2lsu;
 type_fwd2ptop_s                         fwd2ptop;
 
-type_clint2csr_s        clint2csr_i;
+type_clint2csr_s                        clint2csr_i;
 
-type_pipe2csr_s         core2pipe_i;
+type_pipe2csr_s                         core2pipe_i;
+
+type_id2exe_ctrl_s                      id2exe_ctrl_next;
+type_id2exe_data_s                      id2exe_data_next;
+
+type_exe2lsu_ctrl_s                     exe2lsu_ctrl_next;
+type_exe2lsu_data_s                     exe2lsu_data_next;
+
+// Interfaces for CSR module
+type_exe2csr_data_s                     exe2csr_data_next;
+type_exe2csr_ctrl_s                     exe2csr_ctrl_next;
 
 // ============================================================
 // Peripheral bus signals — stubbed (not used in simulation)
@@ -119,7 +129,6 @@ logic                                   gpsw_sel;
 logic                                   gpled_sel;
 
 type_dbus2peri_s                        dbus2peri;
-//type_dbus2peri_s                        dbus2mem;
 type_peri2dbus_s                        mem2dbus;
 
 // ============================================================
@@ -301,6 +310,8 @@ logic                                   scalar_pro_ack;
 // Done signals
 logic                                   scalar_done, vector_done;
 
+logic [`Tag_Width-1:0] vec_seq_num;
+
 assign scalar_done = div_done | exe_done | lsu_done;
 assign vector_done = execution_done | is_stored | csr_done;
 
@@ -324,6 +335,29 @@ assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu | fwd
                         fwd2ptop.id2exe_pipe_flush | fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush | 
                         fwd2lsu.lsu_flush ;
 assign flush_seq   = '0;
+
+// Pipeline top mein:
+logic [`XLEN-1:0]  scalar_result_to_rob;
+logic [`Tag_Width-1:0] scalar_seq_to_rob;
+
+// Pipeline top MUX mein rd_addr bhi sath rakho:
+logic [`REG_ADDR_W-1:0] scalar_rd_addr_to_rob;
+
+always_comb begin
+    if (div_done) begin
+        scalar_result_to_rob  = div2wrb.alu_d_result;
+        scalar_seq_to_rob     = div2wrb.seq_num;
+        scalar_rd_addr_to_rob = div2wrb.rd_addr;    // div2wrb mein rd_addr hai?
+    end else if (lsu_done) begin
+        scalar_result_to_rob  = lsu2wrb_data.r_data;
+        scalar_seq_to_rob     = lsu2wrb_data.seq_num;
+        scalar_rd_addr_to_rob = lsu2wrb_data.rd_addr; // ✅ yeh already hai
+    end else begin // exe_done — ALU, CSR, MUL
+        scalar_result_to_rob  = exe2lsu_data.alu_result;
+        scalar_seq_to_rob     = exe2lsu_data.seq_num;
+        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;  // ✅ same cycle
+    end
+end
 
 // ============================================================
 //                FETCH MODULE
@@ -408,6 +442,7 @@ decode decode_module (
     .wrb2id_fb_i     (wrb2id_fb)
 );
 
+
 // ============================================================
 //                EXECUTE MODULE
 // ============================================================
@@ -429,48 +464,115 @@ execute execute_module (
     .wrb2exe_fb_rd_data_i    (wrb2exe_fb_rd_data)
 );
 
+// Execute <-----> LSU pipeline/nopipeline  
+`ifdef EXE2LSU_PIPELINE_STAGE
+type_exe2lsu_data_s                     exe2lsu_data_pipe_ff;
+type_exe2lsu_ctrl_s                     exe2lsu_ctrl_pipe_ff;
+type_exe2csr_data_s                     exe2csr_data_pipe_ff;
+type_exe2csr_ctrl_s                     exe2csr_ctrl_pipe_ff;
+
+always_ff @(posedge clk) begin
+    if (~rst_n) begin
+        exe2lsu_data_pipe_ff <= '0;
+        exe2lsu_ctrl_pipe_ff <= '0;         
+        exe2csr_data_pipe_ff <= '0;
+        exe2csr_ctrl_pipe_ff <= '0;
+     end else begin
+        exe2lsu_data_pipe_ff <= exe2lsu_data_next;
+        exe2lsu_ctrl_pipe_ff <= exe2lsu_ctrl_next;
+        exe2csr_data_pipe_ff <= exe2csr_data_next;
+        exe2csr_ctrl_pipe_ff <= exe2csr_ctrl_next;
+    end
+end
+
+always_comb begin
+    exe2csr_data_next = exe2csr_data;
+    exe2lsu_ctrl_next = exe2lsu_ctrl;
+    exe2csr_ctrl_next = exe2csr_ctrl; 
+    exe2lsu_data_next = exe2lsu_data;
+     
+    if (fwd2ptop.exe2lsu_pipe_flush) begin
+        exe2lsu_ctrl_next = '0;
+        exe2csr_ctrl_next = '0;
+        exe2csr_data_next.instr_flushed = 1'b1;
+        exe2lsu_data_next.alu_result = exe2lsu_data_pipe_ff.alu_result;
+    end else if (fwd2ptop.exe2lsu_pipe_stall) begin  // Stall the exe2lsu/csr stage
+        exe2lsu_ctrl_next = exe2lsu_ctrl_pipe_ff;
+        exe2csr_ctrl_next = exe2csr_ctrl_pipe_ff;
+        exe2lsu_data_next = exe2lsu_data_pipe_ff;
+    end 
+end 
+`endif // EXE2LSU_PIPELINE_STAGE
+
 // ============================================================
 //                LSU MODULE
 // ============================================================
+// Load-store module instantiation
 lsu lsu_module (
-    .rst_n                   (rst_n),
-    .clk                     (clk),
-    .exe2lsu_ctrl_i          (exe2lsu_ctrl),
-    .exe2lsu_data_i          (exe2lsu_data),
-    .lsu2csr_ctrl_o          (lsu2csr_ctrl),
-    .lsu2csr_data_o          (lsu2csr_data),
-    .lsu2wrb_ctrl_o          (lsu2wrb_ctrl),
-    .lsu2wrb_data_o          (lsu2wrb_data),
-    .lsu2exe_fb_alu_result_o (lsu2exe_fb_alu_result),
-    .lsu2fwd_o               (lsu2fwd),
-    .fwd2lsu_i               (fwd2lsu),
-    .lsu2dbus_o              (lsu2dbus),
-    .dbus2lsu_i              (dbus2lsu),
-    .lsu_flush_o             (lsu_flush_o),
+    .rst_n                      (rst_n),
+    .clk                        (clk),
+    // Input interface signals from execution module  
+`ifdef EXE2LSU_PIPELINE_STAGE
+    .exe2lsu_ctrl_i             (exe2lsu_ctrl_pipe_ff),
+    .exe2lsu_data_i             (exe2lsu_data_pipe_ff),
+`else
+    .exe2lsu_ctrl_i             (exe2lsu_ctrl),
+    .exe2lsu_data_i             (exe2lsu_data),
+`endif
+    // CSR module interface signals 
+    .lsu2csr_ctrl_o             (lsu2csr_ctrl),
+    .lsu2csr_data_o             (lsu2csr_data),
+    // Writeback module interface signals 
+    .lsu2wrb_ctrl_o             (lsu2wrb_ctrl),
+    .lsu2wrb_data_o             (lsu2wrb_data),
+    .lsu2exe_fb_alu_result_o    (lsu2exe_fb_alu_result),
+    // Forward_stall interface
+    .lsu2fwd_o                  (lsu2fwd),
+    .fwd2lsu_i                  (fwd2lsu),
+    // LSU to data bus interface
+    .lsu2dbus_o                 (lsu2dbus),      
+    .dbus2lsu_i                 (dbus2lsu),
+    .lsu_flush_o                (lsu_flush_o),
+    // LSU to AMO interface
+    .lsu2amo_data_o             (lsu2amo_data),      
+    .lsu2amo_ctrl_o             (lsu2amo_ctrl),
     .lsu_done_o              (lsu_done),
-    .lsu2amo_data_o          (lsu2amo_data),
-    .lsu2amo_ctrl_o          (lsu2amo_ctrl),
-    .amo2lsu_data_i          (amo2lsu_data),
-    .amo2lsu_ctrl_i          (amo2lsu_ctrl)
+
+    // AMO to LSU interface
+    .amo2lsu_data_i             (amo2lsu_data),
+    .amo2lsu_ctrl_i             (amo2lsu_ctrl)
 );
 
 // ============================================================
 //                CSR MODULE
 // ============================================================
 csr csr_module (
-    .rst_n          (rst_n),
-    .clk            (clk),
-    .exe2csr_ctrl_i (exe2csr_ctrl),
-    .exe2csr_data_i (exe2csr_data),
-    .lsu2csr_ctrl_i (lsu2csr_ctrl),
-    .lsu2csr_data_i (lsu2csr_data),
-    .csr2wrb_data_o (csr2wrb_data),
-    .clint2csr_i    (clint2csr_i),
-    .pipe2csr_i     (core2pipe_i),
-    .fwd2csr_i      (fwd2csr),
-    .csr2fwd_o      (csr2fwd),
-    .csr2id_fb_o    (csr2id_fb),
-    .csr2if_fb_o    (csr2if_fb)
+    .rst_n                      (rst_n),
+    .clk                        (clk),
+
+    // Execution module interface signals 
+`ifdef EXE2LSU_PIPELINE_STAGE
+    .exe2csr_ctrl_i             (exe2csr_ctrl_pipe_ff),
+    .exe2csr_data_i             (exe2csr_data_pipe_ff),
+`else
+    .exe2csr_ctrl_i             (exe2csr_ctrl),
+    .exe2csr_data_i             (exe2csr_data),
+`endif
+
+    // LSU module interface signals 
+    .lsu2csr_ctrl_i             (lsu2csr_ctrl),
+    .lsu2csr_data_i             (lsu2csr_data),
+
+    // Writeback module interface signals 
+    .csr2wrb_data_o             (csr2wrb_data),
+
+    .clint2csr_i                (clint2csr_i),
+
+    .pipe2csr_i                 (core2pipe_i),
+    .fwd2csr_i                  (fwd2csr),
+    .csr2fwd_o                  (csr2fwd),
+    .csr2id_fb_o                (csr2id_fb),
+    .csr2if_fb_o                (csr2if_fb)
 );
 
 // ============================================================
@@ -479,10 +581,17 @@ csr csr_module (
 writeback writeback_module (
     .rst_n                (rst_n),
     .clk                  (clk),
-    .lsu2wrb_ctrl_i       (lsu2wrb_ctrl),
-    .lsu2wrb_data_i       (lsu2wrb_data),
+    .lsu2wrb_ctrl_i       (lsu2wrb_ctrl),        // rd_wrb_sel ke liye rakhna
+    .lsu2wrb_data_i       (lsu2wrb_data),         // hata sakte ho baad mein
     .csr2wrb_data_i       (csr2wrb_data),
     .div2wrb_i            (div2wrb),
+    
+    // Yeh naye connections hain — ROB commit se
+    .rob_commit_valid_i         (rob_commit_valid),
+    .rob_commit_rd_i            (rob_commit_rd),
+    .rob_commit_scalar_result_i (rob_commit_scalar_result),
+    .rob_commit_is_vec_i        (rob_commit_is_vec),
+    
     .wrb2id_fb_o          (wrb2id_fb),
     .wrb2exe_fb_rd_data_o (wrb2exe_fb_rd_data),
     .wrb2fwd_o            (wrb2fwd)
@@ -545,6 +654,13 @@ single_cycle_val_ready_controller scalar_valid_ready (
     .scalar_pro_ack  (scalar_pro_ack)
 );
 
+// scalar_mem_data_i ka source fix karo:
+// Store case mein load data nahi, rs2 data chahiye
+
+// ROB commit load flags
+logic   rob_commit_scalar_load;
+logic   rob_commit_vector_load;
+
 // ============================================================
 //                ROB MODULE
 // ============================================================
@@ -595,18 +711,18 @@ rob rob (
 
     // Scalar execution writeback
     .scalar_done_i           (scalar_done),
-    .scalar_seq_num_i        (exe2lsu_data.seq_num),
-    .scalar_rd_addr_i        (id2rf_rd_addr),
-    .scalar_result_i         (exe2lsu_data.alu_result),
+    .scalar_seq_num_i        (scalar_seq_to_rob),
+    .scalar_rd_addr_i        (scalar_rd_addr_to_rob),
+    .scalar_result_i         (scalar_result_to_rob),
     .scalar_mem_addr_i       (lsu2dbus.addr),
     .scalar_mem_data_i       (dbus2lsu.r_data),
     .scalar_mem_data_o       (rob_scalar_mem_data_out),
 
     // Vector execution writeback
     .vector_done_i           (vector_done),
-    .vector_seq_num_i        (viq_deq_seq_o),
+    .vector_seq_num_i        (vec_seq_num),
     .vector_vd_addr_i        (vec_write_addr),
-    .vector_result_i         (execution_result),
+    .vector_result_i         (execution_inst ? execution_result : csr_out),
     .vector_mem_addr_i       (addr_a),
     .vector_mem_data_i       (rdata_a),
     .vector_mem_data_o       (wdata_a),
@@ -633,6 +749,8 @@ rob rob (
     .commit_mem_addr_o       (rob_commit_mem_addr),
     .commit_mem_data_o       (rob_commit_mem_data),
     .commit_scalar_mem_data_o(rob_commit_scalar_mem_data),
+    .commit_scalar_load_o    (rob_commit_scalar_load),
+    .commit_vector_load_o    (rob_commit_vector_load),
 
     // VIQ dispatch
     .viq_dispatch_valid_o    (viq_dispatch_valid),
@@ -647,7 +765,7 @@ rob rob (
     .stall_viq_full_o        (stall_viq_full),
     .viq_dispatch_rs1_data_o (viq_dispatch_rs1_data),
     .viq_dispatch_rs2_data_o (viq_dispatch_rs2_data),
-    .stall_scalar_raw_o      (stall_scalar_raw),
+    .stall_scalar_raw_o      (stall_scalar_raw),                         
 
     // Register file data (for ROB forwarding)
     .rf2rob_rs1_data_i       (rf2id_rs1_data),
@@ -691,7 +809,8 @@ vector_processor_datapth DATAPATH (
     .instruction     (viq_deq_instr_o),
     .rs1_data        (viq_deq_rs1_o),
     .rs2_data        (viq_deq_rs2_o),
-    .seq_num         (viq_deq_seq_o),
+    .seq_num_i       (viq_deq_seq_o),
+    .seq_num_o       (vec_seq_num),
     .is_vec          (is_vector),
     .error           (error),
     .st_req          (st_req),
@@ -874,8 +993,8 @@ memory memory (
     .dmem_sel    (dmem_sel),
     .exe2mem_i   (dbus2peri),//(dbus2mem),
     .mem2wrb_o   (mem2dbus),
-    .addr_a      (addr_a),
-    .wdata_a     (wdata_a),
+    .addr_a      (rob_commit_mem_addr),
+    .wdata_a     (rob_commit_mem_data),
     .rdata_a     (rdata_a),
     .wen_a       (mem_wen),
     .ren_a       (mem_ren),

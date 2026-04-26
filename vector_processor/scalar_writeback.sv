@@ -27,6 +27,11 @@ module writeback (
     // Writeback <---> ID interface for feedback signals
     output type_wrb2id_fb_s                  wrb2id_fb_o,
 
+    input logic rob_commit_valid_i,
+    input logic [`REG_ADDR_W-1:0] rob_commit_rd_i,
+    input logic [`XLEN-1:0] rob_commit_scalar_result_i,
+    input logic rob_commit_is_vec_i,
+
     // Writeback <---> EXE interface for feedback signals
     output logic [`XLEN-1:0]                 wrb2exe_fb_rd_data_o,
 
@@ -50,38 +55,34 @@ assign csr2wrb_data = csr2wrb_data_i;
 assign div2wrb      = div2wrb_i;
  
 // Writeback MUX for output signal selection
-always_comb begin
-     wrb_rd_data = '0;
 
-      case (lsu2wrb_ctrl.rd_wrb_sel)
-         RD_WRB_ALU    : begin
-             wrb_rd_data = lsu2wrb_data.alu_result;
-         end
-         RD_WRB_INC_PC : begin
-             wrb_rd_data = lsu2wrb_data.pc_next;//next;
-         end
-         RD_WRB_DMEM   : begin
-             wrb_rd_data = lsu2wrb_data.r_data;
-         end
-         RD_WRB_CSR    : begin
-             wrb_rd_data = csr2wrb_data.csr_rdata;
-         end
-         RD_WRB_D_ALU  : begin
-             wrb_rd_data = div2wrb.alu_d_result;
-         end
-         default       : wrb_rd_data  = '0;              // default case 
-     endcase
+always_comb begin
+    wrb_rd_data = '0;
+    
+    if (rob_commit_valid_i && !rob_commit_is_vec_i) begin
+        case (lsu2wrb_ctrl.rd_wrb_sel)
+            RD_WRB_ALU    : wrb_rd_data = rob_commit_scalar_result_i;
+            RD_WRB_INC_PC : wrb_rd_data = rob_commit_scalar_result_i;
+            RD_WRB_DMEM   : wrb_rd_data = rob_commit_scalar_result_i;
+            RD_WRB_CSR    : wrb_rd_data = rob_commit_scalar_result_i;
+            RD_WRB_D_ALU  : wrb_rd_data = rob_commit_scalar_result_i;
+            default       : wrb_rd_data = '0;
+        endcase
+    end
 end
 
-// Prepare the signals for output 
-assign wrb2id_fb.rd_data   = wrb_rd_data; 
-assign wrb2id_fb.rd_addr   = lsu2wrb_data.rd_addr; 
-assign wrb2id_fb.rd_wr_req = lsu2wrb_ctrl.rd_wr_req;
+// rd_addr aur rd_wr_req ab ROB commit se aaye ga
+assign wrb2id_fb.rd_data   = wrb_rd_data;
+assign wrb2id_fb.rd_addr   = rob_commit_rd_i;
+assign wrb2id_fb.rd_wr_req = rob_commit_valid_i && !rob_commit_is_vec_i;
 
-// Update the module output signals
-assign wrb2fwd_o.rd_addr    = lsu2wrb_data.rd_addr; 
-assign wrb2fwd_o.rd_wr_req  = lsu2wrb_ctrl.rd_wr_req;
-assign wrb2exe_fb_rd_data_o = wrb_rd_data;
+// Forwarding module ko batao — commit hua, yeh rd_addr hai
+assign wrb2fwd_o.rd_addr    = rob_commit_rd_i;
+assign wrb2fwd_o.rd_wr_req  = rob_commit_valid_i && !rob_commit_is_vec_i;
+
+// Execute stage ko result forward karo (commit wala result)
+assign wrb2exe_fb_rd_data_o = wrb_rd_data;  // yeh same rahega — wrb_rd_data ab ROB se aa raha hai
+
 assign wrb2id_fb_o          = wrb2id_fb;
 
 endmodule : writeback

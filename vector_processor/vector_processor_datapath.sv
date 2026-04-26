@@ -70,7 +70,8 @@ module vector_processor_datapth (
     input   logic                               index_unordered,     // tells about index unordered stride
 
     output  logic   [`MAX_VLEN-1:0]             vec_wr_data,
-    input   logic   [`Tag_Width-1:0]            seq_num,
+    input   logic   [`Tag_Width-1:0]            seq_num_i,
+    output  logic   [`Tag_Width-1:0]            seq_num_o,
     output  logic                               execution_done,
     output  logic                               data_written,           // tells that data is written to the register file
     // Output from csr_reg--> datapath (done signal)
@@ -176,6 +177,7 @@ logic [63:0] carry_out_mask;
 
 assign inst_done = data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
+assign seq_num_o = seq_num_i;
 
              //////////////////////
             //      DECODE      //
