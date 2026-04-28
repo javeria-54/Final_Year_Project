@@ -11,7 +11,7 @@
 
 `ifndef PCORE_INTERFACE_DEFS
 `define PCORE_INTERFACE_DEFS
-
+import pcore_types_pkg::*;
 `include "scalar_pcore_config_defs.svh"
 `include "scalar_csr_defs.svh"
 `include "scalar_a_ext_defs.svh"
@@ -151,12 +151,12 @@ typedef enum logic [2:0] {
     LD_OPS_LW
 } type_ld_ops_e;
 
-typedef enum logic [1:0] {
+/*typedef enum logic [1:0] {
     ST_OPS_NONE = '0,
     ST_OPS_SB,
     ST_OPS_SH,
     ST_OPS_SW
-} type_st_ops_e;
+} type_st_ops_e;*/
 
 // Writeback source selection for register file 
 typedef enum logic [2:0] {
@@ -266,7 +266,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                alu_result;
     logic [`XLEN-1:0]                pc_next;
     logic [`XLEN-1:0]                rs2_data;
-    logic [`Tag_Width-1:0]    seq_num;
+    logic [`Tag_Width-1:0]           seq_num;
 } type_exe2lsu_data_s;
 
 typedef struct packed {  
@@ -397,7 +397,7 @@ typedef struct packed {
     logic [`XLEN-1:0]                rd_data;
     logic [`RF_AWIDTH-1:0]           rd_addr;
     logic                            rd_wr_req; 
-    //logic [`Tag_Width-1:0]    seq_num; 
+    logic [`Tag_Width-1:0]           seq_num; 
 } type_wrb2id_fb_s;
 
 // LSU-2-Forward_stall interface signals

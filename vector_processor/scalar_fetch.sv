@@ -30,6 +30,8 @@ module fetch (
 
     // CSR <---> Fetch feedback interface
     input wire type_csr2if_fb_s                     csr2if_fb_i,
+    input logic stall_fetch,
+    output logic [`XLEN-1:0]                    instr_word,
     
     // Forward <---> Fetch interface
     input wire type_fwd2if_s                        fwd2if_i
@@ -57,7 +59,7 @@ logic                                kill_req;
 // Imem address generation
 logic [`XLEN-1:0]                    pc_ff, pc_plus_4;              // Current value of program counter (PC)
 logic [`XLEN-1:0]                    pc_next;                       // Updated value of PC
-logic [`XLEN-1:0]                    instr_word;
+
 logic                                if_stall;
 logic                                pc_misaligned;
 
@@ -71,7 +73,7 @@ assign fwd2if    = fwd2if_i;
 assign pc_misaligned = pc_ff[1] | pc_ff[0];
 
 // Stall signal for IF stage
-assign if_stall = fwd2if.if_stall | (~mem2if.ack) | irq_req_next;
+assign if_stall = fwd2if.if_stall | (~mem2if.ack) | irq_req_next | stall_fetch;
 
 // PC update state machine
 always_ff @(posedge clk) begin

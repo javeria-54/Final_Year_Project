@@ -21,12 +21,20 @@ module vector_processor(
     // Outputs from vector processor --> scaler processor 
     input  logic                            is_vec,                 // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                           error,                  // error has occure due to invalid configurations
+    output  logic   [4:0]                   vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
+    output  logic   [`MAX_VLEN-1:0]             vec_wr_data,
+    output logic execution_inst,
     
     // csr_regfile -> scalar_processor
     output  logic   [`XLEN-1:0]             csr_out,                // read data from the csr registers
+    input  logic   [`Tag_Width-1:0]         seq_num_i,
+    output  logic   [`Tag_Width-1:0]        seq_num_o,
+    input logic rob_commit_valid_i,
+    output logic is_loaded,is_stored,csr_done,execution_done,
+    output logic [`MAX_VLEN-1:0] execution_result,
 
     // valready_controller  --> scaler_processor 
-    output  logic                           vec_pro_ack,            // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
+    input  logic                           vec_pro_ack,            // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
     
     output logic [31:0]                     mem_addr,
     output logic [511:0]                    mem_wdata,
@@ -38,8 +46,11 @@ module vector_processor(
     output logic [1:0]                      mem_sew_enc,
     input  logic [511:0]                    mem_rdata,
 
+    input logic [4:0] rob_commit_vd,
+    input logic [`MAX_VLEN-1:0]  rob_commit_vector_result,
+
     // val_ready_controller --> scaler_processor
-    output  logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
+    input   logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
 );
 
 // vec_control_signals -> vec_decode
@@ -72,10 +83,6 @@ logic                               inst_done;
 
 // val_ready_controller --> datapath
 //logic                               inst_reg_en;
-
-//vector processor lsu --> AXI 4 MASTE
-logic                               ld_req;                 // load request signal to the AXI 4 MASTER
-logic                               st_req;                 // store request signal to the AXI 4 MASTER
 
 logic   [2:0]                       execution_op;
 logic                               signed_mode;
@@ -136,11 +143,7 @@ logic   [1:0]                       op_type;
         // Outputs from vector rocessor --> scaler processor
         .is_vec             (is_vec              ),
         .error              (error               ),
-        
 
-        .st_req(st_req),
-        .ld_req(ld_req),
-        
         .mem_addr           (mem_addr                   ),
         .mem_wdata          (mem_wdata                  ),
         .mem_wdata_unit     (mem_wdata_unit             ),
@@ -151,12 +154,26 @@ logic   [1:0]                       op_type;
         .mem_sew_enc        (mem_sew_enc                ),
         .mem_rdata          (mem_rdata                  ),
 
+        .vec_commit_vd_i             (rob_commit_vd),
+        .vec_commit_vector_result_i  (rob_commit_vector_result),
+        .rob_commit_valid_i          (rob_commit_valid_i),
+        .is_loaded(is_loaded),
+        .is_stored(is_stored),
+        .csr_done(csr_done),
+        .execution_done(execution_done),
+        .execution_result(execution_result),
+        .vec_read_addr_1(vec_read_addr_1),
+        .vec_read_addr_2(vec_read_addr_2),
+        .vec_write_addr(vec_write_addr),
+
        
         // csr_regfile -> scalar_processor
         .csr_out            (csr_out             ),
 
         // datapth  --> val_ready_controller
-        .inst_done          (inst_done           ),            
+        .inst_done          (inst_done           ), 
+        .seq_num_i          (seq_num_i),
+        .seq_num_o          (seq_num_o),           
 
         // Inputs from the controller --> datapath
         .sew_eew_sel        (sew_eew_sel         ),
@@ -171,6 +188,8 @@ logic   [1:0]                       op_type;
         
         // vec_control_signals -> vec_csr_regs
         .csrwr_en           (csrwr_en            ),
+
+        .vec_wr_data        (vec_wr_data),
 
         // vec_control_signals -> vec_register_file
         .vec_reg_wr_en      (vec_reg_wr_en       ),

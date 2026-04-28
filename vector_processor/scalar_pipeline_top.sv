@@ -2,16 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE file for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: The pipeline top module — cleaned & fixed version.
+// Description: The pipeline top module — fixed version.
 //
 // Author: Muhammad Tahir, UET Lahore
 // Date: 11.8.2022
-
+import pcore_types_pkg::*;
 `include "scalar_m_ext_defs.svh"
 `include "scalar_a_ext_defs.svh"
 `include "vector_processor_defs.svh"
 
-`default_nettype wire
 
 module pipeline_top (
 
@@ -22,6 +21,11 @@ module pipeline_top (
 // ============================================================
 // Pipeline stage interfaces
 // ============================================================
+
+// Instruction memory
+type_if2imem_s                          if2mem;
+type_imem2if_s                          mem2if;
+
 type_if2id_data_s                       if2id_data, if2id_data_next;
 type_if2id_ctrl_s                       if2id_ctrl, if2id_ctrl_next;
 
@@ -40,19 +44,12 @@ type_exe2csr_ctrl_s                     exe2csr_ctrl;
 type_lsu2csr_data_s                     lsu2csr_data;
 type_lsu2csr_ctrl_s                     lsu2csr_ctrl;
 
-// AMO interfaces
-type_amo2lsu_data_s                     amo2lsu_data;
-type_amo2lsu_ctrl_s                     amo2lsu_ctrl;
-type_lsu2amo_data_s                     lsu2amo_data;
-type_lsu2amo_ctrl_s                     lsu2amo_ctrl;
-
 // Data bus
 type_lsu2dbus_s                         lsu2dbus;
 type_dbus2lsu_s                         dbus2lsu;
 
-// Instruction memory
-type_if2imem_s                          if2mem;
-type_imem2if_s                          mem2if;
+logic [`XLEN-1:0]                       lsu2exe_fb_alu_result;
+logic [`XLEN-1:0]                       wrb2exe_fb_rd_data;
 
 // Writeback interfaces
 type_lsu2wrb_ctrl_s                     lsu2wrb_ctrl;
@@ -60,14 +57,17 @@ type_lsu2wrb_data_s                     lsu2wrb_data;
 type_csr2wrb_data_s                     csr2wrb_data;
 type_div2wrb_s                          div2wrb;
 
+// AMO interfaces
+type_amo2lsu_data_s                     amo2lsu_data;
+type_amo2lsu_ctrl_s                     amo2lsu_ctrl;
+type_lsu2amo_data_s                     lsu2amo_data;
+type_lsu2amo_ctrl_s                     lsu2amo_ctrl;
+
 // Feedback signals
 type_csr2if_fb_s                        csr2if_fb;
 type_csr2id_fb_s                        csr2id_fb;
 type_exe2if_fb_s                        exe2if_fb;
 type_wrb2id_fb_s                        wrb2id_fb;
-
-logic [`XLEN-1:0]                       lsu2exe_fb_alu_result;
-logic [`XLEN-1:0]                       wrb2exe_fb_rd_data;
 
 // Forwarding interfaces
 type_exe2fwd_s                          exe2fwd;
@@ -81,9 +81,8 @@ type_fwd2csr_s                          fwd2csr;
 type_fwd2lsu_s                          fwd2lsu;
 type_fwd2ptop_s                         fwd2ptop;
 
+// FIX #2: clint2csr_i internal signal — port se drive hoga
 type_clint2csr_s                        clint2csr_i;
-
-type_pipe2csr_s                         core2pipe_i;
 
 type_id2exe_ctrl_s                      id2exe_ctrl_next;
 type_id2exe_data_s                      id2exe_data_next;
@@ -96,7 +95,7 @@ type_exe2csr_data_s                     exe2csr_data_next;
 type_exe2csr_ctrl_s                     exe2csr_ctrl_next;
 
 // ============================================================
-// Peripheral bus signals — stubbed (not used in simulation)
+// Peripheral bus signals
 // ============================================================
 type_peri2dbus_s                        uart2dbus;
 type_peri2dbus_s                        clint2dbus;
@@ -104,15 +103,15 @@ type_peri2dbus_s                        plic2dbus;
 type_peri2dbus_s                        spi2dbus;
 type_peri2dbus_s                        gpio2dbus;
 
-// Peripheral stubs — all tied to 0 to prevent X propagation
+// Peripheral stubs — tied to 0
 assign uart2dbus  = '0;
 assign clint2dbus = '0;
 assign plic2dbus  = '0;
 assign spi2dbus   = '0;
 assign gpio2dbus  = '0;
 
-//assign dbus2lsu = dbus2lsu_i;
-//assign mem2if   = mem2if_i;
+// FIX #3: clint2csr_i ko port se assign karo
+assign clint2csr_i = clint2csr_i_port;
 
 // Selection lines from dbus interconnect
 logic                                   dmem_sel;
@@ -140,19 +139,15 @@ logic                                   div_done;
 // ROB signals
 // ============================================================
 logic                                   de_valid;
-logic                                   rob_de_valid;
 logic [`XLEN-1:0]                       rob_de_instr;
 logic [`Tag_Width-1:0]                  rob_de_seq_num;
 
-logic                                   rob_full_o;
 logic                                   stall_vec_raw;
-logic                                   stall_scalar_mem;
-logic                                   stall_vector_mem;
 logic                                   stall_fetch;
 logic                                   stall_viq_full;
 logic                                   stall_scalar_raw;
 
-// Decode-stage flags → ROB
+// Decode-stage flags
 logic                                   is_scalar_store;
 logic                                   is_vector_store;
 logic                                   is_scalar_load;
@@ -168,33 +163,46 @@ logic [`XLEN-1:0]                       rf2id_rs2_data;
 // ROB scalar done path
 logic                                   exe_done;
 logic                                   lsu_done;
+
+// FIX #4: lsu_flush declare kiya
+logic                                   lsu_flush;
+
 logic [`REG_ADDR_W-1:0]                 id2rf_rd_addr;
 
 // ROB scalar forwarding outputs
-logic                                   fwd_rs1_hit_o, fwd_rs2_hit_o;
-logic [`XLEN-1:0]                       fwd_rs1_val_o, fwd_rs2_val_o;
-logic [`XLEN-1:0]                       fwd_rs1_data_o, fwd_rs2_data_o;
+logic [`XLEN-1:0]                       fwd_rs1_data, fwd_rs2_data;
 
 // ROB vector forwarding outputs
-logic                                   fwd_vs1_hit_o, fwd_vs2_hit_o;
-logic [`VLEN-1:0]                       fwd_vs1_val_o, fwd_vs2_val_o;
-logic [`VLEN-1:0]                       fwd_vs1_data_o, fwd_vs2_data_o;
+logic [`VLEN-1:0]                       fwd_vs1_data, fwd_vs2_data;
 
 // ROB commit outputs
 logic                                   rob_commit_valid;
 logic [`Tag_Width-1:0]                  rob_commit_vector_seq;
 logic [`Tag_Width-1:0]                  rob_commit_scalar_seq;
 logic                                   rob_commit_is_vec;
-logic                                   rob_commit_scalar_store;
-logic                                   rob_commit_vector_store;
 logic [`REG_ADDR_W-1:0]                 rob_commit_rd;
 logic [`VREG_ADDR_W-1:0]                rob_commit_vd;
 logic [`XLEN-1:0]                       rob_commit_scalar_result;
 logic [`MAX_VLEN-1:0]                   rob_commit_vector_result;
-logic [`XLEN-1:0]                       rob_commit_mem_addr;
-logic [`VLEN-1:0]                       rob_commit_mem_data;
+
+// FIX #5: rob_commit_mem_addr / rob_commit_mem_data —
+//         yeh aliases the, inka kaam vector mem signals se hoga
+// (memory module mein directly vector mem signals use karo — neeche dekho)
+
 logic [`XLEN-1:0]                       rob_commit_scalar_mem_data;
-logic [`XLEN-1:0]                       rob_scalar_mem_data_out;
+logic [`XLEN-1:0]                       rob_commit_scalar_mem_addr;
+logic [`XLEN-1:0]                       rob_commit_vector_mem_addr;
+logic [`VLEN-1:0]                       rob_commit_vector_mem_data;
+
+// FIX #6: ROB commit vector memory control signals declare kiye
+logic                                   rob_commit_vec_mem_wen;
+logic [63:0]                            rob_commit_vec_mem_byte_en;
+logic                                   rob_commit_vec_mem_elem_mode;
+logic [1:0]                             rob_commit_vec_mem_sew_enc;
+
+// FIX #7: ROB commit scalar store signals declare kiye
+type_st_ops_e                           rob_commit_scalar_store_op;
+logic                                   rob_commit_scalar_rd_wr_req;
 
 // ROB flush interface
 logic                                   flush_valid;
@@ -204,26 +212,30 @@ logic [`Tag_Width-1:0]                  flush_seq;
 // VIQ signals
 // ============================================================
 logic                                   viq_full;
-logic                                   viq_stall_o;
-logic [`VIQ_tag_width-1:0]              viq_num_instr_o;
+logic                                   viq_stall;
+logic [`VIQ_tag_width-1:0]             viq_num_instr;
 logic                                   viq_deq_valid_int;
-logic [`Tag_Width-1:0]                  viq_deq_seq_o;
-logic [`INSTR_W-1:0]                    viq_deq_instr_o;
-logic [`OPERAND_W-1:0]                  viq_deq_rs1_o;
-logic [`OPERAND_W-1:0]                  viq_deq_rs2_o;
+logic [`Tag_Width-1:0]                  viq_deq_seq;
+logic [`INSTR_W-1:0]                    viq_deq_instr;
+logic [`OPERAND_W-1:0]                  viq_deq_rs1;
+logic [`OPERAND_W-1:0]                  viq_deq_rs2;
 logic                                   viq_deq_is_vecmem_int;
 
 // VIQ dispatch from ROB
 logic                                   viq_dispatch_valid;
 logic [`XLEN-1:0]                       viq_dispatch_instr;
 logic [`Tag_Width-1:0]                  viq_dispatch_seq_num;
-logic [`VREG_ADDR_W-1:0]                viq_dispatch_vd;
-logic [`VREG_ADDR_W-1:0]                viq_dispatch_vs1;
-logic [`VREG_ADDR_W-1:0]                viq_dispatch_vs2;
-logic                                   viq_dispatch_is_load;
-logic                                   viq_dispatch_is_store;
 logic [`XLEN-1:0]                       viq_dispatch_rs1_data;
 logic [`XLEN-1:0]                       viq_dispatch_rs2_data;
+
+// FIX #8: viq_dispatch_is_load / viq_dispatch_is_store declare kiye
+//         ROB se yeh flags aane chahiye — filhaal decode flags se drive
+logic                                   viq_dispatch_is_load;
+logic                                   viq_dispatch_is_store;
+logic                                   viq_dispatch_is_vec;
+
+assign viq_dispatch_is_load  = is_vector_load;
+assign viq_dispatch_is_store = is_vector_store;
 
 // ============================================================
 // Vector datapath / controller signals
@@ -231,74 +243,33 @@ logic [`XLEN-1:0]                       viq_dispatch_rs2_data;
 logic [`MAX_VLEN-1:0]                   execution_result;
 logic                                   execution_done;
 logic                                   is_stored;
+logic                                   is_loaded;
 logic                                   data_written;
 logic                                   csr_done;
 logic [`XLEN-1:0]                       csr_out;
 logic [`MAX_VLEN-1:0]                   vec_wr_data;
-logic                                   ld_req, st_req;
 logic                                   inst_done;
 logic                                   error;
 
-// Vector register file addresses
-logic [4:0]                             vec_read_addr_1, vec_read_addr_2, vec_write_addr;
-
-// Vector memory interface
-logic [31:0]                            addr_a;
-logic [`VLEN-1:0]                       wdata_a;
-logic [`VLEN-1:0]                       rdata_a;
-logic [`VLEN-1:0]                       mem_rdata;
-logic [`VLEN-1:0]                       mem_wdata;
-logic [`VLEN-1:0]                       mem_wdata_unit;
-logic [63:0]                            mem_byte_en;
-logic                                   mem_wen, mem_ren;
-logic                                   mem_elem_mode;
-logic [1:0]                             mem_sew_enc;
-
-// Connect memory read data to datapath
-assign mem_rdata = rdata_a;
-
-// Controller → Datapath signals
-logic                                   vl_sel, vtype_sel, lumop_sel, rs1rd_de;
-logic                                   csrwr_en, sew_eew_sel, vlmax_evlmax_sel, emul_vlmul_sel;
-logic                                   vec_reg_wr_en, mask_operation, mask_wr_en;
-logic [1:0]                             data_mux1_sel;
-logic                                   data_mux2_sel, data_mux3_sel;
-logic                                   offset_vec_en;
-logic                                   stride_sel, ld_inst, st_inst, index_str, index_unordered;
-logic                                   Ctrl, start;
-logic [2:0]                             execution_op;
-logic                                   signed_mode;
-logic                                   mul_low, mul_high;
+// FIX #9: execution_inst declare kiya
 logic                                   execution_inst;
-logic                                   add_inst, sub_inst, reverse_sub_inst;
-logic                                   shift_left_logical_inst, shift_right_arith_inst, shift_right_logical_inst;
-logic                                   mul_inst;
-logic                                   equal_inst, not_equal_inst;
-logic                                   less_or_equal_unsigned_inst, less_or_equal_signed_inst;
-logic                                   less_unsinged_inst, greater_unsigned_inst;
-logic                                   less_signed_inst, greater_signed_inst;
-logic                                   mul_add_dest_inst, mul_sub_dest_inst;
-logic                                   mul_add_source_inst, mul_sub_source_inst;
-logic                                   mask_and_inst, mask_nand_inst, mask_and_not_inst;
-logic                                   mask_xor_inst, mask_or_inst, mask_nor_inst;
-logic                                   mask_or_not_inst, mask_xnor_inst;
-logic                                   red_sum_inst, red_max_unsigned_inst, red_max_signed_inst;
-logic                                   red_min_signed_inst, red_min_unsigned_inst;
-logic                                   red_and_inst, red_or_inst, red_xor_inst;
-logic                                   signed_min_inst, unsigned_min_inst;
-logic                                   signed_max_inst, unsigned_max_inst;
-logic                                   move_inst;
-logic                                   wid_add_signed_inst, wid_add_unsigned_inst;
-logic                                   wid_sub_signed_inst, wid_sub_unsigned_inst;
-logic                                   add_carry_inst_inst, sub_borrow_inst;
-logic                                   add_carry_masked_inst, sub_borrow_masked_inst;
-logic                                   sat_add_signed_inst, sat_add_unsigned_inst;
-logic                                   sat_sub_signed_inst, sat_sub_unsigned_inst;
-logic                                   and_inst, or_inst, xor_inst;
-logic [4:0]                             bitwise_op;
-logic [3:0]                             mask_op;
-logic [2:0]                             cmp_op, accum_op, shift_op;
-logic [1:0]                             op_type;
+
+// Vector register file addresses
+logic [4:0]                             vec_read_addr_1;
+// FIX #10: TYPO fix — vec_read_Addr_2 → vec_read_addr_2 (lowercase 'a')
+logic [4:0]                             vec_read_addr_2;
+logic [4:0]                             vec_write_addr;
+
+// FIX #11: Vector memory signals declare kiye
+logic [`XLEN-1:0]                       vec_mem_addr;
+logic [`VLEN-1:0]                       vec_mem_wdata;
+logic [`VLEN-1:0]                       vec_mem_wdata_unit;   // processor output, unused by ROB
+logic [63:0]                            vec_mem_byte_en;
+logic                                   vec_mem_wen;
+logic                                   vec_mem_elem_mode;
+logic [1:0]                             vec_mem_sew_enc;
+logic                                   vec_mem_ren;
+logic [`VLEN-1:0]                       vec_mem_rdata;
 
 // Vector handshake
 logic                                   vec_pro_ack;
@@ -307,55 +278,54 @@ logic                                   scalar_pro_ready;
 logic                                   inst_valid;
 logic                                   scalar_pro_ack;
 
+// FIX #12: viq_is_vec declare kiya — vector_processor se driven hai
+logic                                   viq_is_vec;
+
 // Done signals
 logic                                   scalar_done, vector_done;
+logic [`XLEN-1:0]                       if2rob_instr;
 
-logic [`Tag_Width-1:0] vec_seq_num;
+logic [`Tag_Width-1:0]                  vec_seq_num;
+logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
 
 assign scalar_done = div_done | exe_done | lsu_done;
-assign vector_done = execution_done | is_stored | csr_done;
+assign vector_done = execution_done | is_stored | csr_done | is_loaded;
 
 // ============================================================
 // Key assignments
 // ============================================================
 
-// de_valid — 1 cycle delayed from ROB fetch output (breaks combinational loop)
-logic de_valid_d;
-always_ff @(posedge clk) begin
-    if (!rst_n) de_valid_d <= 1'b0;
-    else        de_valid_d <= rob_de_valid;
-end
-assign de_valid = de_valid_d;
+assign de_valid = mem2if.ack; //| vec_decode_done; ///left logic 
 
 // rd address from execute stage
 assign id2rf_rd_addr = exe2lsu_ctrl.rd_addr;
 
-// Flush — only on real exception/branch, not pipeline stalls
-assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu | fwd2ptop.if2id_pipe_flush | 
-                        fwd2ptop.id2exe_pipe_flush | fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush | 
-                        fwd2lsu.lsu_flush ;
+// Flush
+assign flush_valid = 'b0;
+//assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
+  //                      fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush  |
+    //                    fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush |
+      //                  fwd2lsu.lsu_flush;
 assign flush_seq   = '0;
 
-// Pipeline top mein:
-logic [`XLEN-1:0]  scalar_result_to_rob;
-logic [`Tag_Width-1:0] scalar_seq_to_rob;
-
-// Pipeline top MUX mein rd_addr bhi sath rakho:
+// Scalar result MUX → ROB
+logic [`XLEN-1:0]       scalar_result_to_rob;
+logic [`Tag_Width-1:0]  scalar_seq_to_rob;
 logic [`REG_ADDR_W-1:0] scalar_rd_addr_to_rob;
 
 always_comb begin
     if (div_done) begin
         scalar_result_to_rob  = div2wrb.alu_d_result;
         scalar_seq_to_rob     = div2wrb.seq_num;
-        scalar_rd_addr_to_rob = div2wrb.rd_addr;    // div2wrb mein rd_addr hai?
+        scalar_rd_addr_to_rob = div2wrb.rd_addr;
     end else if (lsu_done) begin
         scalar_result_to_rob  = lsu2wrb_data.r_data;
         scalar_seq_to_rob     = lsu2wrb_data.seq_num;
-        scalar_rd_addr_to_rob = lsu2wrb_data.rd_addr; // ✅ yeh already hai
-    end else begin // exe_done — ALU, CSR, MUL
+        scalar_rd_addr_to_rob = lsu2wrb_data.rd_addr;
+    end else begin
         scalar_result_to_rob  = exe2lsu_data.alu_result;
         scalar_seq_to_rob     = exe2lsu_data.seq_num;
-        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;  // ✅ same cycle
+        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
     end
 end
 
@@ -371,12 +341,11 @@ fetch fetch_module (
     .if2id_ctrl_o (if2id_ctrl),
     .exe2if_fb_i  (exe2if_fb),
     .csr2if_fb_i  (csr2if_fb),
+    .stall_fetch  (stall_fetch),
+    .instr_word   (if2rob_instr),
     .fwd2if_i     (fwd2if)
 );
 
-// ============================================================
-//          FETCH -> DECODE PIPELINE REGISTER
-// ============================================================
 `ifdef IF2ID_PIPELINE_STAGE
 type_if2id_data_s  if2id_data_pipe_ff;
 type_if2id_ctrl_s  if2id_ctrl_pipe_ff;
@@ -412,9 +381,6 @@ always_comb begin
 end
 `endif
 
-// ============================================================
-//                DECODE MODULE
-// ============================================================
 decode decode_module (
     .rst_n           (rst_n),
     .clk             (clk),
@@ -442,10 +408,6 @@ decode decode_module (
     .wrb2id_fb_i     (wrb2id_fb)
 );
 
-
-// ============================================================
-//                EXECUTE MODULE
-// ============================================================
 execute execute_module (
     .rst_n                   (rst_n),
     .clk                     (clk),
@@ -458,13 +420,14 @@ execute execute_module (
     .exe2csr_data_o          (exe2csr_data),
     .fwd2exe_i               (fwd2exe),
     .exe2fwd_o               (exe2fwd),
+    .rd_addr                 (exe2rob_rd_addr),
     .exe2if_fb_o             (exe2if_fb),
     .lsu2exe_fb_alu_result_i (lsu2exe_fb_alu_result),
     .exe_done_o              (exe_done),
     .wrb2exe_fb_rd_data_i    (wrb2exe_fb_rd_data)
 );
 
-// Execute <-----> LSU pipeline/nopipeline  
+// Execute <-----> LSU pipeline register
 `ifdef EXE2LSU_PIPELINE_STAGE
 type_exe2lsu_data_s                     exe2lsu_data_pipe_ff;
 type_exe2lsu_ctrl_s                     exe2lsu_ctrl_pipe_ff;
@@ -474,10 +437,10 @@ type_exe2csr_ctrl_s                     exe2csr_ctrl_pipe_ff;
 always_ff @(posedge clk) begin
     if (~rst_n) begin
         exe2lsu_data_pipe_ff <= '0;
-        exe2lsu_ctrl_pipe_ff <= '0;         
+        exe2lsu_ctrl_pipe_ff <= '0;
         exe2csr_data_pipe_ff <= '0;
         exe2csr_ctrl_pipe_ff <= '0;
-     end else begin
+    end else begin
         exe2lsu_data_pipe_ff <= exe2lsu_data_next;
         exe2lsu_ctrl_pipe_ff <= exe2lsu_ctrl_next;
         exe2csr_data_pipe_ff <= exe2csr_data_next;
@@ -488,30 +451,30 @@ end
 always_comb begin
     exe2csr_data_next = exe2csr_data;
     exe2lsu_ctrl_next = exe2lsu_ctrl;
-    exe2csr_ctrl_next = exe2csr_ctrl; 
+    exe2csr_ctrl_next = exe2csr_ctrl;
     exe2lsu_data_next = exe2lsu_data;
-     
+
     if (fwd2ptop.exe2lsu_pipe_flush) begin
-        exe2lsu_ctrl_next = '0;
-        exe2csr_ctrl_next = '0;
+        exe2lsu_ctrl_next               = '0;
+        exe2csr_ctrl_next               = '0;
         exe2csr_data_next.instr_flushed = 1'b1;
-        exe2lsu_data_next.alu_result = exe2lsu_data_pipe_ff.alu_result;
-    end else if (fwd2ptop.exe2lsu_pipe_stall) begin  // Stall the exe2lsu/csr stage
+        exe2lsu_data_next.alu_result    = exe2lsu_data_pipe_ff.alu_result;
+    end else if (fwd2ptop.exe2lsu_pipe_stall) begin
         exe2lsu_ctrl_next = exe2lsu_ctrl_pipe_ff;
         exe2csr_ctrl_next = exe2csr_ctrl_pipe_ff;
         exe2lsu_data_next = exe2lsu_data_pipe_ff;
-    end 
-end 
-`endif // EXE2LSU_PIPELINE_STAGE
+    end
+end
+`endif
 
-// ============================================================
-//                LSU MODULE
-// ============================================================
-// Load-store module instantiation
 lsu lsu_module (
     .rst_n                      (rst_n),
     .clk                        (clk),
-    // Input interface signals from execution module  
+    .rob_commit_scalar_mem_addr    (rob_commit_scalar_mem_addr),
+    .rob_commit_scalar_mem_data (rob_commit_scalar_mem_data),
+    // FIX #18: Scalar store signals connected
+    .rob_commit_scalar_store_op    (rob_commit_scalar_store_op),
+    .rob_commit_scalar_rd_wr_req     (rob_commit_scalar_rd_wr_req),
 `ifdef EXE2LSU_PIPELINE_STAGE
     .exe2lsu_ctrl_i             (exe2lsu_ctrl_pipe_ff),
     .exe2lsu_data_i             (exe2lsu_data_pipe_ff),
@@ -519,38 +482,27 @@ lsu lsu_module (
     .exe2lsu_ctrl_i             (exe2lsu_ctrl),
     .exe2lsu_data_i             (exe2lsu_data),
 `endif
-    // CSR module interface signals 
     .lsu2csr_ctrl_o             (lsu2csr_ctrl),
     .lsu2csr_data_o             (lsu2csr_data),
-    // Writeback module interface signals 
     .lsu2wrb_ctrl_o             (lsu2wrb_ctrl),
     .lsu2wrb_data_o             (lsu2wrb_data),
     .lsu2exe_fb_alu_result_o    (lsu2exe_fb_alu_result),
-    // Forward_stall interface
     .lsu2fwd_o                  (lsu2fwd),
     .fwd2lsu_i                  (fwd2lsu),
-    // LSU to data bus interface
-    .lsu2dbus_o                 (lsu2dbus),      
+    .lsu2dbus_o                 (lsu2dbus),
     .dbus2lsu_i                 (dbus2lsu),
-    .lsu_flush_o                (lsu_flush_o),
-    // LSU to AMO interface
-    .lsu2amo_data_o             (lsu2amo_data),      
+    // FIX #13: lsu_flush ab declared signal se connected
+    .lsu_flush_o                (lsu_flush),
+    .lsu2amo_data_o             (lsu2amo_data),
     .lsu2amo_ctrl_o             (lsu2amo_ctrl),
-    .lsu_done_o              (lsu_done),
-
-    // AMO to LSU interface
+    .lsu_done_o                 (lsu_done),
     .amo2lsu_data_i             (amo2lsu_data),
     .amo2lsu_ctrl_i             (amo2lsu_ctrl)
 );
 
-// ============================================================
-//                CSR MODULE
-// ============================================================
 csr csr_module (
     .rst_n                      (rst_n),
     .clk                        (clk),
-
-    // Execution module interface signals 
 `ifdef EXE2LSU_PIPELINE_STAGE
     .exe2csr_ctrl_i             (exe2csr_ctrl_pipe_ff),
     .exe2csr_data_i             (exe2csr_data_pipe_ff),
@@ -558,16 +510,12 @@ csr csr_module (
     .exe2csr_ctrl_i             (exe2csr_ctrl),
     .exe2csr_data_i             (exe2csr_data),
 `endif
-
-    // LSU module interface signals 
     .lsu2csr_ctrl_i             (lsu2csr_ctrl),
     .lsu2csr_data_i             (lsu2csr_data),
-
-    // Writeback module interface signals 
     .csr2wrb_data_o             (csr2wrb_data),
-
+    // FIX #14: clint2csr_i ab internal signal se ja raha hai
     .clint2csr_i                (clint2csr_i),
-
+    // FIX #15: core2pipe_i / pipe2csr_i — port se driven
     .pipe2csr_i                 (core2pipe_i),
     .fwd2csr_i                  (fwd2csr),
     .csr2fwd_o                  (csr2fwd),
@@ -575,31 +523,22 @@ csr csr_module (
     .csr2if_fb_o                (csr2if_fb)
 );
 
-// ============================================================
-//                WRITEBACK MODULE
-// ============================================================
 writeback writeback_module (
-    .rst_n                (rst_n),
-    .clk                  (clk),
-    .lsu2wrb_ctrl_i       (lsu2wrb_ctrl),        // rd_wrb_sel ke liye rakhna
-    .lsu2wrb_data_i       (lsu2wrb_data),         // hata sakte ho baad mein
-    .csr2wrb_data_i       (csr2wrb_data),
-    .div2wrb_i            (div2wrb),
-    
-    // Yeh naye connections hain — ROB commit se
+    .rst_n                      (rst_n),
+    .clk                        (clk),
+    .lsu2wrb_ctrl_i             (lsu2wrb_ctrl),
+    .lsu2wrb_data_i             (lsu2wrb_data),
+    .csr2wrb_data_i             (csr2wrb_data),
+    .div2wrb_i                  (div2wrb),
     .rob_commit_valid_i         (rob_commit_valid),
     .rob_commit_rd_i            (rob_commit_rd),
     .rob_commit_scalar_result_i (rob_commit_scalar_result),
     .rob_commit_is_vec_i        (rob_commit_is_vec),
-    
-    .wrb2id_fb_o          (wrb2id_fb),
-    .wrb2exe_fb_rd_data_o (wrb2exe_fb_rd_data),
-    .wrb2fwd_o            (wrb2fwd)
+    .wrb2id_fb_o                (wrb2id_fb),
+    .wrb2exe_fb_rd_data_o       (wrb2exe_fb_rd_data),
+    .wrb2fwd_o                  (wrb2fwd)
 );
 
-// ============================================================
-//                FORWARD/STALL MODULE
-// ============================================================
 forward_stall forward_stall_module (
     .rst_n      (rst_n),
     .clk        (clk),
@@ -615,9 +554,6 @@ forward_stall forward_stall_module (
     .fwd2ptop_o (fwd2ptop)
 );
 
-// ============================================================
-//                DIVIDE MODULE (M-extension)
-// ============================================================
 divide divide_module (
     .rst_n           (rst_n),
     .clk             (clk),
@@ -629,9 +565,6 @@ divide divide_module (
     .div2wrb_o       (div2wrb)
 );
 
-// ============================================================
-//                AMO MODULE (A-extension)
-// ============================================================
 amo amo_module (
     .rst_n          (rst_n),
     .clk            (clk),
@@ -641,9 +574,6 @@ amo amo_module (
     .amo2lsu_ctrl_o (amo2lsu_ctrl)
 );
 
-// ============================================================
-//          SCALAR VAL/READY CONTROLLER
-// ============================================================
 single_cycle_val_ready_controller scalar_valid_ready (
     .clk             (clk),
     .reset           (rst_n),
@@ -654,124 +584,95 @@ single_cycle_val_ready_controller scalar_valid_ready (
     .scalar_pro_ack  (scalar_pro_ack)
 );
 
-// scalar_mem_data_i ka source fix karo:
-// Store case mein load data nahi, rs2 data chahiye
-
-// ROB commit load flags
-logic   rob_commit_scalar_load;
-logic   rob_commit_vector_load;
-
-// ============================================================
-//                ROB MODULE
-// ============================================================
 rob rob (
     .clk                     (clk),
     .rst_n                   (rst_n),
 
-    // Fetch interface
-    .fetch_instr_i           (mem2if.r_data),
+    .fetch_instr_i           (if2rob_instr),
     .fetch_valid_i           (mem2if.ack),
-    .rob_full_o              (rob_full_o),
 
-    // ROB → Decode
-    .rob_de_valid_o          (rob_de_valid),
     .rob_de_instr_o          (rob_de_instr),
     .rob_de_seq_num_o        (rob_de_seq_num),
 
-    // Decode → ROB metadata (1-cycle delayed de_valid)
-    .de_valid_i              (de_valid_d),
+    .de_valid_i              (de_valid),
     .de_seq_num_i            (id2exe_data.seq_num),
     .de_is_vector_i          (is_vector),
     .de_scalar_store_i       (is_scalar_store),
     .de_vector_store_i       (is_vector_store),
     .de_scalar_load_i        (is_scalar_load),
     .de_vector_load_i        (is_vector_load),
-    .de_scalar_rd_addr_i     (exe2lsu_ctrl.rd_addr),
+
+    .de_scalar_rd_addr_i     (exe2rob_rd_addr),
     .de_vector_vd_addr_i     (vec_write_addr),
     .de_rs1_addr_i           (id2rf_rs1_addr),
     .de_rs2_addr_i           (id2rf_rs2_addr),
-    .de_vs1_addr_i           (vec_read_addr_1),
-    .de_vs2_addr_i           (vec_read_addr_2),
+    .de_vs1_addr_i           (id2rf_rs1_addr),
+    .de_vs2_addr_i           (id2rf_rs2_addr),
 
-    // Scalar forwarding outputs
-    .fwd_rs1_hit_o           (fwd_rs1_hit_o),
-    .fwd_rs1_val_o           (fwd_rs1_val_o),
-    .fwd_rs2_hit_o           (fwd_rs2_hit_o),
-    .fwd_rs2_val_o           (fwd_rs2_val_o),
-    .fwd_rs1_data_o          (fwd_rs1_data_o),
-    .fwd_rs2_data_o          (fwd_rs2_data_o),
+    .fwd_rs1_data_o          (fwd_rs1_data),
+    .fwd_rs2_data_o          (fwd_rs2_data),
+    .fwd_vs1_data_o          (fwd_vs1_data),
+    .fwd_vs2_data_o          (fwd_vs2_data),
 
-    // Vector forwarding outputs
-    .fwd_vs1_hit_o           (fwd_vs1_hit_o),
-    .fwd_vs1_val_o           (fwd_vs1_val_o),
-    .fwd_vs2_hit_o           (fwd_vs2_hit_o),
-    .fwd_vs2_val_o           (fwd_vs2_val_o),
-    .fwd_vs1_data_o          (fwd_vs1_data_o),
-    .fwd_vs2_data_o          (fwd_vs2_data_o),
-
-    // Scalar execution writeback
     .scalar_done_i           (scalar_done),
     .scalar_seq_num_i        (scalar_seq_to_rob),
     .scalar_rd_addr_i        (scalar_rd_addr_to_rob),
     .scalar_result_i         (scalar_result_to_rob),
-    .scalar_mem_addr_i       (lsu2dbus.addr),
-    .scalar_mem_data_i       (dbus2lsu.r_data),
-    .scalar_mem_data_o       (rob_scalar_mem_data_out),
+    .scalar_mem_addr_i       (exe2lsu_data.alu_result),
+    .scalar_mem_data_i       (exe2lsu_data.rs2_data),
+    .scalar_store_op_i       (exe2lsu_ctrl.st_ops),
+    .scalar_rd_wr_req        (exe2lsu_ctrl.rd_wr_req),
 
-    // Vector execution writeback
     .vector_done_i           (vector_done),
     .vector_seq_num_i        (vec_seq_num),
     .vector_vd_addr_i        (vec_write_addr),
-    .vector_result_i         (execution_inst ? execution_result : csr_out),
-    .vector_mem_addr_i       (addr_a),
-    .vector_mem_data_i       (rdata_a),
-    .vector_mem_data_o       (wdata_a),
+    .vector_result_i         (execution_inst ? vec_wr_data : csr_out),
+    .vector_mem_addr_i       (vec_mem_addr),
+    .vector_mem_data_i       (vec_mem_wdata),
+    .mem_byte_en             (vec_mem_byte_en),
+    .mem_wen                 (vec_mem_wen),
+    .mem_elem_mode           (vec_mem_elem_mode),
+    .mem_sew_enc             (vec_mem_sew_enc),
 
-    // Vector RAW stall
     .stall_vec_raw_o         (stall_vec_raw),
-
-    // Memory ordering stalls
     .stall_fetch_o           (stall_fetch),
-    .stall_scalar_mem_o      (stall_scalar_mem),
-    .stall_vector_mem_o      (stall_vector_mem),
 
-    // Commit interface
     .commit_valid_o          (rob_commit_valid),
     .commit_vector_seq_num_o (rob_commit_vector_seq),
-    .commit_scalar_seq_num_o (rob_commit_scalar_seq),
-    .commit_is_vector_o      (rob_commit_is_vec),
-    .commit_scalar_store_o   (rob_commit_scalar_store),
-    .commit_vector_store_o   (rob_commit_vector_store),
-    .commit_rd_o             (rob_commit_rd),
     .commit_vd_o             (rob_commit_vd),
-    .commit_scalar_result_o  (rob_commit_scalar_result),
     .commit_vector_result_o  (rob_commit_vector_result),
-    .commit_mem_addr_o       (rob_commit_mem_addr),
-    .commit_mem_data_o       (rob_commit_mem_data),
-    .commit_scalar_mem_data_o(rob_commit_scalar_mem_data),
-    .commit_scalar_load_o    (rob_commit_scalar_load),
-    .commit_vector_load_o    (rob_commit_vector_load),
+    .commit_vec_mem_addr_o       (rob_commit_vector_mem_addr),
+    .commit_vector_mem_data_o(rob_commit_vector_mem_data),
+    // FIX #17: Newly declared signals connected
+    .commit_vector_mem_byte_en   (rob_commit_vec_mem_byte_en),
+    .commit_vector_mem_wen       (rob_commit_vec_mem_wen),
+    .commit_vector_mem_elem_mode (rob_commit_vec_mem_elem_mode),
+    .commit_vector_mem_sew_enc   (rob_commit_vec_mem_sew_enc),
 
-    // VIQ dispatch
+    .commit_scalar_seq_num_o (rob_commit_scalar_seq),
+    .commit_rd_o             (rob_commit_rd),
+    .commit_scalar_result_o  (rob_commit_scalar_result),
+    .commit_scalar_mem_addr_o    (rob_commit_scalar_mem_addr),
+    .commit_scalar_mem_data_o(rob_commit_scalar_mem_data),
+    // FIX #18: Scalar store signals connected
+    .commit_scalar_store_op_o    (rob_commit_scalar_store_op),
+    .commit_scalar_rd_wr_req_o     (rob_commit_scalar_rd_wr_req),
+    .rob_commit_is_vec_o        (rob_commit_is_vec),
+
     .viq_dispatch_valid_o    (viq_dispatch_valid),
     .viq_dispatch_instr_o    (viq_dispatch_instr),
     .viq_dispatch_seq_num_o  (viq_dispatch_seq_num),
-    .viq_dispatch_vd_o       (viq_dispatch_vd),
-    .viq_dispatch_vs1_o      (viq_dispatch_vs1),
-    .viq_dispatch_vs2_o      (viq_dispatch_vs2),
-    .viq_dispatch_is_load_o  (viq_dispatch_is_load),
-    .viq_dispatch_is_store_o (viq_dispatch_is_store),
     .viq_full_i              (viq_full),
     .stall_viq_full_o        (stall_viq_full),
     .viq_dispatch_rs1_data_o (viq_dispatch_rs1_data),
     .viq_dispatch_rs2_data_o (viq_dispatch_rs2_data),
-    .stall_scalar_raw_o      (stall_scalar_raw),                         
+    .stall_scalar_raw_o      (stall_scalar_raw),
+    .viq_dispatch_is_vec_o   (viq_dispatch_is_vec),
+    .rf2rob_vs1_scalar_data_i(rf2id_rs1_data),
 
-    // Register file data (for ROB forwarding)
     .rf2rob_rs1_data_i       (rf2id_rs1_data),
     .rf2rob_rs2_data_i       (rf2id_rs2_data),
 
-    // Flush interface
     .flush_valid_i           (flush_valid),
     .flush_seq_i             (flush_seq)
 );
@@ -779,7 +680,7 @@ rob rob (
 // ============================================================
 //                VIQ MODULE
 // ============================================================
-viq u_viq (
+viq viq (
     .clk                (clk),
     .reset              (rst_n),
     .vector_instr_valid (viq_dispatch_valid),
@@ -787,191 +688,75 @@ viq u_viq (
     .instruction_i      (viq_dispatch_instr),
     .operand_rs1_i      (viq_dispatch_rs1_data),
     .operand_rs2_i      (viq_dispatch_rs2_data),
-    .instr_is_vecmem_i  (viq_dispatch_is_load | viq_dispatch_is_store),
-    .stall_vec          (viq_stall_o),
-    .num_instr          (viq_num_instr_o),
+    // FIX #19: viq_dispatch_is_load/store ab declared aur driven hain
+    .instr_is_vecmem_i  (viq_dispatch_is_vec),
+    .stall_vec          (viq_stall),
+    .num_instr          (viq_num_instr),
     .deq_ready          (vec_pro_ready),
     .viq_full           (viq_full),
     .deq_valid          (viq_deq_valid_int),
-    .instr_seq_o        (viq_deq_seq_o),
-    .instruction_o      (viq_deq_instr_o),
-    .operand_rs1_o      (viq_deq_rs1_o),
-    .operand_rs2_o      (viq_deq_rs2_o),
+    .instr_seq_o        (viq_deq_seq),
+    .instruction_o      (viq_deq_instr),
+    .operand_rs1_o      (viq_deq_rs1),
+    .operand_rs2_o      (viq_deq_rs2),
     .instr_is_vecmem_o  (viq_deq_is_vecmem_int)
 );
 
 // ============================================================
-//          VECTOR DATAPATH
+//                VECTOR PROCESSOR
 // ============================================================
-vector_processor_datapth DATAPATH (
-    .clk             (clk),
-    .reset           (rst_n),
-    .instruction     (viq_deq_instr_o),
-    .rs1_data        (viq_deq_rs1_o),
-    .rs2_data        (viq_deq_rs2_o),
-    .seq_num_i       (viq_deq_seq_o),
-    .seq_num_o       (vec_seq_num),
-    .is_vec          (is_vector),
-    .error           (error),
-    .st_req          (st_req),
-    .ld_req          (ld_req),
-    .execution_done  (execution_done),
-    .data_written    (data_written),
-    .csr_done        (csr_done),
-    .is_stored       (is_stored),
-    .mem_addr        (addr_a),
-    .mem_wdata       (mem_wdata),
-    .mem_wdata_unit  (mem_wdata_unit),
-    .mem_byte_en     (mem_byte_en),
-    .mem_wen         (mem_wen),
-    .mem_ren         (mem_ren),
-    .mem_elem_mode   (mem_elem_mode),
-    .mem_sew_enc     (mem_sew_enc),
-    .mem_rdata       (mem_rdata),
-    .csr_out         (csr_out),
-    .inst_done       (inst_done),
-    .vec_read_addr_1 (vec_read_addr_1),
-    .vec_read_addr_2 (vec_read_addr_2),
-    .vec_write_addr  (vec_write_addr),
-    .sew_eew_sel        (sew_eew_sel),
-    .vlmax_evlmax_sel   (vlmax_evlmax_sel),
-    .emul_vlmul_sel     (emul_vlmul_sel),
-    .vl_sel             (vl_sel),
-    .vtype_sel          (vtype_sel),
-    .lumop_sel          (lumop_sel),
-    .csrwr_en           (csrwr_en),
-    .rs1rd_de           (rs1rd_de),
-    .vec_reg_wr_en      (vec_reg_wr_en),
-    .mask_operation     (mask_operation),
-    .mask_wr_en         (mask_wr_en),
-    .data_mux1_sel      (data_mux1_sel),
-    .data_mux2_sel      (data_mux2_sel),
-    .data_mux3_sel      (data_mux3_sel),
-    .offset_vec_en      (offset_vec_en),
-    .stride_sel         (stride_sel),
-    .ld_inst            (ld_inst),
-    .st_inst            (st_inst),
-    .index_str          (index_str),
-    .index_unordered    (index_unordered),
-    .execution_result   (execution_result),
-    .vec_wr_data        (vec_wr_data),
-    .Ctrl               (Ctrl),
-    .execution_op       (execution_op),
-    .mul_high           (mul_high),
-    .mul_low            (mul_low),
-    .execution_inst     (execution_inst),
-    .reverse_sub_inst   (reverse_sub_inst),
-    .add_inst           (add_inst),
-    .sub_inst           (sub_inst),
-    .signed_mode        (signed_mode),
-    .bitwise_op         (bitwise_op),
-    .op_type            (op_type),
-    .cmp_op             (cmp_op),
-    .accum_op           (accum_op),
-    .mask_op            (mask_op),
-    .start              (start),
-    .shift_op           (shift_op)
-);
+vector_processor vector (
+    .clk                (clk),
+    .reset              (rst_n),
+    .seq_num_i          (viq_deq_seq),
+    .instruction        (viq_deq_instr),
+    .rs1_data           (viq_deq_rs1),
+    .rs2_data           (viq_deq_rs2),
+    // FIX #20: viq_is_vec ab declared — processor output
+    .is_vec             (viq_is_vec),
 
-// ============================================================
-//          VECTOR CONTROLLER
-// ============================================================
-vector_processor_controller CONTROLLER (
-    .vec_inst                    (viq_deq_instr_o),
-    .vl_sel                      (vl_sel),
-    .vtype_sel                   (vtype_sel),
-    .lumop_sel                   (lumop_sel),
-    .csrwr_en                    (csrwr_en),
-    .sew_eew_sel                 (sew_eew_sel),
-    .vlmax_evlmax_sel            (vlmax_evlmax_sel),
-    .emul_vlmul_sel              (emul_vlmul_sel),
-    .rs1rd_de                    (rs1rd_de),
-    .vec_reg_wr_en               (vec_reg_wr_en),
-    .mask_operation              (mask_operation),
-    .mask_wr_en                  (mask_wr_en),
-    .data_mux1_sel               (data_mux1_sel),
-    .data_mux2_sel               (data_mux2_sel),
-    .data_mux3_sel               (data_mux3_sel),
-    .offset_vec_en               (offset_vec_en),
-    .stride_sel                  (stride_sel),
-    .ld_inst                     (ld_inst),
-    .st_inst                     (st_inst),
-    .index_str                   (index_str),
-    .index_unordered             (index_unordered),
-    .execution_op                (execution_op),
-    .signed_mode                 (signed_mode),
-    .Ctrl                        (Ctrl),
-    .mul_low                     (mul_low),
-    .mul_high                    (mul_high),
-    .start                       (start),
-    .add_inst                    (add_inst),
-    .sub_inst                    (sub_inst),
-    .reverse_sub_inst            (reverse_sub_inst),
-    .shift_left_logical_inst     (shift_left_logical_inst),
-    .shift_right_arith_inst      (shift_right_arith_inst),
-    .shift_right_logical_inst    (shift_right_logical_inst),
-    .execution_inst              (execution_inst),
-    .mul_inst                    (mul_inst),
-    .equal_inst                  (equal_inst),
-    .not_equal_inst              (not_equal_inst),
-    .less_or_equal_unsigned_inst (less_or_equal_unsigned_inst),
-    .less_or_equal_signed_inst   (less_or_equal_signed_inst),
-    .less_unsinged_inst          (less_unsinged_inst),
-    .greater_unsigned_inst       (greater_unsigned_inst),
-    .less_signed_inst            (less_signed_inst),
-    .greater_signed_inst         (greater_signed_inst),
-    .mul_add_dest_inst           (mul_add_dest_inst),
-    .mul_sub_dest_inst           (mul_sub_dest_inst),
-    .mul_add_source_inst         (mul_add_source_inst),
-    .mul_sub_source_inst         (mul_sub_source_inst),
-    .mask_and_inst               (mask_and_inst),
-    .mask_nand_inst              (mask_nand_inst),
-    .mask_and_not_inst           (mask_and_not_inst),
-    .mask_xor_inst               (mask_xor_inst),
-    .mask_or_inst                (mask_or_inst),
-    .mask_nor_inst               (mask_nor_inst),
-    .mask_or_not_inst            (mask_or_not_inst),
-    .mask_xnor_inst              (mask_xnor_inst),
-    .red_sum_inst                (red_sum_inst),
-    .red_max_unsigned_inst       (red_max_unsigned_inst),
-    .red_max_signed_inst         (red_max_signed_inst),
-    .red_min_signed_inst         (red_min_signed_inst),
-    .red_min_unsigned_inst       (red_min_unsigned_inst),
-    .red_and_inst                (red_and_inst),
-    .red_or_inst                 (red_or_inst),
-    .red_xor_inst                (red_xor_inst),
-    .signed_min_inst             (signed_min_inst),
-    .unsigned_min_inst           (unsigned_min_inst),
-    .signed_max_inst             (signed_max_inst),
-    .unsigned_max_inst           (unsigned_max_inst),
-    .move_inst                   (move_inst),
-    .wid_add_signed_inst         (wid_add_signed_inst),
-    .wid_add_unsigned_inst       (wid_add_unsigned_inst),
-    .wid_sub_signed_inst         (wid_sub_signed_inst),
-    .wid_sub_unsigned_inst       (wid_sub_unsigned_inst),
-    .add_carry_inst_inst         (add_carry_inst_inst),
-    .sub_borrow_inst             (sub_borrow_inst),
-    .add_carry_masked_inst       (add_carry_masked_inst),
-    .sub_borrow_masked_inst      (sub_borrow_masked_inst),
-    .sat_add_signed_inst         (sat_add_signed_inst),
-    .sat_add_unsigned_inst       (sat_add_unsigned_inst),
-    .sat_sub_signed_inst         (sat_sub_signed_inst),
-    .sat_sub_unsigned_inst       (sat_sub_unsigned_inst),
-    .and_inst                    (and_inst),
-    .or_inst                     (or_inst),
-    .xor_inst                    (xor_inst),
-    .mask_op                     (mask_op),
-    .bitwise_op                  (bitwise_op),
-    .op_type                     (op_type),
-    .cmp_op                      (cmp_op),
-    .shift_op                    (shift_op),
-    .accum_op                    (accum_op)
+    .inst_valid         (inst_valid),
+    .scalar_pro_ready   (scalar_pro_ready),
+    .vec_pro_ack        (vec_pro_ack),
+    .vec_pro_ready      (vec_pro_ready),
+
+    .seq_num_o          (vec_seq_num),
+    .vec_read_addr_1    (vec_read_addr_1),
+    // FIX #21: TYPO fix — lowercase vec_read_addr_2
+    .vec_read_addr_2    (vec_read_addr_2),
+    .vec_write_addr     (vec_write_addr),
+
+    .error              (error),
+    .csr_out            (csr_out),
+    .vec_wr_data        (vec_wr_data),
+    // FIX #22: execution_inst ab declared signal
+    .execution_inst     (execution_inst),
+
+    .rob_commit_vd           (rob_commit_vd),
+    .rob_commit_vector_result (rob_commit_vector_result),
+    .rob_commit_valid_i         (rob_commit_valid),
+
+    .execution_done(execution_done),
+    .csr_done(csr_done),
+    .is_stored(is_stored),
+    .is_loaded(is_loaded),
+    .execution_result(execution_result),
+
+    .mem_addr               (vec_mem_addr),
+    .mem_wdata              (vec_mem_wdata),
+    .mem_wdata_unit         (vec_mem_wdata_unit),
+    .mem_byte_en            (vec_mem_byte_en),
+    .mem_wen                (vec_mem_wen),
+    .mem_elem_mode          (vec_mem_elem_mode),
+    .mem_sew_enc            (vec_mem_sew_enc),
+    .mem_ren                (vec_mem_ren),
+    .mem_rdata              (vec_mem_rdata)
 );
 
 // ============================================================
 //          VECTOR VAL/READY CONTROLLER
 // ============================================================
-val_ready_controller VAL_READY_INTERFACE (
+val_ready_controller val_ready (
     .clk             (clk),
     .reset           (rst_n),
     .inst_valid      (inst_valid),
@@ -984,6 +769,8 @@ val_ready_controller VAL_READY_INTERFACE (
 // ============================================================
 //          MEMORY MODULE
 // ============================================================
+// FIX #23: rob_commit_mem_addr / rob_commit_mem_data alias hata diye
+//          Direct rob_commit_vector_mem_addr / _data use karo
 memory memory (
     .rst_n       (rst_n),
     .clk         (clk),
@@ -991,16 +778,18 @@ memory memory (
     .if2mem_i    (if2mem),
     .mem2if_o    (mem2if),
     .dmem_sel    (dmem_sel),
-    .exe2mem_i   (dbus2peri),//(dbus2mem),
+    .exe2mem_i   (dbus2peri),
     .mem2wrb_o   (mem2dbus),
-    .addr_a      (rob_commit_mem_addr),
-    .wdata_a     (rob_commit_mem_data),
-    .rdata_a     (rdata_a),
-    .wen_a       (mem_wen),
-    .ren_a       (mem_ren),
-    .byte_en_a   (mem_byte_en),
-    .elem_mode_a (mem_elem_mode),
-    .sew_a       (mem_sew_enc)
+
+    .ren_a       (vec_mem_ren),
+    .rdata_a     (vec_mem_rdata),
+    // FIX #24: Direct vector commit signals use kiye — no undefined aliases
+    .addr_a      (rob_commit_vector_mem_addr),
+    .wdata_a     (rob_commit_vector_mem_data),
+    .wen_a       (rob_commit_vec_mem_wen),
+    .byte_en_a   (rob_commit_vec_mem_byte_en),
+    .elem_mode_a (rob_commit_vec_mem_elem_mode),
+    .sew_a       (rob_commit_vec_mem_sew_enc)
 );
 
 // ============================================================
@@ -1034,6 +823,7 @@ dbus_interconnect dbus (
 
 // ============================================================
 //          OUTPUT ASSIGNMENTS
+// FIX #25: Yeh ab valid port assignments hain (port list mein declare hain)
 // ============================================================
 assign lsu2dbus_o = lsu2dbus;
 assign if2mem_o   = if2mem;

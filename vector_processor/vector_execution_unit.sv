@@ -16,6 +16,7 @@ module vector_execution_unit(
     input   logic [`MAX_VLEN-1:0]               data_3,
 
     input  logic [`Tag_Width-1:0]        seq_num,
+    output logic [`Tag_Width-1:0] seq_num_exe,
 
     input   logic                               Ctrl,start,
     input   logic [6:0]                         sew_eew_mux_out,
@@ -70,6 +71,8 @@ module vector_execution_unit(
             default:    sew = 2'b00;
         endcase
     end
+
+    assign seq_num_exe = seq_num;
 
     always_comb begin
         // Default sab zero

@@ -37,6 +37,7 @@ module execute (
     output type_exe2fwd_s                exe2fwd_o,    
 
     output logic exe_done_o,
+    output logic [`RF_AWIDTH-1:0]               rd_addr,
     // EXE <---> IF feedback interface
     output type_exe2if_fb_s              exe2if_fb_o,
 
@@ -92,7 +93,7 @@ logic  [4:0]                         shift_amt;
 
 logic [`RF_AWIDTH-1:0]               rs1_addr;            
 logic [`RF_AWIDTH-1:0]               rs2_addr;           
-logic [`RF_AWIDTH-1:0]               rd_addr;
+
 logic [`Tag_Width-1:0]       exe_seq_num;            
 
 // Instantiate input control and data structures and get the ALU operator

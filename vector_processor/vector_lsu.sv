@@ -35,6 +35,7 @@ module vec_lsu (
     input  logic [`VLEN-1:0]            mem_rdata,
 
     input  logic [`Tag_Width-1:0] seq_num,
+    output logic [`Tag_Width-1:0] seq_num_lsu,
 
     output logic [`MAX_VLEN-1:0]    vd_data,
     output logic                    is_loaded,
@@ -60,6 +61,7 @@ module vec_lsu (
     logic unit_stride, const_stride;
     assign unit_stride  =  stride_sel || ($unsigned(rs2_data) == 32'd1);
     assign const_stride = !stride_sel && ($unsigned(rs2_data) != 32'd1) && !index_str;
+    assign seq_num_lsu = seq_num;
 
     // =========================================================================
     // Element counter

@@ -14,10 +14,6 @@ module vector_processor_datapth (
     input   logic   [`XLEN-1:0]                 instruction,        // The instruction that is to be executed by the vector processor
     input   logic   [`XLEN-1:0]                 rs1_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs1 address
     input   logic   [`XLEN-1:0]                 rs2_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs2 address
-    
-    // Output from  vec_lsu -> 
-    output  logic                               ld_req,                 // load request signal to the AXI 4 MASTER
-    output  logic                               st_req,                 // store request signal to the AXI 4 MASTER
 
     output logic [31:0]             mem_addr,
     output logic [511:0]            mem_wdata,
@@ -78,7 +74,11 @@ module vector_processor_datapth (
     output  logic                               csr_done,               // This signal tells that csr instruction has been implemented successfully
     output logic                                is_stored,              // It tells that data is stored to the memory
     output logic    [`MAX_VLEN-1:0]     execution_result,
+    output logic               is_loaded,              // It tells that data is loaded from the memory and ready to be written in register file
 
+    input logic [4:0] vec_commit_vd_i, //            (rob_commit_vd),
+    input logic [`MAX_VLEN-1:0] vec_commit_vector_result_i,
+    input logic rob_commit_valid_i,
 
     output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
 
@@ -91,10 +91,6 @@ module vector_processor_datapth (
     input   logic   [2:0]                       cmp_op, accum_op,shift_op,
     input   logic   [1:0]                       op_type
 );
-
-
-// Read and Write address from Decode --> Vector Register file 
-
 
 // Vector Immediate from the decode 
 logic   [`MAX_VLEN-1:0] vec_imm;
@@ -120,7 +116,7 @@ logic   [`XLEN-1:0] scalar1;
 logic   [`XLEN-1:0] scalar2;
 
 // Output from vector processor lsu --> lsu mux
-logic               is_loaded;              // It tells that data is loaded from the memory and ready to be written in register file
+
 
 logic               error_flag;             // It tells that wrong configurations has occure   
 
@@ -162,8 +158,7 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 
 // Outputs of the sew eew mux after the decode and csr
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
-
-
+logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe;
 
 logic   [1:0]               sew_execution;         
 logic   [`MAX_VLEN-1:0]     vd_data;
@@ -175,9 +170,19 @@ logic   [63:0]              adder_carry_out;
 logic [1:0] sew_sel;
 logic [63:0] carry_out_mask;
 
-assign inst_done = data_written || csr_done || is_stored || error || execution_done;
+assign inst_done =  rob_commit_valid_i;//data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
-assign seq_num_o = seq_num_i;
+always_comb begin
+    if (execution_inst) begin
+        seq_num_o = seq_num_exe;
+    end
+    else if (ld_inst | st_inst) begin
+        seq_num_o = seq_num_lsu;
+    end
+    else 
+        seq_num_o = seq_num_i;
+
+end
 
              //////////////////////
             //      DECODE      //
@@ -313,15 +318,15 @@ logic [4:0] vector_write_address;
         .reset          (reset              ),
         .raddr_1        (vec_read_addr_1    ), 
         .raddr_2        (vec_read_addr_2    ),  
-        .wdata          (vec_wr_data        ),          
-        .waddr          (vec_write_addr     ),
+        .wdata          (vec_commit_vector_result_i      ),          
+        .waddr          (vec_commit_vd_i     ),
         .wr_en          (vec_wr_en          ), 
         .lmul           (vlmul_emul_mux_out ),
         .emul           (emul               ),
         .offset_vec_en  (offset_vec_en      ),
         .mask_operation (mask_operation     ), 
         .mask_wr_en     (mask_wr_en         ), 
-        
+
         // Outputs 
         .rdata_1        (vec_data_1         ),
         .rdata_2        (vec_data_2         ),
@@ -458,7 +463,8 @@ logic [4:0] vector_write_address;
         .mem_sew_enc        (mem_sew_enc                ),
         .mem_rdata          (mem_rdata                  ),
  
-        .seq_num(seq_num),
+        .seq_num(seq_num_i),
+        .seq_num_lsu(seq_num_lsu),
         // vec_lsu  -> vec_register_file
         .vd_data            (vd_data                    ), 
         .is_loaded          (is_loaded                  ),
@@ -487,7 +493,8 @@ logic [4:0] vector_write_address;
         .data_2             (data_mux2_out[`MAX_VLEN-1:0]), 
         .data_3             (vec_data_3),
 
-        .seq_num(seq_num),
+        .seq_num(seq_num_i),
+        .seq_num_exe(seq_num_exe),
         .Ctrl               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
         .execution_op       (execution_op),

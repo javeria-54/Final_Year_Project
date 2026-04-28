@@ -7,7 +7,7 @@
 // Author: Muhammad Tahir, UET Lahore
 // Date: 11.8.2022
 
-
+import pcore_types_pkg::*;
 `include "scalar_pcore_interface_defs.svh"
 `include "scalar_a_ext_defs.svh"
 `include "vector_processor_defs.svh"
@@ -44,7 +44,10 @@ module lsu (
     input wire type_fwd2lsu_s               fwd2lsu_i,
 
     output logic                            lsu_done_o, 
-
+    input logic [`XLEN-1:0]                  rob_commit_scalar_mem_data,
+    input logic                              rob_commit_scalar_rd_wr_req,
+    input type_st_ops_e                      rob_commit_scalar_store_op,
+    input [`XLEN-1:0]                        rob_commit_scalar_mem_addr,
     // LSU <---> Data Bus (dbus) interface
     input  wire type_dbus2lsu_s             dbus2lsu_i,
     output type_lsu2dbus_s                  lsu2dbus_o,                // Signal to data bus 
@@ -179,9 +182,11 @@ always_comb begin
         lsu2wrb_ctrl.rd_wr_req  = amo2lsu_ctrl.rd_wr_req;
     end else begin
         ld_req                  = |ld_ops; 
-        st_req                  = |(exe2lsu_ctrl.st_ops);
-        lsu2dbus.w_data         = exe2lsu_data.rs2_data;
-        lsu2wrb_ctrl.rd_wr_req  = exe2lsu_ctrl.rd_wr_req;
+        //lsu2dbus.w_data         = //exe2lsu_data.rs2_data;
+        //lsu2wrb_ctrl.rd_wr_req  = //exe2lsu_ctrl.rd_wr_req;
+        lsu2dbus.w_data         = rob_commit_scalar_mem_data;
+        lsu2wrb_ctrl.rd_wr_req  = rob_commit_scalar_rd_wr_req;
+        st_req                  = rob_commit_scalar_store_op;//|(exe2lsu_ctrl.st_ops);
     end
 end
 
@@ -189,8 +194,13 @@ end
 
 assign lsu2wrb_data.seq_num = lsu_seq_num;
 
-assign ld_st_addr = exe2lsu_data.alu_result;
 
+always_comb begin
+   if (st_req)
+      ld_st_addr = rob_commit_scalar_mem_addr;
+   else
+      ld_st_addr = exe2lsu_data.alu_result;
+end
 // Feedback signals to EXE module
 assign lsu2exe_fb_alu_result_o = exe2lsu_data.alu_result; 
 
@@ -239,7 +249,7 @@ assign lsu2dbus.addr   = ld_st_addr;
 assign lsu2dbus.ld_req = ld_req;
 assign lsu2dbus.st_req = st_req;
 // MT: assign lsu2dbus.w_data = exe2lsu_data.rs2_data;
-assign lsu2dbus.st_ops = exe2lsu_ctrl.st_ops;
+assign lsu2dbus.st_ops = rob_commit_scalar_store_op;
 
 // Update the output signals with proper assignment
 assign lsu_flush_o    = fwd2lsu_i.lsu_flush;
