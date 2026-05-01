@@ -9,7 +9,7 @@ module viq (
     input  logic [`INSTR_W-1:0]         instruction_i,
     input  logic [`OPERAND_W-1:0]       operand_rs1_i,
     input  logic [`OPERAND_W-1:0]       operand_rs2_i,
-    input  logic                        instr_is_vecmem_i,
+    input  logic                        instr_is_vec_i,
 
     output logic                        stall_vec,
     output logic                        viq_full,
@@ -20,7 +20,7 @@ module viq (
     output logic [`INSTR_W-1:0]         instruction_o,
     output logic [`OPERAND_W-1:0]       operand_rs1_o,
     output logic [`OPERAND_W-1:0]       operand_rs2_o,
-    output logic                        instr_is_vecmem_o,
+    output logic                        instr_is_vec_o,//instr_is_vecmem_o,
 
     output logic [`VIQ_tag_width-1:0]   num_instr
 );
@@ -70,13 +70,13 @@ module viq (
              instruction_o,
              operand_rs2_o,
              operand_rs1_o,
-             instr_is_vecmem_o} = fifo[read_idx];
+             instr_is_vec_o} = fifo[read_idx];
         end else begin
             instr_seq_o       = '0;
             instruction_o     = '0;
             operand_rs1_o     = '0;
             operand_rs2_o     = '0;
-            instr_is_vecmem_o = 1'b0;
+            instr_is_vec_o = 1'b0;
         end
     end
 
@@ -98,7 +98,7 @@ module viq (
                                      instruction_i,
                                      operand_rs2_i,
                                      operand_rs1_i,
-                                     instr_is_vecmem_i };
+                                     instr_is_vec_i };
                 write_ptr <= write_ptr + 1'b1;
             end
 

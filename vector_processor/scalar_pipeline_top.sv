@@ -11,9 +11,7 @@ import pcore_types_pkg::*;
 `include "scalar_a_ext_defs.svh"
 `include "vector_processor_defs.svh"
 
-
 module pipeline_top (
-
     input   wire                        rst_n,
     input   wire                        clk
 );
@@ -111,7 +109,7 @@ assign spi2dbus   = '0;
 assign gpio2dbus  = '0;
 
 // FIX #3: clint2csr_i ko port se assign karo
-assign clint2csr_i = clint2csr_i_port;
+assign clint2csr_i = 'b0;
 
 // Selection lines from dbus interconnect
 logic                                   dmem_sel;
@@ -219,7 +217,7 @@ logic [`Tag_Width-1:0]                  viq_deq_seq;
 logic [`INSTR_W-1:0]                    viq_deq_instr;
 logic [`OPERAND_W-1:0]                  viq_deq_rs1;
 logic [`OPERAND_W-1:0]                  viq_deq_rs2;
-logic                                   viq_deq_is_vecmem_int;
+logic                                   viq_deq_is_vec_int;
 
 // VIQ dispatch from ROB
 logic                                   viq_dispatch_valid;
@@ -278,34 +276,37 @@ logic                                   scalar_pro_ready;
 logic                                   inst_valid;
 logic                                   scalar_pro_ack;
 
-// FIX #12: viq_is_vec declare kiya — vector_processor se driven hai
-logic                                   viq_is_vec;
-
 // Done signals
 logic                                   scalar_done, vector_done;
 logic [`XLEN-1:0]                       if2rob_instr;
 
 logic [`Tag_Width-1:0]                  vec_seq_num;
 logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
+logic exe_done_delay, lsu_done_delay;
 
-assign scalar_done = div_done | exe_done | lsu_done;
+assign scalar_done = div_done | exe_done_delay | lsu_done_delay;
 assign vector_done = execution_done | is_stored | csr_done | is_loaded;
+
+always_ff @(posedge clk) begin
+    exe_done_delay <= exe_done;
+    lsu_done_delay <= lsu_done;
+end
 
 // ============================================================
 // Key assignments
 // ============================================================
 
-assign de_valid = mem2if.ack; //| vec_decode_done; ///left logic 
+assign de_valid = mem2if.ack; //| vec_decode_done; //left logic 
 
 // rd address from execute stage
 assign id2rf_rd_addr = exe2lsu_ctrl.rd_addr;
 
 // Flush
-assign flush_valid = 'b0;
-//assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
-  //                      fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush  |
-    //                    fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush |
-      //                  fwd2lsu.lsu_flush;
+//assign flush_valid = 'b0;
+assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
+                        fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush  |     //if2id_pipe_flush,id2exe,exe2lsu
+                        fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush |
+                        fwd2lsu.lsu_flush;
 assign flush_seq   = '0;
 
 // Scalar result MUX → ROB
@@ -379,14 +380,29 @@ always_comb begin
         if2id_ctrl_next = if2id_ctrl_pipe_ff;
     end
 end
+logic [`XLEN-1:0]          rob_de_instr_ff;
+logic [`Tag_Width-1:0]     rob_de_seq_num_ff;
+logic                      de_valid_ff;
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        rob_de_instr_ff   <= 32'h00000013;  // NOP
+        rob_de_seq_num_ff <= '0;
+        de_valid_ff       <= 1'b0;
+    end else if (!stall_fetch) begin        // stall ka khayal rakho
+        rob_de_instr_ff   <= rob_de_instr;
+        rob_de_seq_num_ff <= rob_de_seq_num;
+        de_valid_ff       <= de_valid;
+    end
+end
 `endif
 
 decode decode_module (
     .rst_n           (rst_n),
     .clk             (clk),
     .is_vector       (is_vector),
-    .rob_instr       (rob_de_instr),
-    .rob_seq_num     (rob_de_seq_num),
+    .rob_instr       (rob_de_instr_ff),
+    .rob_seq_num     (rob_de_seq_num_ff),
     .is_scalar_store (is_scalar_store),
     .is_scalar_load  (is_scalar_load),
     .is_vector_store (is_vector_store),
@@ -594,7 +610,7 @@ rob rob (
     .rob_de_instr_o          (rob_de_instr),
     .rob_de_seq_num_o        (rob_de_seq_num),
 
-    .de_valid_i              (de_valid),
+    .de_valid_i              (de_valid_ff),
     .de_seq_num_i            (id2exe_data.seq_num),
     .de_is_vector_i          (is_vector),
     .de_scalar_store_i       (is_scalar_store),
@@ -689,7 +705,7 @@ viq viq (
     .operand_rs1_i      (viq_dispatch_rs1_data),
     .operand_rs2_i      (viq_dispatch_rs2_data),
     // FIX #19: viq_dispatch_is_load/store ab declared aur driven hain
-    .instr_is_vecmem_i  (viq_dispatch_is_vec),
+    .instr_is_vec_i     (viq_dispatch_is_vec),
     .stall_vec          (viq_stall),
     .num_instr          (viq_num_instr),
     .deq_ready          (vec_pro_ready),
@@ -699,7 +715,7 @@ viq viq (
     .instruction_o      (viq_deq_instr),
     .operand_rs1_o      (viq_deq_rs1),
     .operand_rs2_o      (viq_deq_rs2),
-    .instr_is_vecmem_o  (viq_deq_is_vecmem_int)
+    .instr_is_vec_o     (viq_deq_is_vec_int)
 );
 
 // ============================================================
@@ -712,8 +728,7 @@ vector_processor vector (
     .instruction        (viq_deq_instr),
     .rs1_data           (viq_deq_rs1),
     .rs2_data           (viq_deq_rs2),
-    // FIX #20: viq_is_vec ab declared — processor output
-    .is_vec             (viq_is_vec),
+    .is_vec             (viq_deq_is_vec_int),
 
     .inst_valid         (inst_valid),
     .scalar_pro_ready   (scalar_pro_ready),
