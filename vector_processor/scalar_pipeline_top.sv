@@ -282,15 +282,10 @@ logic [`XLEN-1:0]                       if2rob_instr;
 
 logic [`Tag_Width-1:0]                  vec_seq_num;
 logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
-logic exe_done_delay, lsu_done_delay;
 
-assign scalar_done = div_done | exe_done_delay | lsu_done_delay;
+assign scalar_done = div_done  | lsu_done | exe_done;
 assign vector_done = execution_done | is_stored | csr_done | is_loaded;
 
-always_ff @(posedge clk) begin
-    exe_done_delay <= exe_done;
-    lsu_done_delay <= lsu_done;
-end
 
 // ============================================================
 // Key assignments
@@ -401,7 +396,7 @@ decode decode_module (
     .rst_n           (rst_n),
     .clk             (clk),
     .is_vector       (is_vector),
-    .rob_instr       (rob_de_instr_ff),
+    .rob_instr       (if2id_data_pipe_ff.instr ),//(rob_de_instr_ff),
     .rob_seq_num     (rob_de_seq_num_ff),
     .is_scalar_store (is_scalar_store),
     .is_scalar_load  (is_scalar_load),
@@ -610,7 +605,7 @@ rob rob (
     .rob_de_instr_o          (rob_de_instr),
     .rob_de_seq_num_o        (rob_de_seq_num),
 
-    .de_valid_i              (de_valid_ff),
+    .de_valid_i              (1'b1),
     .de_seq_num_i            (id2exe_data.seq_num),
     .de_is_vector_i          (is_vector),
     .de_scalar_store_i       (is_scalar_store),

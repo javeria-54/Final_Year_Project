@@ -136,7 +136,7 @@ module rob (
         logic                        mem_wen;
         logic                        mem_elem_mode;
         logic [1:0]                  mem_sew_enc;
-        logic [1:0]                  scalar_store_op;
+        type_st_ops_e                scalar_store_op;
         logic                        scalar_rd_wr_req;
     } rob_entry_t;
 
@@ -202,6 +202,29 @@ module rob (
     assign rob_full    = (count == (PTR_W+1)'(`ROB_DEPTH));
     assign is_nop      = (fetch_instr_i == NOP_INSTR);
     assign head_entry  = rob[head];
+
+        // ── Mini early decoder ─────────────────────────────────────
+    // RISC-V standard opcodes
+    localparam logic [6:0] OPC_LOAD   = 7'b000_0011;  // scalar load
+    localparam logic [6:0] OPC_STORE  = 7'b010_0011;  // scalar store
+    localparam logic [6:0] OPC_VLD    = 7'b000_0111;  // vector load  (RISC-V V extension)
+    localparam logic [6:0] OPC_VST    = 7'b010_0111;  // vector store
+
+    logic        fetch_is_mem_early;   // same-cycle combinational flag
+    logic [6:0]  fetch_opcode;
+
+    // =========================================================
+    // Early (same-cycle) memory instruction detect
+    // Sirf opcode[6:0] dekhta hai — no pipeline dependency
+    // =========================================================
+    assign fetch_opcode      = fetch_instr_i[6:0];
+
+    assign fetch_is_mem_early = fetch_valid_i & (
+        (fetch_opcode == OPC_LOAD)  |
+        (fetch_opcode == OPC_STORE) |
+        (fetch_opcode == OPC_VLD)   |
+        (fetch_opcode == OPC_VST)
+    );
 
     // FIX: stall_viq_full_o was never driven
     assign stall_viq_full_o = viq_full_i;
@@ -272,7 +295,7 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
     // Control signals
     // =========================================================
     always_comb begin
-        do_fetch  = fetch_valid_i & ~rob_full & ~is_nop & ~is_repeat;
+        do_fetch  = fetch_valid_i & ~rob_full & ~is_repeat;
         do_commit = commit_valid_o;
         do_viq_dispatch = found_vec_to_dispatch   // FIX: use scan result
                            & ~viq_full_i
@@ -415,12 +438,17 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
     assign stall_scalar_mem = any_unretired_vec_mem;
     // FIX: name was stall_vector_mem before (mismatch) - now consistent
     assign stall_vec_mem    = any_unretired_scalar_mem;
-    assign stall_fetch_o    = stall_scalar_mem | stall_vec_mem | rob_full;
+
+    // Stall fetch usi cycle mein
+    assign stall_fetch_o = stall_scalar_mem     | stall_vec_mem     | rob_full    | fetch_is_mem_early; 
 
     always_comb begin
         if (do_fetch) begin
             rob_de_instr_o   = fetch_instr_i;  // same cycle
-            rob_de_seq_num_o = (`Tag_Width)'(tail); // tail = current seq_num
+            if (is_nop)
+                rob_de_seq_num_o = 'b0;
+            else 
+                rob_de_seq_num_o = (`Tag_Width)'(tail); // tail = current seq_num
         end else begin
             rob_de_instr_o   = rob_de_instr_o;
             rob_de_seq_num_o = rob_de_seq_num_o;
@@ -461,8 +489,7 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
                 rob[de_seq_num_i].scalar_rd_wr_req<= scalar_rd_wr_req;
                 rob[de_seq_num_i].is_vector_store <= de_vector_store_i;
                 rob[de_seq_num_i].is_vector_load  <= de_vector_load_i;
-                rob[de_seq_num_i].is_mem          <= de_scalar_store_i | de_vector_store_i |
-                                                     de_scalar_load_i  | de_vector_load_i;
+                rob[de_seq_num_i].is_mem          <= de_scalar_store_i | de_vector_store_i | de_scalar_load_i  | de_vector_load_i;
                 rob[de_seq_num_i].vd              <= de_vector_vd_addr_i;
                 rob[de_seq_num_i].vs1             <= de_vs1_addr_i;
                 rob[de_seq_num_i].vs2             <= de_vs2_addr_i;
@@ -552,7 +579,8 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
     assign commit_vector_mem_wen       = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_wen                    : 1'b0;
     assign commit_vector_mem_elem_mode = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_elem_mode              : '0;
     assign commit_vector_mem_sew_enc   = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_sew_enc                : '0;
-    assign commit_scalar_store_op_o    = (!head_entry.is_vector & commit_valid_o) ? type_st_ops_e'(head_entry.scalar_store_op) : '0;
+    //assign commit_scalar_store_op_o    = (!head_entry.is_vector & commit_valid_o) ? type_st_ops_e'(head_entry.scalar_store_op) : '0;
+    assign commit_scalar_store_op_o = (!head_entry.is_vector & commit_valid_o)   ? head_entry.scalar_store_op : ST_OPS_NONE;
     assign commit_scalar_rd_wr_req_o   = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_rd_wr_req           : 1'b0;
     assign rob_commit_is_vec_o         = commit_valid_o && head_entry.is_vector;
 

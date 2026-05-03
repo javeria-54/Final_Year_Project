@@ -134,9 +134,12 @@ always_comb begin
     id2exe_data.pc_next  = if2id_data.pc_next;
     id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
     id2exe_data.instr_flushed = if2id_data.instr_flushed;
-    id2exe_data.seq_num      = rob_seq_num;
-    
-
+    if (instr_codeword == `INSTR_NOP) begin
+        id2exe_data.seq_num      = 'b0;
+    end 
+    else begin
+        id2exe_data.seq_num      = rob_seq_num;
+    end
     // Default values for local signals
     illegal_instr       = 1'b0;
     is_vector           = 1'b0;

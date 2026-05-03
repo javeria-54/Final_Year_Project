@@ -94,7 +94,16 @@ logic  [4:0]                         shift_amt;
 logic [`RF_AWIDTH-1:0]               rs1_addr;            
 logic [`RF_AWIDTH-1:0]               rs2_addr;           
 
-logic [`Tag_Width-1:0]       exe_seq_num;            
+logic [`Tag_Width-1:0]       exe_seq_num;  
+logic  alu_done , alu_b_done , exe_cnt_done , exe_clmul_done,inst_valid;  
+
+always_comb begin
+      inst_valid = 1'b0;
+      if (id2exe_data.instr == `INSTR_NOP)
+         inst_valid = 1'b0;
+      else 
+         inst_valid = 1'b1;
+end
 
 // Instantiate input control and data structures and get the ALU operator
 assign alu_i_operator = type_alu_i_ops_e'(id2exe_ctrl_i.alu_i_ops);
@@ -188,50 +197,63 @@ end
  
 always_comb begin
    alu_result = '0;
-
+   alu_done = 1'b0;
    case (alu_i_operator)
       ALU_I_OPS_AND : begin
          alu_result = alu_operand_1 & alu_operand_2;
+         alu_done = 1'b1;
       end
       ALU_I_OPS_OR : begin
          alu_result = alu_operand_1 | alu_operand_2;
+         alu_done = 1'b1;
       end
       ALU_I_OPS_XOR : begin
          alu_result = alu_operand_1 ^ alu_operand_2;
+         alu_done = 1'b1;
       end
       ALU_I_OPS_ADD : begin
          alu_result = alu_adder_output;
+         alu_done = 1'b1;
       end
       ALU_I_OPS_SUB : begin
          alu_result = alu_adder_output;
+         alu_done = 1'b1;
       end
       // Shift related operations
       ALU_I_OPS_SLL : begin
          alu_result = alu_operand_1 << shift_amt;
+         alu_done = 1'b1;
       end
       ALU_I_OPS_SRL : begin
          alu_result = alu_operand_1 >> shift_amt;
+         alu_done = 1'b1;
       end
       ALU_I_OPS_SRA : begin
          alu_result = $signed(alu_operand_1) >>> shift_amt;
+         alu_done = 1'b1;
       end
       // Branch related operations
       ALU_I_OPS_COPY_OPR1 : begin
          alu_result = alu_operand_1;
+         alu_done = 1'b1;
       end
       // Load upper immediate requires copying operand 2 to ALU output 
       ALU_I_OPS_COPY_OPR2 : begin
          alu_result = alu_operand_2;
+         alu_done = 1'b1;
       end
       // Check for rs1 less than rs2 for both signed/unsigned comparisons  
       ALU_I_OPS_SLT : begin
          alu_result = `XLEN'({cmp_neg ^ cmp_overflow});
+         alu_done = 1'b1;
       end
       ALU_I_OPS_SLTU : begin
          alu_result = `XLEN'(cmp_output[`XLEN]);
+         alu_done = 1'b1;
       end
       default : begin 
          alu_result = '0; 
+         alu_done = 1'b0;
       end
    endcase
 end
@@ -285,8 +307,10 @@ assign clmul_operand_2 = (alu_b_ops == ALU_ZBC_OPS_CLMULH | alu_b_ops == ALU_ZBC
 
 always_comb begin
    clmul_result = '0;
+   exe_clmul_done = 1'b0;
    for (int i = 0; i <= `XLEN; i++) begin
       clmul_result = ((clmul_operand_2 >> i) & 1) ? clmul_result ^ (clmul_operand_1 << i) : clmul_result;
+      exe_clmul_done = 1'b1;
    end
 end
 
@@ -303,6 +327,7 @@ assign cnt_data = is_cpop ? alu_operand_1 : (is_ctz ? ~alu_operand_1 : ~alu_oper
 always_comb begin
    cnt_result = '0;
    cnt_en     = {32'b0, 1'b1};
+   exe_cnt_done = 1'b0;
 
    for (int unsigned i=0; i<32; i++) begin
       // keep counting if all the previous bits are 1, starting from LSB
@@ -310,96 +335,124 @@ always_comb begin
       cnt_en[i+1] = is_cpop || (cnt_en[i] && cnt_data[i]);
       if (cnt_en[i]) begin
          cnt_result = cnt_result + {5'h0, cnt_data[i]};
+         exe_cnt_done = 1'b1;
       end
    end
 end
 
 always_comb begin
+   alu_b_done = 1'b0;
    case (alu_b_ops)
       ALU_ZBA_OPS_SH1ADD : begin
          alu_b_result = (alu_operand_1 << 1) + alu_operand_2;
+         alu_b_done = 1'b1;
       end
       ALU_ZBA_OPS_SH2ADD : begin
          alu_b_result = (alu_operand_1 << 2) + alu_operand_2;
+         alu_b_done = 1'b1;
       end
       ALU_ZBA_OPS_SH3ADD : begin
          alu_b_result = (alu_operand_1 << 3) + alu_operand_2;
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_ANDN : begin
          alu_b_result = alu_operand_1 & (~alu_operand_2);
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_ORN : begin
          alu_b_result = alu_operand_1 | (~alu_operand_2);
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_XNOR : begin
          alu_b_result = alu_operand_1 ^ (~alu_operand_2);
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_CLZ,
       ALU_ZBB_OPS_CTZ,
       ALU_ZBB_OPS_CPOP : begin
          alu_b_result = cnt_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_MAX : begin
          alu_b_result = max_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_MAXU : begin
          alu_b_result = maxu_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_MIN : begin
          alu_b_result = min_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_MINU : begin
          alu_b_result = minu_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_SEXTB : begin
          alu_b_result = {{24{alu_operand_1[7]}}, alu_operand_1[7:0]};
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_SEXTH : begin
          alu_b_result = {{16{alu_operand_1[15]}}, alu_operand_1[15:0]};
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_ZEXTH : begin
          alu_b_result = {16'b0, alu_operand_1[15:0]};
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_ROL : begin
          alu_b_result = (alu_operand_1 << shift_amt) | (alu_operand_1 >> (`XLEN-shift_amt));
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_ROR,
       ALU_ZBB_OPS_RORI : begin
          alu_b_result = (alu_operand_1 >> shift_amt) | (alu_operand_1 << (`XLEN-shift_amt));
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_ORC : begin
          alu_b_result = {{8{|alu_operand_1[31:24]}}, {8{|alu_operand_1[23:16]}}, {8{|alu_operand_1[15:8]}}, {8{|alu_operand_1[7:0]}}};
+         alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_REV8 : begin
          alu_b_result = {alu_operand_1[7:0], alu_operand_1[15:8], alu_operand_1[23:16], alu_operand_1[31:24]};
+         alu_b_done = 1'b1;
       end
       ALU_ZBS_OPS_BCLR,
       ALU_ZBS_OPS_BCLRI : begin
          alu_b_result = alu_operand_1 & (~zbs_index);
+         alu_b_done = 1'b1;
       end
       ALU_ZBS_OPS_BSET,
       ALU_ZBS_OPS_BSETI : begin
          alu_b_result = alu_operand_1 | zbs_index;
+         alu_b_done = 1'b1;
       end
       ALU_ZBS_OPS_BEXT,
       ALU_ZBS_OPS_BEXTI : begin
          alu_b_result = |(alu_operand_1 & zbs_index);
+         alu_b_done = 1'b1;
       end
       ALU_ZBS_OPS_BINV,
       ALU_ZBS_OPS_BINVI : begin
          alu_b_result = alu_operand_1 ^ zbs_index;
+         alu_b_done = 1'b1;
       end
       ALU_ZBC_OPS_CLMUL : begin
          alu_b_result = clmul_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBC_OPS_CLMULR : begin
          alu_b_result = clmulr_result;
+         alu_b_done = 1'b1;
       end
       ALU_ZBC_OPS_CLMULH : begin
          alu_b_result = clmulr_result >> 1;
+         alu_b_done = 1'b1;
       end
       default: begin
          alu_b_result = '0;
+         alu_b_done = 1'b0;
       end
    endcase
 end
@@ -539,42 +592,31 @@ assign exe2div_o       = exe2div;
 assign exe2if_fb.pc_new       = {alu_result[31:2], 2'b0};                         
 assign exe2if_fb_o            = exe2if_fb; 
 
-/////////////////////////////////////////////////////////////////////////////////////////
-logic exe_done;
-logic div_cmd;
-logic alu_cmd;
-logic csr_cmd;
-logic branch_cmd;
-logic any_valid_cmd;
+//assign exe_done_o = 
+  //  (alu_done       & (alu_i_operator != ALU_I_OPS_NONE) & inst_valid)     |
+   // (alu_b_done     & (alu_b_ops      != ALU_B_OPS_NONE))                  |
+    //(exe_cnt_done   & (alu_b_ops      != ALU_B_OPS_NONE))                  |
+   // (exe_clmul_done & (alu_b_ops      != ALU_B_OPS_NONE))                  |
+   // (mul_cmd        & (alu_m_ops      != ALU_M_OPS_NONE))                  |
+   // (id2exe_ctrl.branch_req & (id2exe_ctrl.branch_ops != BR_OPS_NONE))     |
+   // (id2exe_ctrl.jump_req)    & ~(|id2exe_ctrl.ld_ops)    & ~(|id2exe_ctrl.st_ops) & ~(|id2exe_ctrl.csr_ops) &   
+   //  ~(|id2exe_ctrl.amo_ops)  & ~(|id2exe_ctrl.alu_d_ops)  & ~id2exe_ctrl.exc_req    & ~id2exe_ctrl.irq_req;   
 
-// Division
-assign div_cmd = |id2exe_ctrl.alu_d_ops;
+// Filter signals
+logic no_mem, no_csr, no_div, no_exc;
+assign no_mem = ~(|id2exe_ctrl.ld_ops) //& ~(|id2exe_ctrl.st_ops) 
+              & ~(|id2exe_ctrl.amo_ops);
+assign no_csr = ~(|id2exe_ctrl.csr_ops);
+assign no_div = ~(|id2exe_ctrl.alu_d_ops);
+assign no_exc = ~id2exe_ctrl.exc_req & ~id2exe_ctrl.irq_req;
 
-// ALU - koi arithmetic instruction hai?
-//assign alu_cmd = (alu_i_operator != ALU_I_OPS_NOP); // ya jo bhi NOP value ho
-
-// CSR - koi CSR operation hai?
-assign csr_cmd = |id2exe_ctrl.csr_ops;
-
-// Branch ya Jump
-assign branch_cmd = id2exe_ctrl.branch_req | id2exe_ctrl.jump_req;
-
-// Koi bhi valid operation chal rahi hai?
-assign any_valid_cmd =  mul_cmd        // already code mein hai
-                     | bitmanip_cmd   // already code mein hai
-                     | csr_cmd 
-                     | branch_cmd;
-
-// Done signal:
-// 1. Koi valid instruction ho
-// 2. Division na ho rahi ho
-//assign exe_done = any_valid_cmd & ~div_cmd;
-
-// rd_wr_req = 1 matlab execute ne koi result produce kiya
-assign exe_done = id2exe_ctrl.rd_wr_req   // koi register write ho rahi hai
-                & ~div_cmd                 // divide nahi hai
-                & ~id2exe_data.instr_flushed;  // flushed nahi hai
-
-assign exe_done_o = exe_done;
-
+assign exe_done_o = (
+    (alu_done       & (alu_i_operator != ALU_I_OPS_NONE) & inst_valid)  |
+    (alu_b_done     & (alu_b_ops != ALU_B_OPS_NONE))                    |
+    (exe_cnt_done   & (alu_b_ops != ALU_B_OPS_NONE))                    |
+    (exe_clmul_done & (alu_b_ops != ALU_B_OPS_NONE))                    |
+    (mul_cmd        & (alu_m_ops != ALU_M_OPS_NONE))                    |
+    (id2exe_ctrl.branch_req & (id2exe_ctrl.branch_ops != BR_OPS_NONE))  |
+    (id2exe_ctrl.jump_req)
+) & no_mem & no_csr & no_div & no_exc;
 endmodule : execute

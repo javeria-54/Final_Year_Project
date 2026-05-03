@@ -172,14 +172,14 @@ end
 // Kill request to kill an on going request
 assign kill_req = fwd2if.csr_new_pc_req | fwd2if.exe_new_pc_req;
 
-assign instr_word = ((~mem2if.ack) | irq_req_next) ? `INSTR_NOP : mem2if.r_data;
+assign instr_word = ((~mem2if.ack) | irq_req_next ) ? `INSTR_NOP : mem2if.r_data;
 
 // Update the outputs to Imem module
 
 assign if2mem_o.addr = pc_ff; 
 
 //request to memory will be zero if kill request so wrong pc instruction not fetched
-assign if2mem_o.req  = kill_req ? 1'b0 : `IMEM_INST_REQ;
+assign if2mem_o.req  = (kill_req  ) ? 1'b0 : `IMEM_INST_REQ;
 
 // Update the outputs to ID stage
 assign if2id_data.instr         = instr_word;

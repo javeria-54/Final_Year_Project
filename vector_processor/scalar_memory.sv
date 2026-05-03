@@ -39,7 +39,7 @@ module memory #(
     // Scalar address breakdown — yeh declarations ke section mein add karo
     logic [ROW_W-1:0] row_b;
     logic [1:0]       bank_sel_b;
-    logic [1:0]       byte_off_b;
+    logic [3:0]       byte_off_b;
 
     assign row_a           = addr_a[ROW_W+5 : 6];
     assign bank_sel_a_elem = addr_a[5:4];
@@ -62,6 +62,15 @@ module memory #(
     logic [`XLEN-1:0]     read_data;
     logic                 read_ack;
     logic [`XLEN-1:0]                     instr_read;
+
+    logic [ROW_W-1:0]  instr_row;
+    logic [1:0]        instr_bank_sel;
+    logic [3:0]        instr_byte_off;
+
+    // YEH DAALO (row_b assignments ke saath):
+    assign instr_row      = if2mem_i.addr[ROW_W+5 : 6];
+    assign instr_bank_sel = if2mem_i.addr[5:4];
+    assign instr_byte_off = if2mem_i.addr[3:0];
 
     assign load_req       = exe2mem_i.req & dmem_sel & !exe2mem_i.w_en;
     assign store_req      = exe2mem_i.req & dmem_sel &  exe2mem_i.w_en;
@@ -289,16 +298,36 @@ module memory #(
             end
           
             if (instr_req & !instr_ack) begin
-                instr_read <= {
-                                mem_bank_3[instr_address][7:0],
-                                mem_bank_2[instr_address][7:0],
-                                mem_bank_1[instr_address][7:0],
-                                mem_bank_0[instr_address][7:0]
-                            };
-                instr_ack    <= 1'b1;
-            end else if (instr_req & instr_ack)
+                case (instr_bank_sel)
+                    2'd0: instr_read <= {
+                            mem_bank_0[instr_row][(instr_byte_off+3)*8 +: 8],
+                            mem_bank_0[instr_row][(instr_byte_off+2)*8 +: 8],
+                            mem_bank_0[instr_row][(instr_byte_off+1)*8 +: 8],
+                            mem_bank_0[instr_row][ instr_byte_off    *8 +: 8]
+                        };
+                    2'd1: instr_read <= {
+                            mem_bank_1[instr_row][(instr_byte_off+3)*8 +: 8],
+                            mem_bank_1[instr_row][(instr_byte_off+2)*8 +: 8],
+                            mem_bank_1[instr_row][(instr_byte_off+1)*8 +: 8],
+                            mem_bank_1[instr_row][ instr_byte_off    *8 +: 8]
+                        };
+                    2'd2: instr_read <= {
+                            mem_bank_2[instr_row][(instr_byte_off+3)*8 +: 8],
+                            mem_bank_2[instr_row][(instr_byte_off+2)*8 +: 8],
+                            mem_bank_2[instr_row][(instr_byte_off+1)*8 +: 8],
+                            mem_bank_2[instr_row][ instr_byte_off    *8 +: 8]
+                        };
+                    2'd3: instr_read <= {
+                            mem_bank_3[instr_row][(instr_byte_off+3)*8 +: 8],
+                            mem_bank_3[instr_row][(instr_byte_off+2)*8 +: 8],
+                            mem_bank_3[instr_row][(instr_byte_off+1)*8 +: 8],
+                            mem_bank_3[instr_row][ instr_byte_off    *8 +: 8]
+                        };
+                endcase
+                instr_ack <= 1'b1;
+            end else if (instr_req & instr_ack) begin
                 instr_ack <= 1'b0;
-            else begin
+            end else begin
                 instr_read <= `INSTR_NOP;
                 instr_ack  <= 1'b0;
             end
