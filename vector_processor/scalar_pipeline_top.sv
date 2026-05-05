@@ -296,8 +296,6 @@ assign de_valid = mem2if.ack; //| vec_decode_done; //left logic
 // rd address from execute stage
 assign id2rf_rd_addr = exe2lsu_ctrl.rd_addr;
 
-// Flush
-//assign flush_valid = 'b0;
 assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
                         fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush  |     //if2id_pipe_flush,id2exe,exe2lsu
                         fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush |
@@ -323,6 +321,18 @@ always_comb begin
         scalar_seq_to_rob     = exe2lsu_data.seq_num;
         scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
     end
+end
+logic [`MAX_VLEN-1:0] vector_result;
+logic   [`MAX_VLEN-1:0]     vd_data;
+always_comb begin
+    if (execution_done)
+        vector_result = execution_result;
+    else if (csr_done)
+        vector_result = {{(`MAX_VLEN - `XLEN){1'b0}}, csr_out};
+    else if (is_loaded)
+        vector_result = vd_data;
+    else
+        vector_result = '0;
 end
 
 // ============================================================
@@ -391,12 +401,12 @@ always_ff @(posedge clk or negedge rst_n) begin
     end
 end
 `endif
-
+logic [`XLEN-1:0] instr_codeword;
 decode decode_module (
     .rst_n           (rst_n),
     .clk             (clk),
     .is_vector       (is_vector),
-    .rob_instr       (if2id_data_pipe_ff.instr ),//(rob_de_instr_ff),
+    .rob_instr_i     (rob_de_instr_ff),
     .rob_seq_num     (rob_de_seq_num_ff),
     .is_scalar_store (is_scalar_store),
     .is_scalar_load  (is_scalar_load),
@@ -406,6 +416,7 @@ decode decode_module (
     .id2rf_rs2_addr  (id2rf_rs2_addr),
     .rf2id_rs1_data  (rf2id_rs1_data),
     .rf2id_rs2_data  (rf2id_rs2_data),
+    .instr_codeword  (instr_codeword),
 `ifdef IF2ID_PIPELINE_STAGE
     .if2id_data_i    (if2id_data_pipe_ff),
     .if2id_ctrl_i    (if2id_ctrl_pipe_ff),
@@ -594,7 +605,7 @@ single_cycle_val_ready_controller scalar_valid_ready (
     .scalar_pro_ready(scalar_pro_ready),
     .scalar_pro_ack  (scalar_pro_ack)
 );
-
+logic vec_decode;
 rob rob (
     .clk                     (clk),
     .rst_n                   (rst_n),
@@ -607,6 +618,7 @@ rob rob (
 
     .de_valid_i              (1'b1),
     .de_seq_num_i            (id2exe_data.seq_num),
+    .de_instr_i              (instr_codeword),
     .de_is_vector_i          (is_vector),
     .de_scalar_store_i       (is_scalar_store),
     .de_vector_store_i       (is_vector_store),
@@ -617,8 +629,8 @@ rob rob (
     .de_vector_vd_addr_i     (vec_write_addr),
     .de_rs1_addr_i           (id2rf_rs1_addr),
     .de_rs2_addr_i           (id2rf_rs2_addr),
-    .de_vs1_addr_i           (id2rf_rs1_addr),
-    .de_vs2_addr_i           (id2rf_rs2_addr),
+    .de_vs1_addr_i           (vec_read_addr_1),
+    .de_vs2_addr_i           (vec_read_addr_2),
 
     .fwd_rs1_data_o          (fwd_rs1_data),
     .fwd_rs2_data_o          (fwd_rs2_data),
@@ -637,7 +649,7 @@ rob rob (
     .vector_done_i           (vector_done),
     .vector_seq_num_i        (vec_seq_num),
     .vector_vd_addr_i        (vec_write_addr),
-    .vector_result_i         (execution_inst ? vec_wr_data : csr_out),
+    .vector_result_i         (vector_result),
     .vector_mem_addr_i       (vec_mem_addr),
     .vector_mem_data_i       (vec_mem_wdata),
     .mem_byte_en             (vec_mem_byte_en),
@@ -669,6 +681,7 @@ rob rob (
     .commit_scalar_store_op_o    (rob_commit_scalar_store_op),
     .commit_scalar_rd_wr_req_o     (rob_commit_scalar_rd_wr_req),
     .rob_commit_is_vec_o        (rob_commit_is_vec),
+    .vec_decode             (vec_decode),
 
     .viq_dispatch_valid_o    (viq_dispatch_valid),
     .viq_dispatch_instr_o    (viq_dispatch_instr),
@@ -710,6 +723,7 @@ viq viq (
     .instruction_o      (viq_deq_instr),
     .operand_rs1_o      (viq_deq_rs1),
     .operand_rs2_o      (viq_deq_rs2),
+    .do_deq             (vec_decode),
     .instr_is_vec_o     (viq_deq_is_vec_int)
 );
 
@@ -751,6 +765,8 @@ vector_processor vector (
     .is_stored(is_stored),
     .is_loaded(is_loaded),
     .execution_result(execution_result),
+    .vd_data(vd_data),
+
 
     .mem_addr               (vec_mem_addr),
     .mem_wdata              (vec_mem_wdata),
@@ -769,11 +785,15 @@ vector_processor vector (
 val_ready_controller val_ready (
     .clk             (clk),
     .reset           (rst_n),
-    .inst_valid      (inst_valid),
+    .inst_valid      (viq_deq_valid_int),
     .scalar_pro_ready(scalar_pro_ready),
     .vec_pro_ready   (vec_pro_ready),
     .vec_pro_ack     (vec_pro_ack),
-    .inst_done       (inst_done)
+    .inst_done       (inst_done),
+    .exe_done(execution_done),
+    .csr_done(csr_done),
+    .is_stored(is_stored),
+    .is_loaded(is_loaded)
 );
 
 // ============================================================

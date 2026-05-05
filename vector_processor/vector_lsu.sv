@@ -43,6 +43,23 @@ module vec_lsu (
     output logic                    error_flag
 );
 
+
+logic [`Tag_Width-1:0] seq_num_held;
+// Holding register - captures seq_num_i when enable is high
+always_ff @(posedge clk ) begin
+    if (!n_rst)
+        seq_num_held <= 'b0;
+    else if (ld_inst | st_inst)       
+        seq_num_held <= seq_num;
+end
+
+always_comb begin
+    if (!n_rst)
+        seq_num_lsu = 'b0;
+    else if (is_loaded | is_stored)        
+        seq_num_lsu = seq_num_held;
+end
+
     // =========================================================================
     // FSM states
     // =========================================================================
@@ -59,9 +76,8 @@ module vec_lsu (
     // Stride type
     // =========================================================================
     logic unit_stride, const_stride;
-    assign unit_stride  =  stride_sel || ($unsigned(rs2_data) == 32'd1);
-    assign const_stride = !stride_sel && ($unsigned(rs2_data) != 32'd1) && !index_str;
-    assign seq_num_lsu = seq_num;
+    assign unit_stride  =  stride_sel || ($unsigned(rs2_data) == 32'd0);
+    assign const_stride = !stride_sel && ($unsigned(rs2_data) != 32'd0) && !index_str;
 
     // =========================================================================
     // Element counter
@@ -519,17 +535,14 @@ module vec_lsu (
                         n_state = in_flight_ld ? ST_RD_ISSUE : ST_WR_ISSUE;
                 end
 
-                // ── Element-wise LOAD ─────────────────────────────────────
                 ST_RD_ISSUE: begin
                     if (unit_stride) begin
-                        // No rd_wait needed — mem is async, data valid same cycle
                         mem_addr      = rs1_data[31:0];
                         mem_byte_en   = unit_byte_en;
                         mem_ren       = 1'b1;
                         mem_elem_mode = 1'b0;
                         is_loaded_comb = 1'b1;
                         n_state        = ST_IDLE;
-                        // capture happens in always_ff below same posedge
                     end
                     else begin
                         mem_addr      = current_addr[31:0];

@@ -48,6 +48,7 @@ module vector_processor(
 
     input logic [4:0] rob_commit_vd,
     input logic [`MAX_VLEN-1:0]  rob_commit_vector_result,
+    output logic   [`MAX_VLEN-1:0]     vd_data,
 
     // val_ready_controller --> scaler_processor
     input   logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
@@ -165,6 +166,7 @@ logic   [1:0]                       op_type;
         .vec_read_addr_1(vec_read_addr_1),
         .vec_read_addr_2(vec_read_addr_2),
         .vec_write_addr(vec_write_addr),
+        .vd_data (vd_data),
 
        
         // csr_regfile -> scalar_processor
@@ -358,7 +360,12 @@ logic   [1:0]                       op_type;
         .vec_pro_ack        (vec_pro_ack        ),             // tells that the data comming from the vec_procssor is valid and done with the implementation of instruction 
 
         // datapath -->   val_ready_controller 
-        .inst_done          (inst_done          )
+        .inst_done       (inst_done),
+        .exe_done(execution_done),
+        .csr_done(csr_done),
+        .is_stored(is_stored),
+        .is_loaded(is_loaded)
+        
     );
-
+   
 endmodule

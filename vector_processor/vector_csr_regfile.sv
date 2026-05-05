@@ -8,7 +8,9 @@ module vec_csr_regfile (
     input   logic   [`XLEN-1:0]      inst,
 
     // csr_regfile -> scalar_processor
-    output  logic   [`XLEN-1:0]     csr_out,
+    output  logic   [`XLEN-1:0]                 csr_out,
+    input   logic   [`Tag_Width-1:0]            seq_num_i,
+    output  logic   [`Tag_Width-1:0]            seq_num_csr,
 
     // vec_controller -> csr
     input   logic                   rs1rd_de,   // selection for VLMAX or comparator
@@ -34,7 +36,7 @@ module vec_csr_regfile (
     output  logic                   csr_done           // This signal tells that csr instruction has been implemented successfully.       
 );
 
-
+logic   [`Tag_Width-1:0]            seq_num_held;
 csr_vtype_s         csr_vtype_q;
 logic [`XLEN-1:0]   csr_vl_q;
 logic [`XLEN-1:0]   csr_vstart_d, csr_vstart_q;
@@ -51,8 +53,23 @@ assign opcode   = inst [6:0];
 assign rd_addr  = inst [11:7];
 assign funct3   = inst [14:12];
 assign rs1_addr = inst [19:15];
-assign csr_addr = csr_reg_e'(inst [31:20]);  
+assign csr_addr = csr_reg_e'(inst [31:20]); 
 
+
+// Holding register - captures seq_num_i when enable is high
+always_ff @(posedge clk ) begin
+    if (!n_rst)
+        seq_num_held <= 'b0;
+    else if (csrwr_en)       
+        seq_num_held <= seq_num_i;
+end
+
+always_comb begin
+    if (!n_rst)
+        seq_num_csr = 'b0;
+    else if (csr_done)        
+        seq_num_csr = seq_num_held;
+end
 // Two vector CSR registers vtype and vl are written by using only one 'vsetvli' instruction
 // these two registers are not written by the simple read write csr_addr.
  

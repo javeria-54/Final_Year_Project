@@ -206,7 +206,6 @@ typedef struct packed {
     logic                            ack;  
 } type_imem2if_s;
 
-
 // Fetch-2-Decode data signals
 typedef struct packed {                            
     logic [`XLEN-1:0]                instr;

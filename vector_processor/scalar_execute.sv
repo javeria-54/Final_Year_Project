@@ -590,17 +590,7 @@ assign exe2div_o       = exe2div;
 
 // Update the feedback signals from EXE to IF stage                         
 assign exe2if_fb.pc_new       = {alu_result[31:2], 2'b0};                         
-assign exe2if_fb_o            = exe2if_fb; 
-
-//assign exe_done_o = 
-  //  (alu_done       & (alu_i_operator != ALU_I_OPS_NONE) & inst_valid)     |
-   // (alu_b_done     & (alu_b_ops      != ALU_B_OPS_NONE))                  |
-    //(exe_cnt_done   & (alu_b_ops      != ALU_B_OPS_NONE))                  |
-   // (exe_clmul_done & (alu_b_ops      != ALU_B_OPS_NONE))                  |
-   // (mul_cmd        & (alu_m_ops      != ALU_M_OPS_NONE))                  |
-   // (id2exe_ctrl.branch_req & (id2exe_ctrl.branch_ops != BR_OPS_NONE))     |
-   // (id2exe_ctrl.jump_req)    & ~(|id2exe_ctrl.ld_ops)    & ~(|id2exe_ctrl.st_ops) & ~(|id2exe_ctrl.csr_ops) &   
-   //  ~(|id2exe_ctrl.amo_ops)  & ~(|id2exe_ctrl.alu_d_ops)  & ~id2exe_ctrl.exc_req    & ~id2exe_ctrl.irq_req;   
+assign exe2if_fb_o            = exe2if_fb;   
 
 // Filter signals
 logic no_mem, no_csr, no_div, no_exc;

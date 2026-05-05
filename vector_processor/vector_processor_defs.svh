@@ -22,11 +22,11 @@ parameter WR_STROB = `DATA_BUS/8;
 `define REG_ADDR_W  5
 `define VREG_ADDR_W 5
 
-`define VIQ_DEPTH  8
-`define VIQ_tag_width 3
-`define SEQ_W  8
+`define VIQ_DEPTH  16
+`define VIQ_tag_width 4
 `define INSTR_W    32
 `define OPERAND_W  32
-`define ENTRY_W  81//`SEQ_W + `INSTR_W + `OPERAND_W + `OPERAND_W + 1;
+//`define ENTRY_W  101
+`define ENTRY_W  (`Tag_Width + `INSTR_W + `OPERAND_W + `OPERAND_W + 1)
 
 `endif

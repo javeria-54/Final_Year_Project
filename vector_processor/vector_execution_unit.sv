@@ -17,6 +17,7 @@ module vector_execution_unit(
 
     input  logic [`Tag_Width-1:0]        seq_num,
     output logic [`Tag_Width-1:0] seq_num_exe,
+    input logic execution_inst,
 
     input   logic                               Ctrl,start,
     input   logic [6:0]                         sew_eew_mux_out,
@@ -36,6 +37,22 @@ module vector_execution_unit(
     output  logic [1:0]                         sew
      
 );
+
+logic [`Tag_Width-1:0] seq_num_held;
+// Holding register - captures seq_num_i when enable is high
+always_ff @(posedge clk ) begin
+    if (!reset)
+        seq_num_held <= 'b0;
+    else if (execution_inst )       
+        seq_num_held <= seq_num;
+end
+
+always_comb begin
+    if (!reset)
+        seq_num_exe = 'b0;
+    else if (execution_done)        
+        seq_num_exe = seq_num_held;
+end
     
     // Internal signals
     logic                               count_0;
@@ -71,8 +88,6 @@ module vector_execution_unit(
             default:    sew = 2'b00;
         endcase
     end
-
-    assign seq_num_exe = seq_num;
 
     always_comb begin
         // Default sab zero
@@ -434,6 +449,10 @@ module vector_execution_unit(
     );
     
     assign move_result = move_data_1;
-    assign execution_done = sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done | sum_mask_done;
- 
+    always_ff @(posedge clk ) begin
+        if (!reset) 
+            execution_done <= 1'b0;
+        else if (sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done | sum_mask_done)
+            execution_done <= 1'b1;
+    end
 endmodule

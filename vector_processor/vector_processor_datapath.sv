@@ -67,7 +67,7 @@ module vector_processor_datapth (
 
     output  logic   [`MAX_VLEN-1:0]             vec_wr_data,
     input   logic   [`Tag_Width-1:0]            seq_num_i,
-    output  logic   [`Tag_Width-1:0]            seq_num_o,
+    output  logic   [`Tag_Width-1:0]            seq_num_o, 
     output  logic                               execution_done,
     output  logic                               data_written,           // tells that data is written to the register file
     // Output from csr_reg--> datapath (done signal)
@@ -79,6 +79,7 @@ module vector_processor_datapth (
     input logic [4:0] vec_commit_vd_i, //            (rob_commit_vd),
     input logic [`MAX_VLEN-1:0] vec_commit_vector_result_i,
     input logic rob_commit_valid_i,
+    output logic   [`MAX_VLEN-1:0]     vd_data,
 
     output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
 
@@ -158,10 +159,10 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 
 // Outputs of the sew eew mux after the decode and csr
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
-logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe;
+logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe,seq_num_csr;
 
 logic   [1:0]               sew_execution;         
-logic   [`MAX_VLEN-1:0]     vd_data;
+
 
 logic   [`VLEN-1:0]         vs1,vs2;
 logic   [4095:0]            mask_unit_output;
@@ -173,15 +174,17 @@ logic [63:0] carry_out_mask;
 assign inst_done =  rob_commit_valid_i;//data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
 always_comb begin
-    if (execution_inst) begin
+    if (execution_done) begin
         seq_num_o = seq_num_exe;
     end
-    else if (ld_inst | st_inst) begin
+    else if (is_loaded | is_stored) begin
         seq_num_o = seq_num_lsu;
     end
-    else 
+    else  if (csr_done) begin
+        seq_num_o = seq_num_csr; 
+    end else begin
         seq_num_o = seq_num_i;
-
+    end
 end
 
              //////////////////////
@@ -236,6 +239,8 @@ logic [4:0] vector_write_address;
 
         // csr_regfile -> scalar_processor
         .csr_out                (csr_out        ),
+        .seq_num_i              (seq_num_i),
+        .seq_num_csr             (seq_num_csr),
 
         // vec_controller -> csr_regfile
         .rs1rd_de               (rs1rd_de       ),
@@ -497,6 +502,8 @@ logic [4:0] vector_write_address;
         .seq_num_exe(seq_num_exe),
         .Ctrl               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
+        .execution_inst(execution_inst),
+
         .execution_op       (execution_op),
         .signed_mode        (signed_mode),
         .mul_high           (mul_high),

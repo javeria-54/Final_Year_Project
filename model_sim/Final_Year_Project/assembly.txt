@@ -9,3 +9,22 @@ lui x6, 0x0D00B
 vlb.v v1, (x1)
 vlb.v v1, (x2)
 vadd.vv v3, v4, v2
+
+
+Machine Code: 0x0211_0057
+
+Binary:
+000000 | 0 | 00011 | 00010 | 000 | 00001 | 1010111
+funct6   vm   vs2    vs1   funct3  vd    opcode
+
+Machine Code: 0x0200_8087
+
+Binary:
+000000 | 0 | 01000 | 00001 | 110 | 00001 | 0000111
+nf+mew  vm  lumop   rs1   width   vd    opcode(LOAD-FP)
+
+Machine Code: 0x0200_80A7
+
+Binary:
+000000 | 0 | 01000 | 00001 | 110 | 00001 | 0100111
+nf+mew  vm   sumop    rs1   width   vs3   opcode(STORE-FP)
