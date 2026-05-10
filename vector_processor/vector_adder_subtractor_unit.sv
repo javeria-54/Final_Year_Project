@@ -341,12 +341,7 @@ module vector_adder_subtractor (
     output logic                            sum_done    // All slices valid
 );
 
-    // Number of 32-bit slices needed to cover the full vector width
-    localparam NUM_SLICES = (`VLEN / 32);
-
-    // Collect sum_done from each 32-bit slice
-    // Final sum_done = AND of all individual sum_done signals
-    logic [NUM_SLICES-1:0] sum_done_array;
+    logic [`NUM_ELEMENT_SEW32-1:0] sum_done_array;
 
     genvar i;
     generate

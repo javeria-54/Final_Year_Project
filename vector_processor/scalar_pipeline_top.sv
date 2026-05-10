@@ -92,6 +92,8 @@ type_exe2lsu_data_s                     exe2lsu_data_next;
 type_exe2csr_data_s                     exe2csr_data_next;
 type_exe2csr_ctrl_s                     exe2csr_ctrl_next;
 
+type_pipe2csr_s                         core2pipe_i;
+
 // ============================================================
 // Peripheral bus signals
 // ============================================================
@@ -755,6 +757,7 @@ vector_processor vector (
     .vec_wr_data        (vec_wr_data),
     // FIX #22: execution_inst ab declared signal
     .execution_inst     (execution_inst),
+    .data_written(data_written),
 
     .rob_commit_vd           (rob_commit_vd),
     .rob_commit_vector_result (rob_commit_vector_result),

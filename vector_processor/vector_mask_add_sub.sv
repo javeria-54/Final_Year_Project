@@ -4,7 +4,7 @@
 module vector_mask_add_sub (
     input  logic [`VLEN-1:0]  adder_data_1,
     input  logic [`VLEN-1:0]  adder_data_2,
-    input  logic [511:0]      mask_reg,
+    input  logic [`VLEN-1:0]      mask_reg,
     input  logic              Ctrl,       
     input  logic              sew_16_32,
     input  logic              sew_32,

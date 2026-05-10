@@ -16,14 +16,14 @@ module vector_processor_datapth (
     input   logic   [`XLEN-1:0]                 rs2_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs2 address
 
     output logic [31:0]             mem_addr,
-    output logic [511:0]            mem_wdata,
-    output logic [511:0]            mem_wdata_unit,
+    output logic [`VLEN-1:0]            mem_wdata,
+    output logic [`VLEN-1:0]            mem_wdata_unit,
     output logic [63:0]             mem_byte_en,
     output logic                    mem_wen,
     output logic                    mem_ren,
     output logic                    mem_elem_mode,
     output logic [1:0]              mem_sew_enc,
-    input  logic [511:0]            mem_rdata,
+    input  logic [`VLEN-1:0]            mem_rdata,
 
     // Outputs from vector rocessor --> scaler processor
     input  logic                                is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
@@ -165,8 +165,8 @@ logic   [1:0]               sew_execution;
 
 
 logic   [`VLEN-1:0]         vs1,vs2;
-logic   [4095:0]            mask_unit_output;
-logic   [511:0]             mask_reg_updated;
+logic   [`MAX_VLEN-1:0]            mask_unit_output;
+logic   [`VLEN-1:0]             mask_reg_updated;
 logic   [63:0]              adder_carry_out;
 logic [1:0] sew_sel;
 logic [63:0] carry_out_mask;

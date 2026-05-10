@@ -1082,19 +1082,15 @@ module vector_multiplier(
     output logic                mult_done,
     output logic signed [`VLEN*2-1:0] product       // 1024-bit result
 );
-
-    // Number of 32-bit processing elements
-    localparam NUM_PES = `NUM_ELEMENT_SEW32;  // 512 / 32 = 16 PEs
-    
     // Per-PE signals
-    logic [NUM_PES-1:0] pe_count_0;
-    logic [NUM_PES-1:0] pe_mult_done;           //  Separate done signal per PE
-    logic signed [63:0] pe_product [NUM_PES-1:0];
+    logic [`NUM_ELEMENT_SEW32-1:0] pe_count_0;
+    logic [`NUM_ELEMENT_SEW32-1:0] pe_mult_done;           //  Separate done signal per PE
+    logic signed [63:0] pe_product [`NUM_ELEMENT_SEW32-1:0];
     
     // Generate 16 processing elements
     genvar i;
     generate
-        for (i = 0; i < 16; i++) begin : gen_processing_elements
+        for (i = 0; i < `NUM_ELEMENT_SEW32; i++) begin : gen_processing_elements
             // Extract 32-bit slices for each PE
             localparam BASE = i * 32;
             
@@ -1123,25 +1119,25 @@ module vector_multiplier(
     always_comb begin
         case (sew)
             2'b00: begin  // 8-bit elements (64 elements)
-                for (int j = 0; j < NUM_PES; j++) begin
+                for (int j = 0; j < `NUM_ELEMENT_SEW32; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end
             end
             
             2'b01: begin  // 16-bit elements (32 elements)
-                for (int j = 0; j < NUM_PES; j++) begin
+                for (int j = 0; j < `NUM_ELEMENT_SEW32; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end
             end
             
             2'b10: begin  // 32-bit elements (16 elements)
-                for (int j = 0; j < NUM_PES; j++) begin
+                for (int j = 0; j < `NUM_ELEMENT_SEW32; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end
             end
             
             default: begin
-                for (int j = 0; j < NUM_PES; j++) begin
+                for (int j = 0; j < `NUM_ELEMENT_SEW32; j++) begin
                     product[j*64 +: 64] = pe_product[j];
                 end
             end

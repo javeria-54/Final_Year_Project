@@ -48,34 +48,8 @@ module vector_processor_controller (
     output  logic [2:0]          shift_op,
     output  logic [3:0]          mask_op,
 
-    output  logic                add_inst, sub_inst, reverse_sub_inst, 
-
-    output  logic                and_inst, or_inst, xor_inst ,
-
-    output  logic                mul_inst,
-
-    output  logic                shift_left_logical_inst, shift_right_arith_inst,shift_right_logical_inst, 
-
-    output  logic                equal_inst, not_equal_inst, less_or_equal_unsigned_inst, less_or_equal_signed_inst, 
-                                 less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst, 
-                        
-    output  logic                signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst, 
-
-    output  logic                move_inst, 
-
-    output  logic                mul_add_dest_inst, mul_sub_dest_inst, mul_add_source_inst, mul_sub_source_inst,   
-
-    output  logic                mask_and_inst, mask_nand_inst, mask_and_not_inst, mask_xor_inst, mask_or_inst, mask_nor_inst,
-                                 mask_or_not_inst , mask_xnor_inst, 
-
-    output  logic                red_sum_inst, red_max_unsigned_inst, red_max_signed_inst,
-                                 red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst, 
-                                
-    output  logic                wid_add_signed_inst, wid_add_unsigned_inst, wid_sub_signed_inst, wid_sub_unsigned_inst, 
-
-    output  logic                add_carry_inst_inst, sub_borrow_inst, add_carry_masked_inst, sub_borrow_masked_inst, 
-
-    output  logic                sat_add_signed_inst, sat_add_unsigned_inst, sat_sub_signed_inst, sat_sub_unsigned_inst                                                               
+    output  logic                add_inst, sub_inst, reverse_sub_inst
+                                                                   
 );
 
 v_opcode_e      vopcode;
@@ -85,6 +59,22 @@ logic [4:0]     rs1_addr;
 logic [4:0]     rd_addr;
 v_func6_vix_e   v_func6_vix;
 v_func6_vx_e    v_func6_vx;
+
+logic                and_inst, or_inst, xor_inst ;
+logic                mul_inst;
+logic                shift_left_logical_inst, shift_right_arith_inst,shift_right_logical_inst;
+logic                equal_inst, not_equal_inst, less_or_equal_unsigned_inst, less_or_equal_signed_inst,
+                     less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst;
+logic                signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst;
+logic                move_inst;
+logic                mul_add_dest_inst, mul_sub_dest_inst, mul_add_source_inst, mul_sub_source_inst;  
+logic                mask_and_inst, mask_nand_inst, mask_and_not_inst, mask_xor_inst, mask_or_inst, mask_nor_inst,
+                     mask_or_not_inst , mask_xnor_inst;
+logic                red_sum_inst, red_max_unsigned_inst, red_max_signed_inst,
+                     red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst;
+logic                wid_add_signed_inst, wid_add_unsigned_inst, wid_sub_signed_inst, wid_sub_unsigned_inst; 
+logic                add_carry_inst_inst, sub_borrow_inst, add_carry_masked_inst, sub_borrow_masked_inst;
+logic                sat_add_signed_inst, sat_add_unsigned_inst, sat_sub_signed_inst, sat_sub_unsigned_inst;
 
 assign vopcode  = v_opcode_e'(vec_inst[6:0]);
 // vfunc3 for differentiate between arithematic and configuration instructions

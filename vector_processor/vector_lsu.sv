@@ -1,4 +1,5 @@
 `include "vector_regfile_defs.svh"
+`include "vector_execution_unit.svh"
 
 localparam int MEM_W = 512;
 
@@ -302,17 +303,17 @@ end
         for (int i = 0; i < `MAX_VLEN; i++) begin
                 case (sew)
                     7'd8  : begin 
-                        if (i < 64) begin
+                        if (i < `NUM_ELEMENT_SEW8) begin
                             mem_wdata_unit[i*8  +:  8] = vs3_data[i*8  +:  8];
                         end
                     end
                     7'd16 : begin 
-                        if (i < 32) begin
+                        if (i <  `NUM_ELEMENT_SEW16) begin
                             mem_wdata_unit[i*16 +: 16] = vs3_data[i*16 +: 16];
                         end
                     end
                     7'd32 : begin 
-                        if (i < 16) begin
+                        if (i <  `NUM_ELEMENT_SEW32) begin
                            mem_wdata_unit[i*32 +: 32] = vs3_data[i*32 +: 32]; 
                         end
                     end
@@ -327,23 +328,18 @@ end
         for (int i = 0; i < `MAX_VLEN; i++) begin
                 case (sew)
                     7'd8  : begin
-                        if (i < 64) begin
+                        if (i <  `NUM_ELEMENT_SEW8) begin
                             unit_byte_en[i]        = 1'b1;
                         end
                     end
                     7'd16 : begin
-                        if (i < 32) begin
+                        if (i <  `NUM_ELEMENT_SEW16) begin
                             unit_byte_en[2*i +: 2] = 2'b11;
                         end
                     end
                     7'd32 :  begin
-                        if (i < 16) begin
+                        if (i <  `NUM_ELEMENT_SEW32) begin
                            unit_byte_en[4*i +: 4] = 4'b1111; 
-                        end
-                    end
-                    7'd64 :  begin
-                        if (i < 8) begin 
-                           unit_byte_en[8*i +: 8] = 8'hFF;
                         end
                     end
                     
@@ -375,23 +371,18 @@ end
                 for (int i = 0; i < `MAX_VLEN; i++) begin
                         case (sew)
                             7'd8  : begin
-                                if (i < 64) begin
+                                if (i <  `NUM_ELEMENT_SEW8) begin
                                     loaded_data[i] <= {{(2*`XLEN-8) {1'b0}}, mem_rdata[i*8  +:  8]};
                                 end
                             end
                             7'd16 : begin 
-                                if (i < 32) begin
+                                if (i <  `NUM_ELEMENT_SEW16) begin
                                     loaded_data[i] <= {{(2*`XLEN-16){1'b0}}, mem_rdata[i*16 +: 16]};
                                 end
                             end
                             7'd32 : begin
-                                if (i < 16) begin
+                                if (i <  `NUM_ELEMENT_SEW32) begin
                                     loaded_data[i] <= {{(2*`XLEN-32){1'b0}}, mem_rdata[i*32 +: 32]};
-                                end
-                            end
-                            7'd64 : begin
-                                if (i < 8) begin
-                                    loaded_data[i] <= {{(2*`XLEN-64){1'b0}}, mem_rdata[i*64 +: 64]};
                                 end
                             end
                             default: loaded_data[i] <= '0;
@@ -419,23 +410,18 @@ end
         for (int i = 0; i < `MAX_VLEN; i++) begin
                 case (sew)
                     7'd8  : begin
-                        if (i < 64) begin
+                        if (i <  `NUM_ELEMENT_SEW8) begin
                             vd_data[i*8  +:  8] = loaded_data[i][7:0];
                         end
                     end
                     7'd16 : begin
-                        if (i < 32) begin
+                        if (i <  `NUM_ELEMENT_SEW16) begin
                             vd_data[i*16 +: 16] = loaded_data[i][15:0];
                         end
                     end
                     7'd32 : begin
-                        if (i < 16) begin
+                        if (i <  `NUM_ELEMENT_SEW32) begin
                             vd_data[i*32 +: 32] = loaded_data[i][31:0];
-                        end
-                    end
-                    7'd64 : begin
-                        if (i < 8) begin
-                            vd_data[i*64 +: 64] = loaded_data[i][63:0];
                         end
                     end
                     default: 

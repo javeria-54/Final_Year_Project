@@ -28,7 +28,7 @@ module vector_execution_unit(
     input   logic                               reverse_sub_inst,add_inst,sub_inst,
     input   logic [4:0]                         bitwise_op, 
     input   logic [2:0]                         cmp_op,accum_op,shift_op, 
-    input   logic [511:0] mask_reg_updated,
+    input   logic [`VLEN-1:0] mask_reg_updated,
 
     output  logic [63:0] carry_out_mask,
     output  logic [`MAX_VLEN-1:0]               execution_result,

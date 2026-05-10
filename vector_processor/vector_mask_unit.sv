@@ -13,8 +13,8 @@
 `include "vector_regfile_defs.svh"
 module vector_mask_unit(
 
-    input  logic [4095:0] lanes_data_out,
-    input  logic [4095:0] destination_data,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
     input  logic [3:0]    mask_op,
     input  logic          mask_en,
     input  logic          mask_reg_en,
@@ -23,29 +23,29 @@ module vector_mask_unit(
     input  logic [31:0]   vstart,
     input  logic [31:0]   vl,
     input  logic [6:0]    sew,
-    input  logic [511:0]  vs1,
-    input  logic [511:0]  vs2,
-    input  logic [511:0]  v0,
+    input  logic [`VLEN-1:0]  vs1,
+    input  logic [`VLEN-1:0]  vs2,
+    input  logic [`VLEN-1:0]  v0,
     output  logic [1:0]   sew_sel,
     input  logic [63:0]   carry_out,
 
-    output logic [4095:0] mask_unit_output,
-    output logic [511:0]  mask_reg_updated 
+    output logic [`MAX_VLEN-1:0] mask_unit_output,
+    output logic [`VLEN-1:0]  mask_reg_updated 
 );
 
     // ----------------------------------------------------------
     // Internal signals
     // ----------------------------------------------------------
-    logic [511:0]  mask_reg;          // FIX: single declaration only (removed duplicate)
-    logic [511:0]  prestart_check;
-    logic [511:0]  body_check;
-    logic [511:0]  tail_check;
-    logic [511:0]  v0_updated;
-    logic [4095:0] mask_output_01;
-    logic [4095:0] mask_output_02;
-    logic [4095:0] mask_output_03;
-    logic [4095:0] mask_output_04;
-    logic [4095:0] selected_output;
+    logic [`VLEN-1:0]  mask_reg;          // FIX: single declaration only (removed duplicate)
+    logic [`VLEN-1:0]  prestart_check;
+    logic [`VLEN-1:0]  body_check;
+    logic [`VLEN-1:0]  tail_check;
+    logic [`VLEN-1:0]  v0_updated;
+    logic [`MAX_VLEN-1:0] mask_output_01;
+    logic [`MAX_VLEN-1:0] mask_output_02;
+    logic [`MAX_VLEN-1:0] mask_output_03;
+    logic [`MAX_VLEN-1:0] mask_output_04;
+    logic [`MAX_VLEN-1:0] selected_output;
 
     // ----------------------------------------------------------
     // Submodule Instantiations
@@ -153,12 +153,12 @@ endmodule
 //  MODULE: comb_mask_operations
 //////////////////////////////////////////////////////////////////////////////////
 module comb_mask_operations (
-    input  logic [511:0] vs1,
-    input  logic [511:0] vs2,
+    input  logic [`VLEN-1:0] vs1,
+    input  logic [`VLEN-1:0] vs2,
     input  logic [3:0]   mask_op,
     input logic  [1:0]   sew_sel,     
     input  logic [63:0]  carry_out,
-    output logic [511:0] mask_reg_updated
+    output logic [`VLEN-1:0] mask_reg_updated
 );
 
     // FIX: declare loop variable outside always_comb (SV requires this for
@@ -229,11 +229,11 @@ endmodule
 module check_generator (
     input  logic [31:0]  vl,
     input  logic [31:0]  vstart,
-    input  logic [511:0] v0_updated,
-    output logic [511:0] mask_reg,
-    output logic [511:0] prestart_check,
-    output logic [511:0] body_check,
-    output logic [511:0] tail_check
+    input  logic [`VLEN-1:0] v0_updated,
+    output logic [`VLEN-1:0] mask_reg,
+    output logic [`VLEN-1:0] prestart_check,
+    output logic [`VLEN-1:0] body_check,
+    output logic [`VLEN-1:0] tail_check
 );
 
     always_comb begin
@@ -262,15 +262,15 @@ module comb_for_vsew_08 #(
     parameter SEW = 8,
     parameter VAR = 512
 )(
-    input  logic [4095:0] lanes_data_out,
-    input  logic [4095:0] destination_data,
-    input  logic [511:0]  mask_reg,
-    input  logic [511:0]  prestart_check,
-    input  logic [511:0]  body_check,
-    input  logic [511:0]  tail_check,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
     input  logic          vta,
     input  logic          vma,
-    output logic [4095:0] mask_output_01
+    output logic [`MAX_VLEN-1:0] mask_output_01
 );
 
     generate
@@ -305,15 +305,15 @@ module comb_for_vsew_16 #(
     parameter SEW = 16,
     parameter VAR = 256
 )(
-    input  logic [4095:0] lanes_data_out,
-    input  logic [4095:0] destination_data,
-    input  logic [511:0]  mask_reg,
-    input  logic [511:0]  prestart_check,
-    input  logic [511:0]  body_check,
-    input  logic [511:0]  tail_check,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
     input  logic          vta,
     input  logic          vma,
-    output logic [4095:0] mask_output_02
+    output logic [`MAX_VLEN-1:0] mask_output_02
 );
 
     generate
@@ -348,15 +348,15 @@ module comb_for_vsew_32 #(
     parameter SEW = 32,
     parameter VAR = 128
 )(
-    input  logic [4095:0] lanes_data_out,
-    input  logic [4095:0] destination_data,
-    input  logic [511:0]  mask_reg,
-    input  logic [511:0]  prestart_check,
-    input  logic [511:0]  body_check,
-    input  logic [511:0]  tail_check,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
     input  logic          vta,
     input  logic          vma,
-    output logic [4095:0] mask_output_03
+    output logic [`MAX_VLEN-1:0] mask_output_03
 );
 
     generate
@@ -391,15 +391,15 @@ module comb_for_vsew_64 #(
     parameter SEW = 64,
     parameter VAR = 64
 )(
-    input  logic [4095:0] lanes_data_out,
-    input  logic [4095:0] destination_data,
-    input  logic [511:0]  mask_reg,
-    input  logic [511:0]  prestart_check,
-    input  logic [511:0]  body_check,
-    input  logic [511:0]  tail_check,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
     input  logic          vta,
     input  logic          vma,
-    output logic [4095:0] mask_output_04
+    output logic [`MAX_VLEN-1:0] mask_output_04
 );
 
     generate
@@ -431,10 +431,10 @@ endmodule
 //  MODULE: mux2x1
 //////////////////////////////////////////////////////////////////////////////////
 module mux2x1 (
-    input  logic [511:0] v0,
-    input  logic [511:0] mask_reg_updated,
+    input  logic [`VLEN-1:0] v0,
+    input  logic [`VLEN-1:0] mask_reg_updated,
     input  logic         mask_reg_en,
-    output logic [511:0] v0_updated
+    output logic [`VLEN-1:0] v0_updated
 );
 
     always_comb begin
@@ -451,12 +451,12 @@ endmodule
 //  MODULE: mux4x1
 //////////////////////////////////////////////////////////////////////////////////
 module mux4x1 (
-    input  logic [4095:0] mask_output_01,
-    input  logic [4095:0] mask_output_02,
-    input  logic [4095:0] mask_output_03,
-    input  logic [4095:0] mask_output_04,
+    input  logic [`MAX_VLEN-1:0] mask_output_01,
+    input  logic [`MAX_VLEN-1:0] mask_output_02,
+    input  logic [`MAX_VLEN-1:0] mask_output_03,
+    input  logic [`MAX_VLEN-1:0] mask_output_04,
     input  logic [1:0]    sew_sel,
-    output logic [4095:0] selected_output
+    output logic [`MAX_VLEN-1:0] selected_output
 );
 
     always_comb begin
@@ -476,10 +476,10 @@ endmodule
 //  MODULE: mux_output
 //////////////////////////////////////////////////////////////////////////////////
 module mux_output (
-    input  logic [4095:0] selected_output,
-    input  logic [4095:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] selected_output,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
     input  logic          mask_en,
-    output logic [4095:0] mask_unit_output
+    output logic [`MAX_VLEN-1:0] mask_unit_output
 );
 
     always_comb begin

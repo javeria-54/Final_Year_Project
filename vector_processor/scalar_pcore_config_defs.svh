@@ -28,17 +28,14 @@
 `define RF_AWIDTH                    5
 `define RF_SIZE                      32
 
-`define PC_RESET                     32'h00000000
-
-
 // Memory related parameters
 `define IMEM_INST_REQ                1
 
-`ifdef FPGA
-`define MEM_BANK_SIZE                20'h10000
-`else
-`define MEM_BANK_SIZE                20'h80000 //20 as always should be multiple of 4
-`endif
+//`ifdef FPGA
+//`define MEM_BANK_SIZE                20'h10000
+//`else
+//`define MEM_BANK_SIZE                20'h80000 //20 as always should be multiple of 4
+//`endif
 
 `define MEM_ADDR_WIDTH               24
 
@@ -92,5 +89,11 @@ typedef enum logic [`CLINT_ADDR_WIDTH-1:0] {
 } type_mtime_regs_e;
 
 
+`define MEM_BANK_SIZE        32'h00010000
+`define DMEM_BASE_ADDR       32'h00000000
+`define DMEM_SIZE            32'h00200000  // 2MB
+`define IMEM_BASE_ADDR       32'h00200000  // DMEM_ADDR_MATCH ke saath match
+`define IMEM_SIZE            32'h00200000
+`define PC_RESET             32'h00200000
 
 `endif // PCORE_CONFIG_DEFS

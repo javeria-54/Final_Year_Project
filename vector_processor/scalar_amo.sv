@@ -9,7 +9,6 @@
 // Date: 11.8.2022
 
 `include "scalar_a_ext_defs.svh"
-
 `include "vector_processor_defs.svh"
 
 module amo (
