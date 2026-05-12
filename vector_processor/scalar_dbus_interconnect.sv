@@ -93,7 +93,7 @@ assign dbus_req  = st_req | ld_req;
 
 // Decode the device address
 assign dmem_addr_match  = (dbus_addr[`DMEM_SEL_ADDR_HIGH:`DMEM_SEL_ADDR_LOW] < `DMEM_ADDR_MATCH); //22'h200000
-
+//assign dmem_addr_match = (dbus_addr < 32'h00200000);
 assign uart0_addr_match  = (dbus_addr[`PERI_SEL_ADDR_HIGH:`PERI_SEL_ADDR_LOW] == `UART0_ADDR_MATCH);
 assign uart1_addr_match  = (dbus_addr[`PERI_SEL_ADDR_HIGH:`PERI_SEL_ADDR_LOW] == `UART1_ADDR_MATCH);
 assign spi0_addr_match   = (dbus_addr[`PERI_SEL_ADDR_HIGH:`PERI_SEL_ADDR_LOW] == `SPI0_ADDR_MATCH);

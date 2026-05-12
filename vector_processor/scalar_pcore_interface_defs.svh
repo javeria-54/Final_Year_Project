@@ -314,7 +314,7 @@ typedef struct packed {
 // CSR-2-Writeback data and control signals
 typedef struct packed {                            
     logic [`XLEN-1:0]                csr_rdata; 
-    logic [`Tag_Width-1:0]    seq_num;    
+    logic [`Tag_Width-1:0]    seq_num;   
 } type_csr2wrb_data_s;
 
 // Pipeline-2-CSR IRQ signals

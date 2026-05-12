@@ -56,9 +56,6 @@ module decode (
 //logic [`RF_AWIDTH-1:0]               id2rf_rs2_addr;            // RF rs2 address
 //logic [`RF_AWIDTH-1:0]               id2exe_rd_addr;            // RF rd address
 
-
-
-
 // 
 logic                                illegal_instr;
 

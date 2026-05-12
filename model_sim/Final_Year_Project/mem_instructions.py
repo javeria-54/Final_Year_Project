@@ -18,11 +18,11 @@ if FPGA_MODE:
     DMEM_SIZE       = 0x40000
     PC_RESET        = 0x00000
 else:
-    DMEM_BASE_ADDR  = 0x000000
+    DMEM_BASE_ADDR  = 0x200000
     DMEM_SIZE       = 0x200000
-    IMEM_BASE_ADDR  = 0x200000
+    IMEM_BASE_ADDR  = 0x000000
     IMEM_SIZE       = 0x200000
-    PC_RESET        = 0x200000
+    PC_RESET        = 0x000000
 
 # Auto-calculated
 BYTES_PER_BANK_ROW  = MEM_BANK_WIDTH // 8
@@ -98,7 +98,7 @@ def generate_bank_files(input_file, output_dir=None):
     # Verification table
     print("\n--- Verification ---")
     print(f"{'Idx':>4}  {'AbsAddr':>10}  {'LocalAddr':>10}  {'Instr':>10}  {'Row':>4}  {'Bank':>4}  {'ByteOff':>7}")
-    for i in range(min(16, total)):
+    for i in range(min(total, total)):
         abs_addr   = PC_RESET + i * BYTES_PER_INSTR
         local_addr = abs_addr - IMEM_BASE_ADDR
         row        = local_addr >> ROW_SHIFT

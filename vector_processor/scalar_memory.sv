@@ -53,12 +53,9 @@ module memory(
     logic vec_addr_valid;
     logic imem_addr_valid;
 
-    assign dmem_addr_valid = (exe2mem.addr >= `DMEM_BASE_ADDR) &&
-                             (exe2mem.addr <  `DMEM_BASE_ADDR + `DMEM_SIZE);
-    assign vec_addr_valid  = (addr_a >= `DMEM_BASE_ADDR) &&
-                             (addr_a <  `DMEM_BASE_ADDR + `DMEM_SIZE);
-    assign imem_addr_valid = (if2mem.addr >= `IMEM_BASE_ADDR) &&
-                             (if2mem.addr <  `IMEM_BASE_ADDR + `IMEM_SIZE);
+    assign dmem_addr_valid = (exe2mem.addr >= `DMEM_BASE_ADDR)  && (exe2mem.addr <  `DMEM_BASE_ADDR + `DMEM_SIZE);
+    assign vec_addr_valid  = (addr_a       >= `DMEM_BASE_ADDR)  && (addr_a       <  `DMEM_BASE_ADDR + `DMEM_SIZE);
+    assign imem_addr_valid = (if2mem.addr  >= `IMEM_BASE_ADDR)  && (if2mem.addr  <  `IMEM_BASE_ADDR + `IMEM_SIZE);
 
     // =====================================================
     // Local addresses — base subtract
@@ -234,7 +231,7 @@ module memory(
             end
 
             // ---- PORT A : Element-mode write ----
-            else if (wen_a && elem_mode_a && !addr_misaligned_a && vec_addr_valid) begin
+            if (wen_a && elem_mode_a && !addr_misaligned_a && vec_addr_valid) begin
                 case (sew_a)
                     2'd0: begin
                         case (bank_sel_a_elem)
@@ -272,7 +269,7 @@ module memory(
             end
 
             // ---- PORT B : Scalar Store ----
-            else if (store_req) begin
+            if (store_req) begin
                 case (write_sel_byte)
                     4'b0001: begin  // Byte
                         case (bank_sel_b)
@@ -336,7 +333,7 @@ module memory(
 
             // ---- PORT B : Scalar Load ----
             // 32-bit bank — word read sirf us bank se jo bank_sel_b bataye
-            else if (load_req) begin
+            if (load_req) begin
                 case (bank_sel_b)
                     2'd0: read_data <= mem_bank_0[row_b];
                     2'd1: read_data <= mem_bank_1[row_b];
@@ -344,6 +341,9 @@ module memory(
                     2'd3: read_data <= mem_bank_3[row_b];
                 endcase
                 read_ack <= 1'b1;
+            end else if (~dmem_addr_valid && exe2mem.req) begin
+                read_ack <= 1'b1;
+                read_data <= 32'hDEADBEEF; 
             end
 
             // ---- Instruction Fetch ----

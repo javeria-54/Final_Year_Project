@@ -46,11 +46,11 @@
 `define PLCL_SEL_ADDR_HIGH           21
 `define PLCL_SEL_ADDR_LOW            0
 
-`ifdef FPGA
-`define DMEM_ADDR_MATCH              20'h40000 //256KB instruction + code memory
-`else
+//`ifdef FPGA
+//`define DMEM_ADDR_MATCH              20'h40000 //256KB instruction + code memory
+//`else
 `define DMEM_ADDR_MATCH              22'h200000 //2MB instruction + code memory
-`endif
+//`endif
 
 `define UART0_ADDR_MATCH             6'h20
 `define UART1_ADDR_MATCH             6'h21
@@ -89,11 +89,11 @@ typedef enum logic [`CLINT_ADDR_WIDTH-1:0] {
 } type_mtime_regs_e;
 
 
-`define MEM_BANK_SIZE        32'h00010000
-`define DMEM_BASE_ADDR       32'h00000000
-`define DMEM_SIZE            32'h00200000  // 2MB
-`define IMEM_BASE_ADDR       32'h00200000  // DMEM_ADDR_MATCH ke saath match
-`define IMEM_SIZE            32'h00200000
-`define PC_RESET             32'h00200000
+`define MEM_BANK_SIZE        32'h00040000
+`define IMEM_BASE_ADDR       32'h00000000
+`define IMEM_SIZE            32'h00200000  // 2MB
+`define DMEM_BASE_ADDR       32'h00200000  // DMEM_ADDR_MATCH ke saath match
+`define DMEM_SIZE            32'h00200000
+`define PC_RESET             32'h00000000
 
 `endif // PCORE_CONFIG_DEFS

@@ -47,6 +47,8 @@ module csr (
     // CSR <---> Decode feedback interface
     output type_csr2id_fb_s                 csr2id_fb_o,
 
+    output logic csr_done_o,
+
     // CSR <---> Fetch feedback interface
     output type_csr2if_fb_s                 csr2if_fb_o
 
@@ -178,6 +180,7 @@ logic                            csr_minstret_inc;
 logic                            csr_minstreth_inc;
 logic                            is_not_ebreak;
 logic                            is_not_ecall;
+logic csr_done;
 
 
 
@@ -864,5 +867,27 @@ assign csr2wrb_data_o = csr2wrb_data;
 assign csr2fwd_o      = csr2fwd;
 assign csr2if_fb_o    = csr2if_fb;
 assign csr2id_fb_o    = csr2id_fb;
+
+always_comb begin
+    csr_done = 1'b0;
+
+    // Read: combinational, same cycle ready
+    if (exe2csr_ctrl.csr_rd_req && !fwd2csr.pipe_stall) begin
+        csr_done = 1'b1;
+    end
+
+    // Write: next cycle pe register update hota hai
+    // toh wr_req ke saath hi ack de sakte hain (1-cycle latency assumed)
+    else if (exe2csr_ctrl.csr_wr_req && !fwd2csr.pipe_stall) begin
+        csr_done = 1'b1;
+    end
+
+    // mret / wfi system ops
+    else if (mret_req || wfi_req) begin
+        csr_done = 1'b1;
+    end
+end
+
+assign csr_done_o = csr_done;
 
 endmodule : csr

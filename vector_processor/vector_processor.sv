@@ -93,34 +93,6 @@ logic                               mul_low;
 logic                               mul_high;
 
 logic                               add_inst, sub_inst, reverse_sub_inst;
-                              
-logic                               shift_left_logical_inst, shift_right_arith_inst, shift_right_logical_inst;
-                             
-logic                               mul_inst;
-
-logic                               equal_inst, not_equal_inst, less_or_equal_unsigned_inst, less_or_equal_signed_inst, 
-                                    less_unsinged_inst, greater_unsigned_inst, less_signed_inst, greater_signed_inst; 
-                        
-
-logic                               mul_add_dest_inst, mul_sub_dest_inst, mul_add_source_inst, mul_sub_source_inst;  
-
-logic                               mask_and_inst, mask_nand_inst, mask_and_not_inst, mask_xor_inst, mask_or_inst, mask_nor_inst,
-                                    mask_or_not_inst , mask_xnor_inst; 
-
-logic                               red_sum_inst, red_max_unsigned_inst, red_max_signed_inst,
-                                    red_min_signed_inst, red_min_unsigned_inst, red_and_inst , red_or_inst, red_xor_inst;
-    
-logic                               signed_min_inst, unsigned_min_inst, signed_max_inst, unsigned_max_inst; 
-                                
-logic                               move_inst; 
-
-logic                               wid_add_signed_inst, wid_add_unsigned_inst, wid_sub_signed_inst, wid_sub_unsigned_inst; 
-
-logic                               add_carry_inst_inst, sub_borrow_inst, add_carry_masked_inst, sub_borrow_masked_inst; 
-
-logic                               sat_add_signed_inst, sat_add_unsigned_inst, sat_sub_signed_inst, sat_sub_unsigned_inst;
-
-logic                               and_inst, or_inst, xor_inst;
 
 logic   [4:0]                       bitwise_op;
 logic   [3:0]                       mask_op;

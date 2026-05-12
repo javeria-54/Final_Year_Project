@@ -92,7 +92,7 @@ type_exe2lsu_data_s                     exe2lsu_data_next;
 type_exe2csr_data_s                     exe2csr_data_next;
 type_exe2csr_ctrl_s                     exe2csr_ctrl_next;
 
-type_pipe2csr_s                         core2pipe_i;
+type_pipe2csr_s                         core2pipe;
 
 // ============================================================
 // Peripheral bus signals
@@ -277,6 +277,7 @@ logic                                   vec_pro_ready;
 logic                                   scalar_pro_ready;
 logic                                   inst_valid;
 logic                                   scalar_pro_ack;
+logic                                   cs_done;
 
 // Done signals
 logic                                   scalar_done, vector_done;
@@ -285,7 +286,7 @@ logic [`XLEN-1:0]                       if2rob_instr;
 logic [`Tag_Width-1:0]                  vec_seq_num;
 logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
 
-assign scalar_done = div_done  | lsu_done | exe_done;
+assign scalar_done = div_done  | lsu_done | exe_done | cs_done;
 assign vector_done = execution_done | is_stored | csr_done | is_loaded;
 
 
@@ -304,6 +305,16 @@ assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
                         fwd2lsu.lsu_flush;
 assign flush_seq   = '0;
 
+// Input assignment to local signals
+assign core2pipe.csr_mhartid = 'b0;//`CSR_MHARTID;
+assign core2pipe.ext_irq     = 'b0;//{irq_plic_target_1, irq_plic_target_0};
+assign core2pipe.timer_irq   = 'b0;//irq_clint_timer;
+assign core2pipe.soft_irq    = 'b0;//irq_soft_i;
+assign core2pipe.uart_irq    = 'b0;//irq_uart;
+assign core2pipe.spi_irq     = 'b0;//irq_spi;
+assign core2pipe.gpio_irq    = 'b0;//irq_gpio;
+assign core2pipe.sw_irq      = 'b0;//irq_sw;
+
 // Scalar result MUX → ROB
 logic [`XLEN-1:0]       scalar_result_to_rob;
 logic [`Tag_Width-1:0]  scalar_seq_to_rob;
@@ -318,6 +329,10 @@ always_comb begin
         scalar_result_to_rob  = lsu2wrb_data.r_data;
         scalar_seq_to_rob     = lsu2wrb_data.seq_num;
         scalar_rd_addr_to_rob = lsu2wrb_data.rd_addr;
+    end else if (cs_done) begin
+        scalar_result_to_rob  = csr2wrb_data.csr_rdata;
+        scalar_seq_to_rob     = csr2wrb_data.seq_num;
+        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
     end else begin
         scalar_result_to_rob  = exe2lsu_data.alu_result;
         scalar_seq_to_rob     = exe2lsu_data.seq_num;
@@ -540,9 +555,10 @@ csr csr_module (
     // FIX #14: clint2csr_i ab internal signal se ja raha hai
     .clint2csr_i                (clint2csr_i),
     // FIX #15: core2pipe_i / pipe2csr_i — port se driven
-    .pipe2csr_i                 (core2pipe_i),
+    .pipe2csr_i                 (core2pipe),
     .fwd2csr_i                  (fwd2csr),
     .csr2fwd_o                  (csr2fwd),
+    .csr_done_o                 (cs_done),
     .csr2id_fb_o                (csr2id_fb),
     .csr2if_fb_o                (csr2if_fb)
 );
