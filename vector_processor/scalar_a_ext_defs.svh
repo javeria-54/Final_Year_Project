@@ -16,7 +16,7 @@
 
 
 // Atomic memory opertions
- typedef enum logic [3:0] {
+typedef enum logic [3:0] {
     AMO_OPS_NONE = '0,
     AMO_OPS_LR,
     AMO_OPS_SC,

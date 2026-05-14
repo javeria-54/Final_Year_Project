@@ -47,7 +47,7 @@ always  #5 clk = ~clk;
 // ----------------------------------------------------------------
 initial begin
     rst_n = 1'b0;
-    repeat (2) @(posedge clk);
+    @(posedge clk);
     @(negedge clk);
     rst_n = 1'b1;
     $display("[TB] Reset released at time %0t ns", $time);

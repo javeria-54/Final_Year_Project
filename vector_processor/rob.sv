@@ -205,6 +205,12 @@ module rob (
     // last instruction for repeat detection
     logic [`XLEN-1:0]            last_instr;
 
+    function automatic logic [PTR_W-1:0] next_ptr(logic [PTR_W-1:0] p);
+        logic [PTR_W-1:0] n;
+        n = p + PTR_W'(1);
+        return (n == '0) ? PTR_W'(1) : n;   // skip 0, wrap to 1
+    endfunction
+
     // =========================================================
     // Basic status
     // =========================================================
@@ -249,11 +255,7 @@ module rob (
         for (int i = 0; i < `ROB_DEPTH; i++) begin
             automatic logic [PTR_W-1:0] idx;
             idx = PTR_W'(head + PTR_W'(i));   // walk in-order from head
-            if (rob[idx].valid      &&
-                rob[idx].filled     &&
-                rob[idx].is_vector  &&
-                !rob[idx].viq_dispatched &&
-                !found_vec_to_dispatch) begin
+            if (rob[idx].valid && rob[idx].filled && rob[idx].is_vector  && !rob[idx].viq_dispatched && !found_vec_to_dispatch) begin
                 found_vec_to_dispatch = 1'b1;
                 viq_seq_num           = idx;
             end
@@ -449,20 +451,25 @@ module rob (
             if (do_fetch && do_commit && ~is_nop) begin
                 rob[tail].valid <= 1'b1;
                 rob[tail].instr <= fetch_instr_i;
-                tail            <= tail + PTR_W'(1);
+                //tail            <= tail + PTR_W'(1);
+                //head            <= head + PTR_W'(1);
+                tail <= next_ptr(tail);
+                head <= next_ptr(head);
                 rob[head].valid <= 1'b0;
-                head            <= head + PTR_W'(1);
                 // count unchanged: one in, one out
             end
             else if (do_fetch && ~is_nop) begin
                 rob[tail].valid <= 1'b1;
                 rob[tail].instr <= fetch_instr_i;
-                tail            <= tail + PTR_W'(1);
+                tail <= next_ptr(tail);
+                //head <= next_ptr(head);
+                //tail            <= tail + PTR_W'(1);
                 count           <= count + (PTR_W+1)'(1);
             end
             else if (do_commit) begin
                 rob[head].valid <= 1'b0;
-                head            <= head + PTR_W'(1);
+                //head            <= head + PTR_W'(1);
+                head <= next_ptr(head);
                 count           <= count - (PTR_W+1)'(1);
             end
 

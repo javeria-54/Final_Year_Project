@@ -17,7 +17,7 @@
 `endif
 
 `ifndef COMPLIANCE
-`define FPGA                           1
+`define FPGA                           0
 `endif
 
 //============================= CORE PARAMETERS ========================//

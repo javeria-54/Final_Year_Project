@@ -54,11 +54,9 @@ logic  [`XLEN-1:0]                   rem_u;
 
 
 logic                                div_valid;
-logic [`Tag_Width-1:0]        div_seq_num;
+logic [`Tag_Width-1:0]               div_seq_num,div_seq_num_ff, div_seq_num_next;
 
 assign exe2div = exe2div_i;
-
-assign div_seq_num = exe2div.seq_num;
 
 assign alu_d_ops = type_alu_d_ops_e'(exe2div.alu_d_ops); 
 assign alu_opr_1 = exe2div.alu_operand_1;
@@ -66,15 +64,14 @@ assign alu_opr_2 = exe2div.alu_operand_2;
 
 assign alu_d_req = |alu_d_ops_ff;
 
-
 always_comb begin
     if (alu_d_ops == ALU_D_OPS_DIV || alu_d_ops == ALU_D_OPS_REM) begin 
         alu_d_opr_1 = alu_opr_1[`XLEN-1] ? (~alu_opr_1 + 1) : alu_opr_1;
     end else begin
         alu_d_opr_1 = alu_opr_1;
+        div_seq_num = 0;
     end
 end
-
 
 always_comb begin
     if (alu_d_ops == ALU_D_OPS_DIV || alu_d_ops == ALU_D_OPS_REM) begin
@@ -95,6 +92,7 @@ always_ff @(negedge rst_n, posedge clk ) begin
         alu_d_opr1_sign_ff <= '0;
         alu_d_opr2_sign_ff <= '0;
         alu_d_rd_addr_ff   <= '0;
+        div_seq_num_ff     <= '0;
     end else begin
         alu_d_ops_ff       <= alu_d_ops_next; 
         alu_d_opr1_ff      <= alu_d_opr1_next;
@@ -102,6 +100,7 @@ always_ff @(negedge rst_n, posedge clk ) begin
         alu_d_opr1_sign_ff <= alu_d_opr1_sign_next;
         alu_d_opr2_sign_ff <= alu_d_opr2_sign_next;
         alu_d_rd_addr_ff   <= alu_d_rd_addr_next;
+        div_seq_num_ff     <= div_seq_num_next;
     end 
 end
 
@@ -114,6 +113,7 @@ always_comb begin
         alu_d_opr1_sign_next = alu_d_opr1_sign_ff;
         alu_d_opr2_sign_next = alu_d_opr2_sign_ff;
         alu_d_rd_addr_next   = alu_d_rd_addr_ff;
+        div_seq_num_next     = div_seq_num_ff;
     end else begin
         alu_d_ops_next       = alu_d_ops;
         alu_d_opr1_next      = alu_d_opr_1;
@@ -121,6 +121,7 @@ always_comb begin
         alu_d_opr1_sign_next = alu_opr_1[`XLEN-1];
         alu_d_opr2_sign_next = alu_opr_2[`XLEN-1];
         alu_d_rd_addr_next   = exe2div.rd_addr;
+        div_seq_num_next     = exe2div.seq_num;
     end
 end
 
@@ -169,7 +170,7 @@ assign div2fwd.div_req = alu_d_req;
 assign div2wrb.rd_addr      = alu_d_rd_addr_ff;
 // Response from M-extension
 assign div2wrb.alu_d_result = alu_d_result_next;
-assign div2wrb.seq_num = div_seq_num; 
+assign div2wrb.seq_num = div_seq_num_ff; 
 assign div2fwd.div_ack      = alu_d_ack_ff;
 
 assign div2fwd_o = div2fwd;
