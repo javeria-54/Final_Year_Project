@@ -31,7 +31,8 @@ module vector_execution_unit(
     input   logic [`VLEN-1:0] mask_reg_updated,
 
     output  logic [63:0] carry_out_mask,
-    output  logic [`MAX_VLEN-1:0]               execution_result,
+    
+    output  logic [`MAX_VLEN-1:0] execution_result_reg,
     output  logic                               execution_done,
     output  logic [63:0]                        carry_out,
     output  logic [1:0]                         sew
@@ -39,6 +40,7 @@ module vector_execution_unit(
 );
 
 logic [`Tag_Width-1:0] seq_num_held;
+logic [`MAX_VLEN-1:0]               execution_result;
 // Holding register - captures seq_num_i when enable is high
 always_ff @(posedge clk ) begin
     if (!reset)
@@ -129,26 +131,26 @@ end
         end
     end
 
-    assign adder_data_1         =   add_en          ? data_1[511:0] :
-                                    reverse_sub_en  ? data_2[511:0] :
+    assign adder_data_1         =   reverse_sub_en          ? data_1[`VLEN-1:0] :
+                                    add_en                  ? data_2[`VLEN-1:0] :
                                                             `VLEN'b0;
-    assign adder_data_2         =   add_en          ? data_2[511:0] :
-                                    reverse_sub_en  ? data_1[511:0] :
+    assign adder_data_2         =   reverse_sub_en          ? data_2[`VLEN-1:0] :
+                                    add_en  ? data_1[`VLEN-1:0] :
                                                             `VLEN'b0;
-    assign  mult_data_1         = mult_en           ? data_1[511:0] :  `VLEN'b0;
-    assign  mult_data_2         = mult_en           ? data_2[511:0] :  `VLEN'b0;
-    assign  shift_data_1        = shift_en          ? data_1[511:0] :  `VLEN'b0;
-    assign  shift_data_2        = shift_en          ? data_2[511:0] :  `VLEN'b0;
-    assign  compare_data_1      = compare_en        ? data_1[511:0] :  `VLEN'b0;
-    assign  compare_data_2      = compare_en        ? data_2[511:0] :  `VLEN'b0;
-    assign  bitwise_data_1      = bitwise_en        ? data_1[511:0] :  `VLEN'b0;
-    assign  bitwise_data_2      = bitwise_en        ? data_2[511:0] :  `VLEN'b0;
-    assign  mult_add_data_1     = mult_add_en       ? data_1[511:0] :  `VLEN'b0;
-    assign  mult_add_data_2     = mult_add_en       ? data_2[511:0] :  `VLEN'b0;
-    assign  mult_add_data_3     = mult_add_en       ? data_3[511:0] :  `VLEN'b0;
-    assign  move_data_1         = move_en           ? data_1[511:0] :  `VLEN'b0;
-    assign  mask_add_data_1         = mask_add_en           ? data_1[511:0] :  `VLEN'b0;
-    assign  mask_add_data_2         = mask_add_en           ? data_2[511:0] :  `VLEN'b0;
+    assign  mult_data_1         = mult_en           ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  mult_data_2         = mult_en           ? data_2[`VLEN-1:0] :  `VLEN'b0;
+    assign  shift_data_1        = shift_en          ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  shift_data_2        = shift_en          ? data_2[`VLEN-1:0] :  `VLEN'b0;
+    assign  compare_data_1      = compare_en        ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  compare_data_2      = compare_en        ? data_2[`VLEN-1:0] :  `VLEN'b0;
+    assign  bitwise_data_1      = bitwise_en        ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  bitwise_data_2      = bitwise_en        ? data_2[`VLEN-1:0] :  `VLEN'b0;
+    assign  mult_add_data_1     = mult_add_en       ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  mult_add_data_2     = mult_add_en       ? data_2[`VLEN-1:0] :  `VLEN'b0;
+    assign  mult_add_data_3     = mult_add_en       ? data_3[`VLEN-1:0] :  `VLEN'b0;
+    assign  move_data_1         = move_en           ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  mask_add_data_1         = mask_add_en           ? data_1[`VLEN-1:0] :  `VLEN'b0;
+    assign  mask_add_data_2         = mask_add_en           ? data_2[`VLEN-1:0] :  `VLEN'b0;
 
     always_comb begin
         sum_done = 1'b0;
@@ -164,7 +166,7 @@ end
             if (reset) begin  
                 sew_16_32 = 1'b0;
                 sew_32 = 1'b0;  
-                if (add_en) begin
+                if (add_en | reverse_sub_en) begin
                     if (sew == 2'b00) begin
                         sew_16_32 = 1'b0;
                         sew_32    = 1'b0;
@@ -189,8 +191,6 @@ end
                     bitwise_done = 1'b0;
                     move_done = 1'b0;
                     product_sum_done = 1'b0;
-                    sew_16_32 = 1'b0;
-                    sew_32 = 1'b0;
                     sum_mask_done = 1'b0;
                 end 
                 else if (shift_en) begin
@@ -449,10 +449,18 @@ end
     );
     
     assign move_result = move_data_1;
+   
     always_ff @(posedge clk ) begin
-        if (!reset) 
+        if (!reset) begin
             execution_done <= 1'b0;
-        else if (sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done | sum_mask_done)
+            execution_result_reg <= '0;
+        end else if (sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done | sum_mask_done) begin
             execution_done <= 1'b1;
+            execution_result_reg <= execution_result;
+        end else begin
+            execution_done <= 1'b0;
+            execution_result_reg <= '0;
+        end
     end
+
 endmodule

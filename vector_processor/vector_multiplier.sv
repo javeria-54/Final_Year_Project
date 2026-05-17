@@ -285,8 +285,8 @@ module multiplier_8 (
     logic [31:0] prev_data_in_B;
     logic new_transaction;
 
-    always_ff @(posedge clk or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk ) begin
+        if (!reset) begin
             cycle_counter <= 2'b00;
             count_0 <= 1'b0;
             prev_data_in_A <= 32'h0;
@@ -510,8 +510,6 @@ assign Y = A^B^Cin;
 assign Cout = (A&B)|(A&Cin)|(B&Cin);
     
 endmodule
-
-
 
 module carry_save_8 (
     input  logic               clk,
@@ -816,8 +814,8 @@ always_comb begin
         end
     endcase
 end
-    always_ff @(posedge clk or posedge reset) begin
-    if (reset) begin
+    always_ff @(posedge clk ) begin
+    if (!reset) begin
         accum_0 <= 0;
         accum_1 <= 0;
         accum_2 <= 0;
@@ -930,7 +928,7 @@ module top_8(
     // ──────────────────────────────────────────────
     //  Stage 3: 1-cycle delay (stall registers)
     // ──────────────────────────────────────────────
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             mult_out_1_delayed <= 0;
             mult_out_2_delayed <= 0;

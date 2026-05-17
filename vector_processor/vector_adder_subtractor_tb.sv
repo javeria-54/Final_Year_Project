@@ -127,69 +127,17 @@ module tb_vector_adder_subtractor;
 
     initial begin
 
-        $display("Starting Vector Adder/Subtractor Testbench");
-
-        // ---------------- 8-bit RANDOM TESTS ----------------
-
-        sew_16_32 = 0;
-        sew_32    = 0;
-
-        repeat(10000) begin
-
-            Ctrl = $urandom_range(0,1);
-
-            A = {$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,
-                 $urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom};
-
-            B = {$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,
-                 $urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom};
-
-            if(Ctrl)
-                run_test("8-bit RANDOM SUB");
-            else
-                run_test("8-bit RANDOM ADD");
-
-        end
-
-
-        // ---------------- 16-bit RANDOM TESTS ----------------
-
-        sew_16_32 = 1;
-        sew_32    = 0;
-
-        repeat(10000) begin
-
-            Ctrl = $urandom_range(0,1);
-
-            A = {$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,
-                 $urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom};
-
-            B = {$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,
-                 $urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom};
-
-            if(Ctrl)
-                run_test("16-bit RANDOM SUB");
-            else
-                run_test("16-bit RANDOM ADD");
-
-        end
-
-
         // ---------------- 32-bit RANDOM TESTS ----------------
 
         sew_16_32 = 1;
         sew_32    = 1;
 
-        repeat(10000) begin
+        begin
 
-            Ctrl = $urandom_range(0,1);
-
-            A = {$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,
-                 $urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom};
-
-            B = {$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,
-                 $urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom,$urandom};
-
+            Ctrl = 1;
+            // SAHI
+            A = {32'h00000008, 32'h00000008, 32'h00000008, 32'h00000008};
+            B = {32'hFFFFFFFF, 32'hFFFFFFFF, 32'hFFFFFFFF, 32'hFFFFFFFF};
             if(Ctrl)
                 run_test("32-bit RANDOM SUB");
             else

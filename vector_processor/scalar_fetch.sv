@@ -7,10 +7,7 @@
 // Author: Muhammad Tahir, UET Lahore
 // Date: 11.8.2022
 
-
-
 `include "scalar_pcore_interface_defs.svh"
-
 
 module fetch (
 
@@ -31,7 +28,8 @@ module fetch (
     // CSR <---> Fetch feedback interface
     input wire type_csr2if_fb_s                     csr2if_fb_i,
     input logic stall_fetch,
-    output logic [`XLEN-1:0]                    instr_word,
+    output logic [`XLEN-1:0]                        instr_word,
+    output   logic                                  is_jal,
     
     // Forward <---> Fetch interface
     input wire type_fwd2if_s                        fwd2if_i
@@ -88,7 +86,7 @@ assign pc_plus_4 = pc_ff + 32'd4;
 
 ////////////////////////////////////////////////////////////////
 logic [`XLEN-1:0]                    jal_imm;            
-logic                                is_jal;
+
 
 always_comb begin
     pc_next = (pc_plus_4);

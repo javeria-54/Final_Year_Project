@@ -334,7 +334,7 @@ module rob (
         do_fetch        = fetch_valid_i & ~rob_full & ~is_nop & ~is_repeat;
         do_commit       = commit_valid_o;
         de_vec_dispatch_now = de_valid_i    & de_is_vector_i    & ~viq_full_i    & ~flush_valid_i & ~stall_fetch_o;
-        do_viq_dispatch =  ~viq_full_i   & viq_rs1_ready & ~block_viq_after_stall & found_vec_to_dispatch;
+        do_viq_dispatch =  ~viq_full_i   & viq_rs1_ready & ~block_viq_after_stall & (found_vec_to_dispatch | de_vec_dispatch_now);
                            //& viq_rs2_ready;
     end
     always_comb begin

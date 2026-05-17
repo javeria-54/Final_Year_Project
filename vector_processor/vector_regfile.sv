@@ -199,7 +199,12 @@ module vec_regfile (
                     4'b0001: begin
                         if (waddr >= `MAX_VEC_REGISTERS) begin
                             wrong_addr <= 1;
-                        end else begin
+                        end
+                        else if (waddr == 0) begin
+                            vec_regfile[0] <= wdata[`VLEN-1:0];
+                            data_written   <= 1'b1;
+                        end 
+                        else begin
                             if (waddr == 0)begin
                                 vec_regfile[waddr] <= vec_regfile[0];
                             end

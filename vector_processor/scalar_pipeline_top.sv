@@ -285,6 +285,7 @@ logic [`XLEN-1:0]                       if2rob_instr;
 
 logic [`Tag_Width-1:0]                  vec_seq_num;
 logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
+logic                                   is_jal;
 
 assign scalar_done = div_done  | lsu_done | exe_done | cs_done;
 assign vector_done = execution_done | is_stored | csr_done | is_loaded;
@@ -366,6 +367,7 @@ fetch fetch_module (
     .csr2if_fb_i  (csr2if_fb),
     .stall_fetch  (stall_fetch),
     .instr_word   (if2rob_instr),
+    .is_jal       (is_jal),
     .fwd2if_i     (fwd2if)
 );
 
@@ -463,6 +465,7 @@ execute execute_module (
     .exe2if_fb_o             (exe2if_fb),
     .lsu2exe_fb_alu_result_i (lsu2exe_fb_alu_result),
     .exe_done_o              (exe_done),
+    .is_jal                  (is_jal),
     .wrb2exe_fb_rd_data_i    (wrb2exe_fb_rd_data)
 );
 
@@ -785,6 +788,7 @@ vector_processor vector (
     .is_loaded(is_loaded),
     .execution_result(execution_result),
     .vd_data(vd_data),
+    .rob_commit_is_vec_o(rob_commit_is_vec),
 
 
     .mem_addr               (vec_mem_addr),

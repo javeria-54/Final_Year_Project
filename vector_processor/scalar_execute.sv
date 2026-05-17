@@ -37,9 +37,10 @@ module execute (
     output type_exe2fwd_s                exe2fwd_o,    
 
     output logic exe_done_o,
-    output logic [`RF_AWIDTH-1:0]               rd_addr,
+    output logic [`RF_AWIDTH-1:0]        rd_addr,
     // EXE <---> IF feedback interface
     output type_exe2if_fb_s              exe2if_fb_o,
+    input logic                           is_jal,
 
     // WB/LSU <---> EXE feedback interface
     input logic [`XLEN-1:0]              lsu2exe_fb_alu_result_i,
@@ -141,18 +142,18 @@ always_comb begin
 end
 
 //============================== Preparing signals for ALU operations ============================//
-
+logic [31:0] imm_mux_out;
 // Operand for shift operations 
 assign shift_amt = alu_operand_2[4:0];
 
 // Prepare the two operands
 always_comb begin
+   imm_mux_out = is_jal ? 'b100 : id2exe_data.imm;
    alu_operand_1 = (id2exe_ctrl.alu_opr1_sel == ALU_OPR1_PC)
                  ? (id2exe_data.pc)                               // Operand 1 is PC
                  : (operand_rs1_data);                            // Operand 1 is register
-   alu_operand_2 = (id2exe_ctrl.alu_opr2_sel == ALU_OPR2_IMM)
-                 ? (id2exe_data.imm)                              // Operand 2 is immediate
-                 : (operand_rs2_data);                            // Operand 2 is register
+   alu_operand_2 = (id2exe_ctrl.alu_opr2_sel == ALU_OPR2_IMM) ?   // Operand 2 is immediate
+                   (imm_mux_out) : (operand_rs2_data);            // Operand 2 is register
 end
 
 // Implementation of different ALU operations

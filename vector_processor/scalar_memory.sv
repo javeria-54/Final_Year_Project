@@ -362,8 +362,6 @@ module memory(
                 instr_read <= `INSTR_NOP;
                 instr_ack  <= 1'b0;
             end
-
         end
     end
-
 endmodule

@@ -80,6 +80,7 @@ module vector_processor_datapth (
     input logic [`MAX_VLEN-1:0] vec_commit_vector_result_i,
     input logic rob_commit_valid_i,
     output logic   [`MAX_VLEN-1:0]     vd_data,
+    input logic rob_commit_is_vec_o,
 
     output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
 
@@ -161,7 +162,8 @@ logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmu
 logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
 logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe,seq_num_csr;
 
-logic   [1:0]               sew_execution;         
+logic   [1:0]               sew_execution;    
+
 
 
 logic   [`VLEN-1:0]         vs1,vs2;
@@ -325,7 +327,7 @@ logic [4:0] vector_write_address;
         .raddr_2        (vec_read_addr_2    ),  
         .wdata          (vec_commit_vector_result_i      ),          
         .waddr          (vec_commit_vd_i     ),
-        .wr_en          (vec_wr_en          ), 
+        .wr_en          (rob_commit_is_vec_o ), 
         .lmul           (vlmul_emul_mux_out ),
         .emul           (emul               ),
         .offset_vec_en  (offset_vec_en      ),
@@ -515,7 +517,7 @@ logic [4:0] vector_write_address;
         .cmp_op             (cmp_op),
         .accum_op           (accum_op),
         .shift_op           (shift_op),
-        .execution_result   (execution_result),
+        .execution_result_reg   (execution_result),
         .sew                (sew_execution),  
         .carry_out          (adder_carry_out),                 
         .start              (start),

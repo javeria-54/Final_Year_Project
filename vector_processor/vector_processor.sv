@@ -50,6 +50,7 @@ module vector_processor(
     input logic [4:0] rob_commit_vd,
     input logic [`MAX_VLEN-1:0]  rob_commit_vector_result,
     output logic   [`MAX_VLEN-1:0]     vd_data,
+    input logic rob_commit_is_vec_o,
 
     // val_ready_controller --> scaler_processor
     input   logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
@@ -142,6 +143,7 @@ logic   [1:0]                       op_type;
         .vec_write_addr(vec_write_addr),
         .vd_data (vd_data),
         .data_written(data_written),
+        .rob_commit_is_vec_o(rob_commit_is_vec_o),
 
        
         // csr_regfile -> scalar_processor
