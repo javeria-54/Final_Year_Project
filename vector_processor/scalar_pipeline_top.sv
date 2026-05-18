@@ -286,9 +286,11 @@ logic [`XLEN-1:0]                       if2rob_instr;
 logic [`Tag_Width-1:0]                  vec_seq_num;
 logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
 logic                                   is_jal;
+logic [`VLEN-1:0] mask_reg_updated;
+logic mask_done;
 
 assign scalar_done = div_done  | lsu_done | exe_done | cs_done;
-assign vector_done = execution_done | is_stored | csr_done | is_loaded;
+assign vector_done = execution_done | is_stored | csr_done | is_loaded |mask_done;
 
 
 // ============================================================
@@ -349,6 +351,8 @@ always_comb begin
         vector_result = {{(`MAX_VLEN - `XLEN){1'b0}}, csr_out};
     else if (is_loaded)
         vector_result = vd_data;
+    else if (mask_done)
+        vector_result = mask_reg_updated;
     else
         vector_result = '0;
 end
@@ -789,6 +793,8 @@ vector_processor vector (
     .execution_result(execution_result),
     .vd_data(vd_data),
     .rob_commit_is_vec_o(rob_commit_is_vec),
+    .mask_reg_updated(mask_reg_updated),
+    .mask_done(mask_done),
 
 
     .mem_addr               (vec_mem_addr),
@@ -816,6 +822,7 @@ val_ready_controller val_ready (
     .exe_done(execution_done),
     .csr_done(csr_done),
     .is_stored(is_stored),
+    .mask_done(mask_done),
     .is_loaded(is_loaded)
 );
 

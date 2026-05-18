@@ -140,6 +140,18 @@ add wave -position insertpoint sim:/pipeline_tb/dut/amo_module/*
 
 add wave -divider {=== ROB ===}
 add wave -position insertpoint sim:/pipeline_tb/dut/rob/*
+add wave sim:/pipeline_tb/dut/rob/rob[f]/done
+add wave sim:/pipeline_tb/dut/rob/rob[1]/done
+add wave sim:/pipeline_tb/dut/rob/rob[2]/done
+add wave sim:/pipeline_tb/dut/rob/rob[3]/done
+add wave sim:/pipeline_tb/dut/rob/rob[f]/filled
+add wave sim:/pipeline_tb/dut/rob/rob[1]/filled
+add wave sim:/pipeline_tb/dut/rob/rob[2]/filled
+add wave sim:/pipeline_tb/dut/rob/rob[3]/filled
+add wave sim:/pipeline_tb/dut/rob/rob[f]/valid
+add wave sim:/pipeline_tb/dut/rob/rob[1]/valid
+add wave sim:/pipeline_tb/dut/rob/rob[2]/valid
+add wave sim:/pipeline_tb/dut/rob/rob[3]/valid
 
 # ======= VECTOR PROCESSOR =======
 add wave -divider {=== VIQ ===}

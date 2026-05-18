@@ -221,6 +221,9 @@ module rob (
     assign stall_vec_raw_o    = 1'b0;
     assign stall_scalar_raw_o = 1'b0;
 
+    logic is_vx_instr;
+    assign is_vx_instr = (de_instr_i[6:0] == 7'b1010111) && (de_instr_i[14:12] == 3'b100 || de_instr_i[14:12] == 3'b110);    
+
     // =========================================================
     // Repeat detection
     // =========================================================
@@ -274,57 +277,55 @@ module rob (
     end
     
     always_comb begin
-        viq_fwd_rs1   = de_vec_dispatch_now ? fwd_rs1_data_o
-                                            : rob[viq_seq_num].rs1_data;
-        viq_fwd_rs2   = de_vec_dispatch_now ? fwd_rs2_data_o
-                                            : rob[viq_seq_num].rs2_data;
+        viq_fwd_rs1   = de_vec_dispatch_now ? fwd_rs1_data_o : rob[viq_seq_num].rs1_data;
+        viq_fwd_rs2   = de_vec_dispatch_now ? fwd_rs2_data_o : rob[viq_seq_num].rs2_data;
         viq_rs1_ready = 1'b1;
         viq_rs2_ready = 1'b1;
 
         for (int i = 0; i < `ROB_DEPTH; i++) begin
-            if (rob[i].valid && rob[i].filled &&
-                (entry_age_arr[i] < cand_age_sig)) begin
+            if (rob[i].valid && rob[i].filled && (entry_age_arr[i] < cand_age_sig)) begin
 
                 // Older scalar instruction
-                if (!rob[i].is_vector && rob[i].rd != '0) begin
+                if (!rob[i].is_vector && rob[i].rd != '0 ) begin
 
-                    if (`VREG_ADDR_W'(rob[i].rd) ==
-                            (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs1_addr_i)
-                                                 : rob[viq_seq_num].rs1)) begin
-                        if (rob[i].done)
+                    if (`VREG_ADDR_W'(rob[i].rd) == (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs1_addr_i) : rob[viq_seq_num].rs1)) begin
+                        if (rob[i].done) begin
                             viq_fwd_rs1 = rob[i].scalar_result;
-                        else
+                            viq_rs1_ready = 1'b1;
+                        end else begin
                             viq_rs1_ready = 1'b0;
+                        end
                     end
 
-                    if (`VREG_ADDR_W'(rob[i].rd) ==
-                            (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs2_addr_i)
-                                                 : rob[viq_seq_num].rs2)) begin
-                        if (rob[i].done)
+                    if (`VREG_ADDR_W'(rob[i].rd) == (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs2_addr_i) : rob[viq_seq_num].rs2)) begin
+                        if (rob[i].done) begin
                             viq_fwd_rs2 = rob[i].scalar_result;
-                        else
+                            viq_rs1_ready = 1'b1;
+                        end else begin
                             viq_rs2_ready = 1'b0;
+                        end
                     end
                 end
 
                 // Older vector instruction
-                if (rob[i].is_vector) begin
-                    if (rob[i].vd ==
-                            (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs1_addr_i)
-                                                 : rob[viq_seq_num].rs1)) begin
-                        if (rob[i].done)
+                if (rob[i].is_vector && is_vx_instr) begin
+                    if (rob[i].vd == (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs1_addr_i): rob[viq_seq_num].rs1)) begin
+                        if (rob[i].done) begin
                             viq_fwd_rs1 = rob[i].vector_result[`XLEN-1:0];
-                        else
+                            viq_rs1_ready = 1'b1;
+                        end else begin
                             viq_rs1_ready = 1'b0;
+                        end
                     end
 
-                    if (rob[i].vd ==
-                            (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs2_addr_i)
-                                                 : rob[viq_seq_num].rs2)) begin
-                        if (rob[i].done)
+
+                    if (rob[i].vd == (de_vec_dispatch_now ? `VREG_ADDR_W'(de_rs2_addr_i): rob[viq_seq_num].rs2)) begin
+                        if (rob[i].done) begin
                             viq_fwd_rs2 = rob[i].vector_result[`XLEN-1:0];
-                        else
+                            viq_rs1_ready = 1'b1;
+                        end else begin
                             viq_rs2_ready = 1'b0;
+                        end
                     end
                 end
             end
@@ -451,24 +452,19 @@ module rob (
             if (do_fetch && do_commit && ~is_nop) begin
                 rob[tail].valid <= 1'b1;
                 rob[tail].instr <= fetch_instr_i;
-                //tail            <= tail + PTR_W'(1);
-                //head            <= head + PTR_W'(1);
                 tail <= next_ptr(tail);
                 head <= next_ptr(head);
                 rob[head].valid <= 1'b0;
                 // count unchanged: one in, one out
             end
-            else if (do_fetch && ~is_nop) begin
+            if (do_fetch && ~is_nop) begin
                 rob[tail].valid <= 1'b1;
                 rob[tail].instr <= fetch_instr_i;
                 tail <= next_ptr(tail);
-                //head <= next_ptr(head);
-                //tail            <= tail + PTR_W'(1);
                 count           <= count + (PTR_W+1)'(1);
             end
-            else if (do_commit) begin
+            if (do_commit) begin
                 rob[head].valid <= 1'b0;
-                //head            <= head + PTR_W'(1);
                 head <= next_ptr(head);
                 count           <= count - (PTR_W+1)'(1);
             end

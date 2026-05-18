@@ -7,7 +7,7 @@ module val_ready_controller (
     // scaler_procssor  --> val_ready_controller
     input   logic       inst_valid,             // tells data comming from the saler processor is valid
     input   logic       scalar_pro_ready,       // tells that scaler processor is ready to take output
-    input   logic       csr_done,exe_done,is_loaded, is_stored,
+    input   logic       csr_done,exe_done,is_loaded, is_stored,mask_done,
     
     // val_ready_controller --> scaler_processor
     output  logic       vec_pro_ready,          // tells that vector processor is ready to take the instruction
@@ -47,7 +47,7 @@ always_comb begin
             else                n_state = IDLE;
       end
       PROCESS  :   begin
-            if (csr_done | exe_done | is_loaded | is_stored) begin
+            if (csr_done | exe_done | is_loaded | is_stored |mask_done) begin
                 if (scalar_pro_ready) begin
                     n_state = IDLE;
                 end

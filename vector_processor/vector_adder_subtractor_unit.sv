@@ -337,7 +337,7 @@ module vector_adder_subtractor (
     input  logic signed [`VLEN-1:0]         A,          // Full vector operand A
     input  logic signed [`VLEN-1:0]         B,          // Full vector operand B
     output logic signed [`VLEN-1:0]         Sum,        // Full vector result
-    output logic        [63:0]              carry_out,
+    output logic        [(`VLEN/8)-1:0]     carry_out,
     output logic                            sum_done    // All slices valid
 );
 

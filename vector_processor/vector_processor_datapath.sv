@@ -81,6 +81,9 @@ module vector_processor_datapth (
     input logic rob_commit_valid_i,
     output logic   [`MAX_VLEN-1:0]     vd_data,
     input logic rob_commit_is_vec_o,
+    input logic mask_reg_en ,
+    output logic   [`VLEN-1:0]             mask_reg_updated,
+    output logic mask_done,
 
     output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
 
@@ -164,19 +167,18 @@ logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe,seq_num_csr;
 
 logic   [1:0]               sew_execution;    
 
-
-
 logic   [`VLEN-1:0]         vs1,vs2;
 logic   [`MAX_VLEN-1:0]            mask_unit_output;
-logic   [`VLEN-1:0]             mask_reg_updated;
-logic   [63:0]              adder_carry_out;
+
+logic    [(`VLEN/8)-1:0]              adder_carry_out;
 logic [1:0] sew_sel;
-logic [63:0] carry_out_mask;
+logic  [(`VLEN/8)-1:0] carry_out_mask;
+logic [`Tag_Width-1:0] seq_num_mask;
 
 assign inst_done =  rob_commit_valid_i;//data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
 always_comb begin
-    if (execution_done) begin
+    if (execution_done ) begin
         seq_num_o = seq_num_exe;
     end
     else if (is_loaded | is_stored) begin
@@ -184,7 +186,11 @@ always_comb begin
     end
     else  if (csr_done) begin
         seq_num_o = seq_num_csr; 
-    end else begin
+    end 
+    else if (mask_done) begin
+        seq_num_o = seq_num_mask;
+    end
+    else begin
         seq_num_o = seq_num_i;
     end
 end
@@ -490,6 +496,7 @@ logic [4:0] vector_write_address;
     );
 
     assign vec_wr_data = execution_inst ? execution_result : vd_data ;
+    logic [`MAX_VLEN-1:0] lanes_data;
     
     vector_execution_unit EXECUTION_UNIT(
 
@@ -518,6 +525,7 @@ logic [4:0] vector_write_address;
         .accum_op           (accum_op),
         .shift_op           (shift_op),
         .execution_result_reg   (execution_result),
+        .execution_result (lanes_data),
         .sew                (sew_execution),  
         .carry_out          (adder_carry_out),                 
         .start              (start),
@@ -533,11 +541,13 @@ logic [4:0] vector_write_address;
     assign vs2 = mask_operation ? vec_data_2[`VLEN-1:0] : 'b0;
 
     vector_mask_unit MASK_UNIT(
-        .lanes_data_out     (execution_result),
+        .clk(clk),
+        .reset(reset),
+        .lanes_data_out     (lanes_data),
         .destination_data   (vd_data),
         .mask_op            (mask_op),
-        .mask_en            (mask_operation),
-        .mask_reg_en        (mask_wr_en),
+        .mask_en            (vec_mask),
+        .mask_reg_en        (mask_reg_en),
         .vta                (tail_agnostic),
         .vma                (mask_agnostic),
         .vstart             (start_element),
@@ -549,6 +559,9 @@ logic [4:0] vector_write_address;
         .sew_sel            (sew_sel),
         .carry_out           (carry_out_mask),
         .mask_unit_output   (mask_unit_output),
+        .mask_done(mask_done),
+        .seq_num(seq_num_i),
+        .seq_num_mask(seq_num_mask),
         .mask_reg_updated   (mask_reg_updated)     
     );
 

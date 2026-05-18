@@ -11,13 +11,17 @@
 
 `include "vector_processor_defs.svh"
 `include "vector_regfile_defs.svh"
+`include "vector_execution_unit.svh"
 module vector_mask_unit(
 
+    input logic clk,reset,
     input  logic [`MAX_VLEN-1:0] lanes_data_out,
     input  logic [`MAX_VLEN-1:0] destination_data,
     input  logic [3:0]    mask_op,
     input  logic          mask_en,
     input  logic          mask_reg_en,
+    input  logic [`Tag_Width-1:0]        seq_num,
+    output logic [`Tag_Width-1:0] seq_num_mask,
     input  logic          vta,
     input  logic          vma,
     input  logic [31:0]   vstart,
@@ -27,9 +31,10 @@ module vector_mask_unit(
     input  logic [`VLEN-1:0]  vs2,
     input  logic [`VLEN-1:0]  v0,
     output  logic [1:0]   sew_sel,
-    input  logic [63:0]   carry_out,
+    input  logic [(`VLEN/8)-1:0]   carry_out,
 
     output logic [`MAX_VLEN-1:0] mask_unit_output,
+    output logic mask_done,
     output logic [`VLEN-1:0]  mask_reg_updated 
 );
 
@@ -46,6 +51,32 @@ module vector_mask_unit(
     logic [`MAX_VLEN-1:0] mask_output_03;
     logic [`MAX_VLEN-1:0] mask_output_04;
     logic [`MAX_VLEN-1:0] selected_output;
+        
+    logic [`Tag_Width-1:0] seq_num_held;
+
+    // Holding register - captures seq_num_i when enable is high
+    always_ff @(posedge clk ) begin
+        if (!reset)
+            seq_num_held <= 'b0;
+        else if (mask_reg_en )       
+            seq_num_held <= seq_num;
+    end
+
+    always_comb begin
+        if (!reset)
+            seq_num_mask = 'b0;
+        else if (mask_done)        
+            seq_num_mask = seq_num_held;
+    end
+
+    always_ff @(posedge clk) begin
+        if (!reset)
+            mask_done <= 1'b0;
+        else if (mask_en & mask_reg_en)
+            mask_done <= 1'b1;
+        else 
+            mask_done <= 1'b0;
+    end
 
     // ----------------------------------------------------------
     // Submodule Instantiations
@@ -157,7 +188,7 @@ module comb_mask_operations (
     input  logic [`VLEN-1:0] vs2,
     input  logic [3:0]   mask_op,
     input logic  [1:0]   sew_sel,     
-    input  logic [63:0]  carry_out,
+    input  logic  [(`VLEN/8)-1:0]  carry_out,
     output logic [`VLEN-1:0] mask_reg_updated
 );
 
@@ -181,17 +212,17 @@ module comb_mask_operations (
             4'b1000: begin
                 mask_reg_updated = 512'b0;
                 if (sew_sel == 2'b00) begin
-                    for (i = 0; i < 64; i = i + 1) begin
+                    for (i = 0; i < `NUM_ELEMENT_SEW8; i = i + 1) begin
                         mask_reg_updated[i] = carry_out[i];
                     end
                 end
                 else if (sew_sel == 2'b01) begin
-                    for (i = 0; i < 64; i = i + 1) begin
+                    for (i = 0; i < `NUM_ELEMENT_SEW16; i = i + 1) begin
                         mask_reg_updated[i] = carry_out[i*2 + 1];
                     end
                 end
                 else if (sew_sel == 2'b10) begin
-                    for (i = 0; i < 64; i = i + 1) begin
+                    for (i = 0; i < `NUM_ELEMENT_SEW32; i = i + 1) begin
                         mask_reg_updated[i] = carry_out[i*4 + 3];
                     end
                 end
@@ -213,10 +244,10 @@ module sew_encoder (
 );
     always_comb begin
         case (sew)
-            7'b0000100: sew_sel = 2'b00;
-            7'b0001000: sew_sel = 2'b01;
-            7'b0010000: sew_sel = 2'b10;
-            7'b0100000: sew_sel = 2'b11;
+            7'b0001000: sew_sel = 2'b00;  // 8  → SEW-8
+            7'b0010000: sew_sel = 2'b01;  // 16 → SEW-16
+            7'b0100000: sew_sel = 2'b10;  // 32 → SEW-32
+            7'b1000000: sew_sel = 2'b11;  // 64 → SEW-64
             default:    sew_sel = 2'b00;
         endcase
     end

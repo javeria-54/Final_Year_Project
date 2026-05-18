@@ -51,6 +51,9 @@ module vector_processor(
     input logic [`MAX_VLEN-1:0]  rob_commit_vector_result,
     output logic   [`MAX_VLEN-1:0]     vd_data,
     input logic rob_commit_is_vec_o,
+    output logic [`VLEN-1:0] mask_reg_updated,
+    output logic mask_done,
+    
 
     // val_ready_controller --> scaler_processor
     input   logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
@@ -99,6 +102,7 @@ logic   [4:0]                       bitwise_op;
 logic   [3:0]                       mask_op;
 logic   [2:0]                       cmp_op,accum_op,shift_op;
 logic   [1:0]                       op_type; 
+logic mask_reg_en ;
 
 
 
@@ -144,6 +148,9 @@ logic   [1:0]                       op_type;
         .vd_data (vd_data),
         .data_written(data_written),
         .rob_commit_is_vec_o(rob_commit_is_vec_o),
+        .mask_reg_en(mask_reg_en),
+        .mask_reg_updated(mask_reg_updated),
+        .mask_done(mask_done),
 
        
         // csr_regfile -> scalar_processor
@@ -253,6 +260,7 @@ logic   [1:0]                       op_type;
         .mul_high                   (mul_high),
         .start(start),
         .execution_inst(execution_inst),
+        .mask_reg_en(mask_reg_en),
 
         .add_inst                   (add_inst), 
         .sub_inst                   (sub_inst), 
@@ -289,6 +297,7 @@ logic   [1:0]                       op_type;
         .exe_done(execution_done),
         .csr_done(csr_done),
         .is_stored(is_stored),
+        .mask_done(mask_done),
         .is_loaded(is_loaded)
         
     );

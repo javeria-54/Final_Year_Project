@@ -29,18 +29,19 @@ module vector_execution_unit(
     input   logic [4:0]                         bitwise_op, 
     input   logic [2:0]                         cmp_op,accum_op,shift_op, 
     input   logic [`VLEN-1:0] mask_reg_updated,
+    output logic [`MAX_VLEN-1:0]               execution_result,
 
-    output  logic [63:0] carry_out_mask,
+    output  logic [(`VLEN/8)-1:0] carry_out_mask,
     
     output  logic [`MAX_VLEN-1:0] execution_result_reg,
     output  logic                               execution_done,
-    output  logic [63:0]                        carry_out,
+    output  logic [(`VLEN/8)-1:0]                        carry_out,
     output  logic [1:0]                         sew
      
 );
 
 logic [`Tag_Width-1:0] seq_num_held;
-logic [`MAX_VLEN-1:0]               execution_result;
+
 // Holding register - captures seq_num_i when enable is high
 always_ff @(posedge clk ) begin
     if (!reset)
@@ -66,7 +67,7 @@ end
     logic                               sum_done_internal, shift_done_internal, mult_done_internal, compare_done_internal, sum_mask_done_internal,
                                         bitwise_done_internal, product_sum_done_internal;
     logic [`VLEN-1:0]                   adder_data_1, adder_data_2;
-    logic [`VLEN-1:0]                   mult_data_1, mult_data_2;
+    logic [`VLEN-1:0]                   mult_data_1, mult_data_2, mult_data_1_latch, mult_data_2_latch;
     logic [`VLEN-1:0]                   shift_data_1, shift_data_2 ;
     logic [`VLEN-1:0]                   bitwise_data_1, bitwise_data_2;
     logic [`VLEN-1:0]                   compare_data_1, compare_data_2 ;
@@ -131,14 +132,53 @@ end
         end
     end
 
+    logic [`VLEN-1:0] mult_data_1_reg, mult_data_2_reg;
+    logic mult_active,  mul_low_reg, mul_high_reg, signed_mode_reg;//, start_reg; 
+
+    always_ff @(posedge clk) begin
+        if (!reset) begin
+            mult_data_1_reg <= '0;
+            mult_data_2_reg <= '0;
+            mult_active     <= 1'b0;
+            //start_reg       <= 1'b0; 
+            mul_low_reg     <= 1'b0;
+            mul_high_reg    <= 1'b0;
+            signed_mode_reg <= 1'b0;
+        end
+        else if (mult_en && !mult_active) begin
+
+            mult_data_1_reg <= data_1[`VLEN-1:0];
+            mult_data_2_reg <= data_2[`VLEN-1:0];
+            mult_active     <= 1'b1;
+            //start_reg       <= start; 
+            mul_low_reg     <= mul_low;
+            mul_high_reg    <= mul_high;
+            signed_mode_reg <= signed_mode;
+        end
+        else if (mult_done_internal) begin
+            mult_data_1_reg <= '0;
+            mult_data_2_reg <= '0;
+            mult_active     <= 1'b0;
+            //start_reg       <= 1'b0; 
+            mul_low_reg     <= 1'b0;
+            mul_high_reg    <= 1'b0;
+            signed_mode_reg <= 1'b0;
+        end
+    end
+
+    //logic signed_mult;
+    assign mult_data_1_latch = (mult_active ) ? mult_data_1_reg : '0;
+    assign mult_data_2_latch = (mult_active ) ? mult_data_2_reg : '0;
+    assign signed_mult = (signed_mode) ? 1'b1 : signed_mode_reg; 
+
     assign adder_data_1         =   reverse_sub_en          ? data_1[`VLEN-1:0] :
                                     add_en                  ? data_2[`VLEN-1:0] :
                                                             `VLEN'b0;
     assign adder_data_2         =   reverse_sub_en          ? data_2[`VLEN-1:0] :
                                     add_en  ? data_1[`VLEN-1:0] :
                                                             `VLEN'b0;
-    assign  mult_data_1         = mult_en           ? data_1[`VLEN-1:0] :  `VLEN'b0;
-    assign  mult_data_2         = mult_en           ? data_2[`VLEN-1:0] :  `VLEN'b0;
+    assign  mult_data_1         = mult_en           ? data_1[`VLEN-1:0] :  mult_data_1_latch;
+    assign  mult_data_2         = mult_en           ? data_2[`VLEN-1:0] :  mult_data_2_latch;
     assign  shift_data_1        = shift_en          ? data_1[`VLEN-1:0] :  `VLEN'b0;
     assign  shift_data_2        = shift_en          ? data_2[`VLEN-1:0] :  `VLEN'b0;
     assign  compare_data_1      = compare_en        ? data_1[`VLEN-1:0] :  `VLEN'b0;
@@ -246,6 +286,22 @@ end
                     sum_mask_done = 1'b0;
                 end
                 else if (mask_add_en) begin
+                    if (sew == 2'b00) begin
+                        sew_16_32 = 1'b0;
+                        sew_32    = 1'b0;
+                    end
+                    else if (sew == 2'b01) begin
+                        sew_16_32 = 1'b1;
+                        sew_32    = 1'b0;
+                    end
+                    else if (sew == 2'b10) begin
+                        sew_16_32 = 1'b1;
+                        sew_32    = 1'b1;
+                    end
+                    else begin
+                        sew_16_32 = 1'b0;
+                        sew_32    = 1'b0;
+                    end
                     execution_result = sum_mask_result;
                     sum_mask_done = sum_mask_done_internal;
                     sum_done = 1'b0;
@@ -255,14 +311,11 @@ end
                     bitwise_done = 1'b0;
                     move_done = 1'b0;
                     product_sum_done = 1'b0;
-                    sew_16_32 = 1'b0;
-                    sew_32 = 1'b0;
                 end
-                else if (mult_en) begin
+                else if (mult_done_internal) begin
                     mult_done = mult_done_internal;
                     sum_done = 1'b0;
                     shift_done = 1'b0;
-                    mult_done = 1'b0;
                     compare_done = 1'b0;
                     bitwise_done = 1'b0;
                     product_sum_done = 1'b0;
@@ -272,9 +325,9 @@ end
                     case (sew)
                         2'b00: begin // 8-bit elements → 16-bit products
                             for (int i = 0; i < `NUM_ELEMENT_SEW8 ; i++) begin
-                                if (mul_high)
+                                if (mul_high_reg)
                                     execution_result[i*8 +: 8] = product_result[i*16 + 8 +: 8]; // Upper 8 bits
-                                else if (mul_low) 
+                                else if (mul_low_reg) 
                                     execution_result[i*8 +: 8] = product_result[i*16 +: 8];     // Lower 8 bits
                                 else 
                                     execution_result = '0; 
@@ -282,19 +335,19 @@ end
                         end
                         2'b01: begin // 16-bit elements → 32-bit products
                             for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
-                                if (mul_high)
+                                if (mul_high_reg)
                                     execution_result[i*16 +: 16] = product_result[i*32 + 16 +: 16]; // Upper 16 bits
-                                else if (mul_low)
+                                else if (mul_low_reg)
                                     execution_result[i*16 +: 16] = product_result[i*32 +: 16];      // Lower 16 bits
                                 else 
                                     execution_result = '0; 
                             end
                         end
                         2'b10: begin // 32-bit elements → 64-bit products
-                            for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
-                                if (mul_high)
+                            for (int i = 0; i < `NUM_ELEMENT_SEW32; i++) begin
+                                if (mul_high_reg)
                                     execution_result[i*32 +: 32] = product_result[i*64 + 32 +: 32]; // Upper 32 bits
-                                else if (mul_low)
+                                else if (mul_low_reg)
                                     execution_result[i*32 +: 32] = product_result[i*64 +: 32];      // Lower 32 bits
                                 else 
                                     execution_result = '0; 
@@ -312,9 +365,9 @@ end
                                 // sum_product_result mein max 512/16 = 32 products fit hote hain
                                 for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
                                     if (i < 32) begin
-                                        if (mul_high)
+                                        if (mul_high_reg)
                                             execution_result[i*8 +: 8] = sum_product_result[i*16 + 8 +: 8];
-                                        else if (mul_low)
+                                        else if (mul_low_reg)
                                             execution_result[i*8 +: 8] = sum_product_result[i*16 +: 8];
                                     end
                                 end
@@ -323,9 +376,9 @@ end
                                 // sum_product_result mein max 512/32 = 16 products fit hote hain
                                 for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
                                     if (i < 16) begin
-                                        if (mul_high)
+                                        if (mul_high_reg)
                                             execution_result[i*16 +: 16] = sum_product_result[i*32 + 16 +: 16];
-                                        else if (mul_low)
+                                        else if (mul_low_reg)
                                             execution_result[i*16 +: 16] = sum_product_result[i*32 +: 16];
                                     end
                                 end
@@ -334,9 +387,9 @@ end
                                 // sum_product_result mein max 512/64 = 8 products fit hote hain
                                 for (int i = 0; i < `NUM_ELEMENT_SEW32; i++) begin
                                     if (i < 8) begin
-                                        if (mul_high)
+                                        if (mul_high_reg)
                                             execution_result[i*32 +: 32] = sum_product_result[i*64 + 32 +: 32];
-                                        else if (mul_low)
+                                        else if (mul_low_reg)
                                             execution_result[i*32 +: 32] = sum_product_result[i*64 +: 32];
                                     end
                                 end
@@ -378,7 +431,7 @@ end
         .data_in_A      (mult_data_1),
         .data_in_B      (mult_data_2),
         .sew            (sew),
-        .signed_mode    (signed_mode),
+        .signed_mode    (signed_mult),
         .count_0        (count_0),
         .start          (start),
         .mult_done      (mult_done_internal),
@@ -430,11 +483,6 @@ end
         .product_sum_done   (product_sum_done_internal)
     );
 
-
-    
-
-     // Mask register update logic (for simplicity, directly using data_3 as mask input)
-
     vector_mask_add_sub mask_add_sub (
         .adder_data_1     (mask_add_data_1),
         .adder_data_2     (mask_add_data_2),
@@ -454,9 +502,12 @@ end
         if (!reset) begin
             execution_done <= 1'b0;
             execution_result_reg <= '0;
-        end else if (sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done | sum_mask_done) begin
+        end else if (sum_done | shift_done | mult_done | compare_done | bitwise_done | product_sum_done | move_done ) begin
             execution_done <= 1'b1;
             execution_result_reg <= execution_result;
+        end else if (sum_done && mask_add_en ) begin
+            execution_done <= 1'b0;
+            execution_result_reg <= 'b0;
         end else begin
             execution_done <= 1'b0;
             execution_result_reg <= '0;

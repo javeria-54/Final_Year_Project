@@ -66,7 +66,7 @@ initial begin
     $dumpvars(0, pipeline_tb);
 
     @(posedge rst_n);
-    repeat (100) @(posedge clk);
+    repeat (200) @(posedge clk);
 
     $display("[TB] Simulation complete at %0t ns", $time);
     $finish;

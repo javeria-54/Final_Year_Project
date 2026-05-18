@@ -175,6 +175,7 @@ module multiplier_8 (
     input logic [31:0]  data_in_A,
     input logic [31:0]  data_in_B,
     input logic [1:0]   sew,
+    input logic start,
     input logic         signed_mode,
 
     output logic        count_0,    
@@ -303,11 +304,11 @@ module multiplier_8 (
                 prev_data_in_B <= data_in_B;
                 cycle_counter <= 2'b00;
             end
-            else if (sew == 2'b10) begin
-                cycle_counter <= cycle_counter + 1'b1;
-                if (cycle_counter == 2'b11)
-                    cycle_counter <= 2'b00;
-            end
+            //else if (sew == 2'b10) begin
+              //  cycle_counter <= cycle_counter + 1'b1;
+                //if (cycle_counter == 2'b11)
+                  //  cycle_counter <= 2'b00;
+            //end
             else begin
                 cycle_counter <= 2'b00;
             end
@@ -315,7 +316,7 @@ module multiplier_8 (
             if (new_transaction && sew == 2'b10) begin
                 count_0 <= 1'b0;  
             end
-            else if (sew == 2'b10 && cycle_counter == 2'b00) begin
+            else if (sew == 2'b10 && cycle_counter == 2'b00 && start) begin
                 count_0 <= 1'b1;  
             end
         end
@@ -884,6 +885,7 @@ module top_8(
         .data_in_B(data_in_B),
         .sew(sew),
         .signed_mode(signed_mode),
+        .start(start),
         
         .count_0(count_0),
         .mult1_A(mult1_A),
@@ -929,7 +931,7 @@ module top_8(
     //  Stage 3: 1-cycle delay (stall registers)
     // ──────────────────────────────────────────────
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (!reset) begin
             mult_out_1_delayed <= 0;
             mult_out_2_delayed <= 0;
             mult_out_3_delayed <= 0;

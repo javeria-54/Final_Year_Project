@@ -9,7 +9,7 @@ module vector_mask_add_sub (
     input  logic              sew_16_32,
     input  logic              sew_32,
     input  logic [1:0]        sew, 
-    output logic [63:0]       carry_out,       
+    output logic [(`VLEN/8)-1:0]       carry_out,       
     output logic [`VLEN-1:0]  sum_mask_result,
     output logic              sum_mask_done
 );
@@ -17,11 +17,10 @@ module vector_mask_add_sub (
     logic [`VLEN-1:0] sum_result;
     logic             sum_done_internal;
     logic [`VLEN-1:0] mask_extended;
-    logic [63:0]      carry_out_unused;  // ← mask adder ka carry, use nahi hoga
+    logic  [(`VLEN/8)-1:0]      carry_out_unused;  // ← mask adder ka carry, use nahi hoga
 
     always_comb begin
         mask_extended = '0;
-        
         if (!sew_32 && !sew_16_32) begin        // SEW=8
             for (int i = 0; i < `NUM_ELEMENT_SEW8; i++)
                 mask_extended[i*8 +: 8] = {{7{1'b0}}, mask_reg[i]};
