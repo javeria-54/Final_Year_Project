@@ -19,17 +19,17 @@ module forward_stall (
     input   logic                        clk,                      // clock
 
     // Writeback <---> Forward_stall interface signals
-    input wire type_wrb2fwd_s             wrb2fwd_i,
+    input  type_wrb2fwd_s             wrb2fwd_i,
 
     // Memory <---> Forward_stall interface signals
-    input wire type_lsu2fwd_s             lsu2fwd_i, 
+    input type_lsu2fwd_s             lsu2fwd_i, 
 
     // M-extension <---> Forward_stall interface signals
-    input wire type_div2fwd_s             div2fwd_i,
+    input type_div2fwd_s             div2fwd_i,
     
     // EXE/CSR <---> Forward_stall interface signals
-    input wire type_exe2fwd_s             exe2fwd_i,  
-    input wire type_csr2fwd_s             csr2fwd_i,
+    input type_exe2fwd_s             exe2fwd_i,  
+    input type_csr2fwd_s             csr2fwd_i,
 
     // Fetch <---> Forward_stall interface signals
  //   input wire                            if2fwd_stall_i,

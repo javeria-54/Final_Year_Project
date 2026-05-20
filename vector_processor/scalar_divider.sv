@@ -16,11 +16,11 @@
 
 
 module divider (     
-    input wire logic                        clk,     // clock
-    input wire logic                        rst,     // reset
-    input wire logic                        start_i, // start calculation
-    input wire logic [`XLEN-1:0]            opr1_i,  // dividend (numerator)
-    input wire logic [`XLEN-1:0]            opr2_i,  // divisor (denominator)
+    input logic                        clk,     // clock
+    input logic                        rst,     // reset
+    input logic                        start_i, // start calculation
+    input logic [`XLEN-1:0]            opr1_i,  // dividend (numerator)
+    input logic [`XLEN-1:0]            opr2_i,  // divisor (denominator)
  
     output     logic                        done_o,  // calculation is complete (high for one tick)
     output     logic [`XLEN-1:0]            quo_o,   // result value: quotient

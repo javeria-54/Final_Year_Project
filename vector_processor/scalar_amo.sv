@@ -17,8 +17,8 @@ module amo (
     input   logic                           clk,                      // clock
 
     // AMO <---> LSU interface
-    input  wire type_lsu2amo_data_s         lsu2amo_data_i,
-    input  wire type_lsu2amo_ctrl_s         lsu2amo_ctrl_i,             
+    input  type_lsu2amo_data_s         lsu2amo_data_i,
+    input  type_lsu2amo_ctrl_s         lsu2amo_ctrl_i,             
 
     output type_amo2lsu_data_s              amo2lsu_data_o,
     output type_amo2lsu_ctrl_s              amo2lsu_ctrl_o

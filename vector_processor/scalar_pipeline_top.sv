@@ -12,8 +12,8 @@ import pcore_types_pkg::*;
 `include "vector_processor_defs.svh"
 
 module pipeline_top (
-    input   wire                        rst_n,
-    input   wire                        clk
+    input   logic                         rst_n,
+    input   logic                         clk
 );
 
 // ============================================================
@@ -240,7 +240,7 @@ assign viq_dispatch_is_store = is_vector_store;
 // ============================================================
 // Vector datapath / controller signals
 // ============================================================
-logic [`MAX_VLEN-1:0]                   execution_result;
+logic [`MAX_VLEN-1:0]                   execution_result,mask_unit_output;
 logic                                   execution_done;
 logic                                   is_stored;
 logic                                   is_loaded;
@@ -346,7 +346,7 @@ logic [`MAX_VLEN-1:0] vector_result;
 logic   [`MAX_VLEN-1:0]     vd_data;
 always_comb begin
     if (execution_done)
-        vector_result = execution_result;
+        vector_result = mask_unit_output;
     else if (csr_done)
         vector_result = {{(`MAX_VLEN - `XLEN){1'b0}}, csr_out};
     else if (is_loaded)
@@ -763,6 +763,7 @@ vector_processor vector (
     .rs1_data           (viq_deq_rs1),
     .rs2_data           (viq_deq_rs2),
     .is_vec             (viq_deq_is_vec_int),
+    .vec_decode         (vec_decode),
 
     .inst_valid         (inst_valid),
     .scalar_pro_ready   (scalar_pro_ready),
@@ -795,6 +796,7 @@ vector_processor vector (
     .rob_commit_is_vec_o(rob_commit_is_vec),
     .mask_reg_updated(mask_reg_updated),
     .mask_done(mask_done),
+    .mask_unit_output(mask_unit_output),
 
 
     .mem_addr               (vec_mem_addr),

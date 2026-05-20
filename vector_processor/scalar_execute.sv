@@ -18,8 +18,8 @@ module execute (
     input   logic                        clk,                      // clock
 
     // ID <---> EXE interface
-    input  wire type_id2exe_data_s       id2exe_data_i,
-    input  wire type_id2exe_ctrl_s       id2exe_ctrl_i,            // Structure for control signals from decode to execute 
+    input  type_id2exe_data_s       id2exe_data_i,
+    input  type_id2exe_ctrl_s       id2exe_ctrl_i,            // Structure for control signals from decode to execute 
 
     // EXE <---> M-Extension interface
     output type_exe2div_s                exe2div_o,
@@ -33,7 +33,7 @@ module execute (
     output type_exe2csr_ctrl_s           exe2csr_ctrl_o,
 
     // EXE <---> Forwarding module interface
-    input wire type_fwd2exe_s            fwd2exe_i,
+    input  type_fwd2exe_s            fwd2exe_i,
     output type_exe2fwd_s                exe2fwd_o,    
 
     output logic exe_done_o,

@@ -16,16 +16,16 @@ module dbus_interconnect (
     input logic                                    clk,                      // clock
 
     // Core <----> dbus interface
-    input wire type_lsu2dbus_s                     lsu2dbus_i,
+    input  type_lsu2dbus_s                     lsu2dbus_i,
     output type_dbus2lsu_s                         dbus2lsu_o,               // Signals to core
 
     // dbus <----> Peripheral module interface
-    input wire type_peri2dbus_s                    mem2dbus_i,               // Signals from DATA memory 
-    input wire type_peri2dbus_s                    uart2dbus_i,              // Signals from UART module
-    input wire type_peri2dbus_s                    clint2dbus_i,             // Signals from CLINT module
-    input wire type_peri2dbus_s                    plic2dbus_i,              // Signals from PLIC module
-    input wire type_peri2dbus_s                    spi2dbus_i,               // Signals from SPI module
-    input wire type_peri2dbus_s                    gpio2dbus_i,              // Signals from GPIO module
+    input type_peri2dbus_s                    mem2dbus_i,               // Signals from DATA memory 
+    input type_peri2dbus_s                    uart2dbus_i,              // Signals from UART module
+    input type_peri2dbus_s                    clint2dbus_i,             // Signals from CLINT module
+    input type_peri2dbus_s                    plic2dbus_i,              // Signals from PLIC module
+    input type_peri2dbus_s                    spi2dbus_i,               // Signals from SPI module
+    input type_peri2dbus_s                    gpio2dbus_i,              // Signals from GPIO module
 
     output logic                                   dmem_sel_o,               // DATA memory selection line
     output logic                                   uart0_sel_o,               // UART0 selection line

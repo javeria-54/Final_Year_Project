@@ -24,24 +24,24 @@ module csr (
     input   logic                           clk,                      // clock
 
     // EXE <---> CSR interface
-    input  wire type_exe2csr_data_s         exe2csr_data_i,
-    input  wire type_exe2csr_ctrl_s         exe2csr_ctrl_i,            
+    input  type_exe2csr_data_s         exe2csr_data_i,
+    input  type_exe2csr_ctrl_s         exe2csr_ctrl_i,            
 
     // LSU <---> CSR interface
-    input  wire type_lsu2csr_data_s         lsu2csr_data_i,
-    input  wire type_lsu2csr_ctrl_s         lsu2csr_ctrl_i,
+    input  type_lsu2csr_data_s         lsu2csr_data_i,
+    input  type_lsu2csr_ctrl_s         lsu2csr_ctrl_i,
 
     // CLINT to CSR interface  
-    input wire type_clint2csr_s             clint2csr_i,
+    input  type_clint2csr_s             clint2csr_i,
 
     // Pipeline <---> CSR interface
-    input wire type_pipe2csr_s              pipe2csr_i,
+    input  type_pipe2csr_s              pipe2csr_i,
 
     // CSR <---> WRB interface
     output type_csr2wrb_data_s              csr2wrb_data_o,
 
     // CSR <---> Forward_stall interface
-    input wire type_fwd2csr_s               fwd2csr_i,
+    input  type_fwd2csr_s               fwd2csr_i,
     output type_csr2fwd_s                   csr2fwd_o,
 
     // CSR <---> Decode feedback interface

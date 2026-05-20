@@ -7,9 +7,9 @@
 module vec_regfile (
     // Inputs
     input   logic                           clk, reset,
-    input   logic   [4:0]        raddr_1, raddr_2,  // The address of the vector registers to be read
+    input   logic   [4:0]                   raddr_1, raddr_2, vec_write_addr,  // The address of the vector registers to be read
     input   logic   [DATA_WIDTH-1:0]        wdata,             // The vector that is to be written in the vector register
-    input   logic   [4:0]        waddr,             // The address of the vector register where the vector is written
+    input   logic   [4:0]                   waddr,             // The address of the vector register where the vector is written
     input   logic                           wr_en,             // The enable signal to write in the vector register 
     input   logic   [3:0]                   lmul,              // LMUL value (controls register granularity)
     input   logic   [3:0]                   emul,              // EMUL value (controls register granularity)
@@ -49,7 +49,6 @@ module vec_regfile (
     // assigning the data of v0 to mask_data
     assign v0_mask_data = vec_regfile[0];
 
-    
     // Address validation and read operation
     always_comb begin
         rdata_1          = 'h0;
@@ -114,7 +113,7 @@ module vec_regfile (
                     end else begin
                         rdata_1      = vec_regfile[raddr_1];
                         rdata_2_lmul = vec_regfile[raddr_2];
-                        dst_data     = vec_regfile[waddr]; // Read data at waddr
+                        dst_data     = vec_regfile[vec_write_addr]; // Read data at waddr
                         rdata_3 = dst_data;
                     end
                 end
@@ -125,7 +124,7 @@ module vec_regfile (
                     end else begin
                         rdata_1      = {vec_regfile[raddr_1 + 1], vec_regfile[raddr_1]};
                         rdata_2_lmul = {vec_regfile[raddr_2 + 1], vec_regfile[raddr_2]};
-                        dst_data     = {vec_regfile[waddr + 1], vec_regfile[waddr]}; // Read data at waddr
+                        dst_data     = {vec_regfile[vec_write_addr + 1], vec_regfile[vec_write_addr]}; // Read data at waddr
                         rdata_3 = dst_data;
                     end
                 end
@@ -136,7 +135,7 @@ module vec_regfile (
                     end else begin
                         rdata_1      = {vec_regfile[raddr_1 + 3], vec_regfile[raddr_1 + 2], vec_regfile[raddr_1 + 1], vec_regfile[raddr_1]};
                         rdata_2_lmul = {vec_regfile[raddr_2 + 3], vec_regfile[raddr_2 + 2], vec_regfile[raddr_2 + 1], vec_regfile[raddr_2]};
-                        dst_data     = {vec_regfile[waddr + 3], vec_regfile[waddr + 2], vec_regfile[waddr + 1], vec_regfile[waddr]}; // Read data at waddr
+                        dst_data     = {vec_regfile[vec_write_addr + 3], vec_regfile[vec_write_addr + 2], vec_regfile[vec_write_addr + 1], vec_regfile[vec_write_addr]}; // Read data at waddr
                         rdata_3 = dst_data;
                     end
                 end
@@ -149,8 +148,8 @@ module vec_regfile (
                                         vec_regfile[raddr_1 + 3], vec_regfile[raddr_1 + 2], vec_regfile[raddr_1 + 1], vec_regfile[raddr_1]};
                         rdata_2_lmul = {vec_regfile[raddr_2 + 7], vec_regfile[raddr_2 + 6], vec_regfile[raddr_2 + 5], vec_regfile[raddr_2 + 4],
                                         vec_regfile[raddr_2 + 3], vec_regfile[raddr_2 + 2], vec_regfile[raddr_2 + 1], vec_regfile[raddr_2]};
-                        dst_data     = {vec_regfile[waddr + 7], vec_regfile[waddr + 6], vec_regfile[waddr + 5], vec_regfile[waddr + 4],
-                                        vec_regfile[waddr + 3], vec_regfile[waddr + 2], vec_regfile[waddr + 1], vec_regfile[waddr]}; // Read data at waddr
+                        dst_data     = {vec_regfile[vec_write_addr + 7], vec_regfile[vec_write_addr + 6], vec_regfile[vec_write_addr + 5], vec_regfile[vec_write_addr + 4],
+                                        vec_regfile[vec_write_addr + 3], vec_regfile[vec_write_addr + 2], vec_regfile[vec_write_addr + 1], vec_regfile[vec_write_addr]}; // Read data at waddr
                         rdata_3 = dst_data;
                     end
                 end

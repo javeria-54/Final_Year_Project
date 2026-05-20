@@ -31,7 +31,7 @@ module vector_processor(
     output  logic   [`Tag_Width-1:0]        seq_num_o,
     input logic rob_commit_valid_i,
     output logic is_loaded,is_stored,csr_done,execution_done,
-    output logic [`MAX_VLEN-1:0] execution_result,
+    output logic [`MAX_VLEN-1:0] execution_result,mask_unit_output,
     output logic data_written,
 
     // valready_controller  --> scaler_processor 
@@ -46,6 +46,7 @@ module vector_processor(
     output logic                            mem_elem_mode,
     output logic [1:0]                      mem_sew_enc,
     input  logic [`VLEN-1:0]                    mem_rdata,
+    input  logic vec_decode,
 
     input logic [4:0] rob_commit_vd,
     input logic [`MAX_VLEN-1:0]  rob_commit_vector_result,
@@ -100,7 +101,8 @@ logic                               add_inst, sub_inst, reverse_sub_inst;
 
 logic   [4:0]                       bitwise_op;
 logic   [3:0]                       mask_op;
-logic   [2:0]                       cmp_op,accum_op,shift_op;
+logic   [2:0]                       cmp_op,shift_op;
+logic   [2:0] accum_op;
 logic   [1:0]                       op_type; 
 logic mask_reg_en ;
 
@@ -151,8 +153,9 @@ logic mask_reg_en ;
         .mask_reg_en(mask_reg_en),
         .mask_reg_updated(mask_reg_updated),
         .mask_done(mask_done),
-
-       
+        .vec_decode(vec_decode),
+        .mask_unit_output(mask_unit_output),
+     
         // csr_regfile -> scalar_processor
         .csr_out            (csr_out             ),
 

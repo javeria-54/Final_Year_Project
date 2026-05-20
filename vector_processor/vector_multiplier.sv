@@ -286,7 +286,7 @@ module multiplier_8 (
     logic [31:0] prev_data_in_B;
     logic new_transaction;
 
-    always_ff @(posedge clk ) begin
+    /*always_ff @(posedge clk ) begin
         if (!reset) begin
             cycle_counter <= 2'b00;
             count_0 <= 1'b0;
@@ -318,6 +318,34 @@ module multiplier_8 (
             end
             else if (sew == 2'b10 && cycle_counter == 2'b00 && start) begin
                 count_0 <= 1'b1;  
+            end
+        end
+    end*/
+
+    always_ff @(posedge clk) begin
+        if (!reset) begin
+            cycle_counter   <= 2'b00;
+            count_0         <= 1'b0;
+            prev_data_in_A  <= 32'h0;
+            prev_data_in_B  <= 32'h0;
+            new_transaction <= 1'b0;
+        end
+        else begin
+            count_0         <= 1'b0;
+            new_transaction <= 1'b0;
+            if ((data_in_A != prev_data_in_A) || (data_in_B != prev_data_in_B)) begin
+                new_transaction <= 1'b1;
+                prev_data_in_A  <= data_in_A;
+                prev_data_in_B  <= data_in_B;
+                cycle_counter   <= 2'b01; // ✅ 0 se start mat karo, 1 se karo
+            end
+            else if (sew == 2'b10 && cycle_counter != 2'b00) begin
+                cycle_counter <= cycle_counter + 1'b1;
+            end
+
+            // ✅ new_transaction guard hatao — directly cycle_counter check karo
+            if (sew == 2'b10 && cycle_counter == 2'b01 && start && !new_transaction) begin
+                count_0 <= 1'b1;  // ✅ Data stable hai, count_0 enable karo
             end
         end
     end
@@ -654,8 +682,8 @@ always_comb begin
             next_accum_1 =  mult_out_2;
             next_accum_2 =  mult_out_3;
             next_accum_3 =  mult_out_4; 
-            mult_done = 0;
-            next_state = DONE;   
+            mult_done = 1;
+            next_state = IDLE;   
         end
 
         PP_16: begin   
@@ -704,9 +732,9 @@ always_comb begin
             next_accum_1 =  {sum16_10[7:0], sum16_9[7:0]};
             next_accum_2 =  {sum16_11[7:0], result_4[7:0]};
             next_accum_3 =  {sum16_13[7:0], sum16_12[7:0]};
-            mult_done = 0;
+            mult_done = 1;
                       
-            next_state = DONE ;            
+            next_state = IDLE ;            
         end
 
         PP1_32: begin 
@@ -803,9 +831,9 @@ always_comb begin
             next_accum_1 = sum_accum_1[15:0];
             next_accum_2 = sum_accum_2[15:0];
             next_accum_3 = sum_accum_3[15:0];
-            mult_done = 0;
+            mult_done = 1;
 
-            next_state = DONE ;
+            next_state = IDLE ;
 
         end 
         DONE: begin

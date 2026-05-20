@@ -17,8 +17,8 @@ module decode (
     input   logic                             clk,                    // clock
 
     // Fetch <---> Decode interface
-    input wire type_if2id_data_s              if2id_data_i,
-    input wire type_if2id_ctrl_s              if2id_ctrl_i,
+    input  type_if2id_data_s              if2id_data_i,
+    input  type_if2id_ctrl_s              if2id_ctrl_i,
 
     input  logic     [`XLEN-1:0]              rob_instr_i,
     input  logic    [`Tag_Width-1:0]          rob_seq_num,
@@ -42,10 +42,10 @@ module decode (
     output logic                              is_vector,
 
     // CSR <---> Decode feedback interface
-    input wire type_csr2id_fb_s               csr2id_fb_i,
+    input type_csr2id_fb_s               csr2id_fb_i,
 
     // Writeback <---> Decode feedback interface
-    input wire type_wrb2id_fb_s               wrb2id_fb_i
+    input  type_wrb2id_fb_s               wrb2id_fb_i
 
   //  input wire type_debug_port_s              debug_port_i
 );
@@ -80,7 +80,7 @@ assign if2id_data = if2id_data_i;
 assign csr2id_fb  = csr2id_fb_i;
 
 // Instruction opcodes
-assign instr_codeword = rob_instr_i; //if2id_data.instr;
+assign instr_codeword = if2id_data.instr;
 assign instr_opcode   = type_rv_opcode_e'(instr_codeword[6:2]); 
 assign funct7_opcode  = instr_codeword[31:25];
 assign funct3_opcode  = instr_codeword[14:12];

@@ -18,7 +18,7 @@ if FPGA_MODE:
     DMEM_SIZE       = 0x40000
     PC_RESET        = 0x00000
 else:
-    DMEM_BASE_ADDR  = 0x200000
+    DMEM_BASE_ADDR  = 0x00000
     DMEM_SIZE       = 0x200000
     IMEM_BASE_ADDR  = 0x000000
     IMEM_SIZE       = 0x200000

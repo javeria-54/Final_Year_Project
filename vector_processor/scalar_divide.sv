@@ -16,10 +16,10 @@ module divide (
     input   logic                        clk,                      // clock
 
     // EXE <---> M-extension interface
-    input  wire type_exe2div_s           exe2div_i,
+    input  type_exe2div_s           exe2div_i,
 
-    input wire                           fwd2div_stall_i,
-    input wire                           fwd2div_flush_i,
+    input                            fwd2div_stall_i,
+    input                            fwd2div_flush_i,
 
     // M-extension <---> Forward-stall interface
     output type_div2fwd_s                div2fwd_o,

@@ -74,6 +74,7 @@ module vector_processor_datapth (
     output  logic                               csr_done,               // This signal tells that csr instruction has been implemented successfully
     output logic                                is_stored,              // It tells that data is stored to the memory
     output logic    [`MAX_VLEN-1:0]     execution_result,
+    output logic   [`MAX_VLEN-1:0]            mask_unit_output,
     output logic               is_loaded,              // It tells that data is loaded from the memory and ready to be written in register file
 
     input logic [4:0] vec_commit_vd_i, //            (rob_commit_vd),
@@ -86,6 +87,7 @@ module vector_processor_datapth (
     output logic mask_done,
 
     output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
+    input   logic vec_decode,
 
     input   logic                               Ctrl,start,
     input   logic   [2:0]                       execution_op,
@@ -168,7 +170,7 @@ logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe,seq_num_csr;
 logic   [1:0]               sew_execution;    
 
 logic   [`VLEN-1:0]         vs1,vs2;
-logic   [`MAX_VLEN-1:0]            mask_unit_output;
+
 
 logic    [(`VLEN/8)-1:0]              adder_carry_out;
 logic [1:0] sew_sel;
@@ -345,6 +347,7 @@ logic [4:0] vector_write_address;
         .rdata_2        (vec_data_2         ),
         .rdata_3        (vec_data_3         ),
         .dst_data       (dst_vec_data       ),
+        .vec_write_addr (vec_write_addr     ),
         .vector_length  (vector_length      ),
         .wrong_addr     (wrong_addr         ),
         .v0_mask_data   (v0_mask_data       ),
@@ -476,8 +479,8 @@ logic [4:0] vector_write_address;
         .mem_sew_enc        (mem_sew_enc                ),
         .mem_rdata          (mem_rdata                  ),
  
-        .seq_num(seq_num_i),
-        .seq_num_lsu(seq_num_lsu),
+        .seq_num            (seq_num_i),
+        .seq_num_lsu        (seq_num_lsu),
         // vec_lsu  -> vec_register_file
         .vd_data            (vd_data                    ), 
         .is_loaded          (is_loaded                  ),
@@ -495,8 +498,19 @@ logic [4:0] vector_write_address;
     
     );
 
-    assign vec_wr_data = execution_inst ? execution_result : vd_data ;
     logic [`MAX_VLEN-1:0] lanes_data;
+
+    /*always_ff @(posedge clk) begin
+        if (!reset) 
+            vec_wr_data <= 'b0;
+        else if (execution_inst) 
+            vec_wr_data <= lanes_data;
+        else 
+            vec_wr_data <= vd_data;
+    end*/
+    logic mult_done;
+   assign vec_wr_data = (execution_inst | mult_done) ? lanes_data : vd_data ;
+    
     
     vector_execution_unit EXECUTION_UNIT(
 
@@ -525,7 +539,8 @@ logic [4:0] vector_write_address;
         .accum_op           (accum_op),
         .shift_op           (shift_op),
         .execution_result_reg   (execution_result),
-        .execution_result (lanes_data),
+        .mult_done          (mult_done),
+        .execution_result   (lanes_data),
         .sew                (sew_execution),  
         .carry_out          (adder_carry_out),                 
         .start              (start),
@@ -535,19 +550,26 @@ logic [4:0] vector_write_address;
 );
 
     // vs1 mux — mask_operation ho to lower 512 bits, warna poora data
-    assign vs1 = mask_operation ? vec_data_1[`VLEN-1:0] : 'b0;
+    assign vs1 = vec_mask ? vec_data_1[`VLEN-1:0] : 'b0;
 
     // vs2 mux — mask_operation ho to lower 512 bits, warna poora data  
-    assign vs2 = mask_operation ? vec_data_2[`VLEN-1:0] : 'b0;
+    assign vs2 = vec_mask ? vec_data_2[`VLEN-1:0] : 'b0;
 
     vector_mask_unit MASK_UNIT(
-        .clk(clk),
-        .reset(reset),
-        .lanes_data_out     (lanes_data),
-        .destination_data   (vd_data),
+        .clk                (clk),
+        .reset              (reset),
+        .lanes_data_out     (vec_wr_data),
+        .destination_data   (dst_vec_data),
         .mask_op            (mask_op),
         .mask_en            (vec_mask),
+        .vec_decode         (vec_decode),
         .mask_reg_en        (mask_reg_en),
+        //.execution_inst     (execution_inst),
+        //.execution_done     (execution_done),
+        //.ld_inst            (ld_inst),
+        //.st_inst            (st_inst),
+        //.is_loaded          (is_loaded),
+        //.is_stored          (is_stored),
         .vta                (tail_agnostic),
         .vma                (mask_agnostic),
         .vstart             (start_element),
@@ -557,12 +579,12 @@ logic [4:0] vector_write_address;
         .vs2                (vs2),   
         .v0                 (v0_mask_data),
         .sew_sel            (sew_sel),
-        .carry_out           (carry_out_mask),
+        .carry_out          (carry_out_mask),
         .mask_unit_output   (mask_unit_output),
-        .mask_done(mask_done),
-        .seq_num(seq_num_i),
-        .seq_num_mask(seq_num_mask),
-        .mask_reg_updated   (mask_reg_updated)     
+        .mask_done          (mask_done),
+        .seq_num            (seq_num_i),
+        .seq_num_mask       (seq_num_mask),
+        .mask_register_v0   (mask_reg_updated)     
     );
 
 endmodule

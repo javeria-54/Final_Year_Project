@@ -48,10 +48,10 @@ always_comb begin
       end
       PROCESS  :   begin
             if (csr_done | exe_done | is_loaded | is_stored |mask_done) begin
-                if (scalar_pro_ready) begin
+                //if (scalar_pro_ready) begin
                     n_state = IDLE;
-                end
-                else n_state = WAIT_READY;
+                //end
+                //else n_state = WAIT_READY;
             end   
             else     n_state = PROCESS;
       end
