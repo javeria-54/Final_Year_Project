@@ -15,43 +15,43 @@ import pcore_types_pkg::*;
 
 module lsu (
 
-    input   logic                           rst_n,                    // reset
-    input   logic                           clk,                      // clock
+    input   logic                            rst_n,                    // reset
+    input   logic                            clk,                      // clock
 
     // EXE <---> LSU interface
-    input  type_exe2lsu_data_s         exe2lsu_data_i,
-    input  type_exe2lsu_ctrl_s         exe2lsu_ctrl_i,            // Structure for control signals from execute to memory 
+    input  type_exe2lsu_data_s               exe2lsu_data_i,
+    input  type_exe2lsu_ctrl_s               exe2lsu_ctrl_i,            // Structure for control signals from execute to memory 
 
     // LSU <---> CSR interface
-    output type_lsu2csr_data_s              lsu2csr_data_o,
-    output type_lsu2csr_ctrl_s              lsu2csr_ctrl_o,
+    output type_lsu2csr_data_s               lsu2csr_data_o,
+    output type_lsu2csr_ctrl_s               lsu2csr_ctrl_o,
 
     // AMO <---> LSU interface
-    input  type_amo2lsu_data_s         amo2lsu_data_i, 
-    input  type_amo2lsu_ctrl_s         amo2lsu_ctrl_i,              
-    output type_lsu2amo_data_s              lsu2amo_data_o,
-    output type_lsu2amo_ctrl_s              lsu2amo_ctrl_o,
+    input  type_amo2lsu_data_s               amo2lsu_data_i, 
+    input  type_amo2lsu_ctrl_s               amo2lsu_ctrl_i,              
+    output type_lsu2amo_data_s               lsu2amo_data_o,
+    output type_lsu2amo_ctrl_s               lsu2amo_ctrl_o,
 
     // LSU <---> WRB interface
-    output type_lsu2wrb_data_s              lsu2wrb_data_o,
-    output type_lsu2wrb_ctrl_s              lsu2wrb_ctrl_o,
+    output type_lsu2wrb_data_s               lsu2wrb_data_o,
+    output type_lsu2wrb_ctrl_s               lsu2wrb_ctrl_o,
 
     // LSU <---> EXE interface for feedback signals
-    output logic [`XLEN-1:0]                lsu2exe_fb_alu_result_o,
+    output logic [`XLEN-1:0]                 lsu2exe_fb_alu_result_o,
 
     // LSU <---> Forward_stall interface for forwarding
-    output type_lsu2fwd_s                   lsu2fwd_o,
-    input  type_fwd2lsu_s               fwd2lsu_i,
+    output type_lsu2fwd_s                    lsu2fwd_o,
+    input  type_fwd2lsu_s                    fwd2lsu_i,
 
-    output logic                            lsu_done_o, 
+    output logic                             lsu_done_o, 
     input logic [`XLEN-1:0]                  rob_commit_scalar_mem_data,
     input logic                              rob_commit_scalar_rd_wr_req,
     input type_st_ops_e                      rob_commit_scalar_store_op,
     input [`XLEN-1:0]                        rob_commit_scalar_mem_addr,
     // LSU <---> Data Bus (dbus) interface
-    input  type_dbus2lsu_s             dbus2lsu_i,
-    output type_lsu2dbus_s                  lsu2dbus_o,                // Signal to data bus 
-    output logic                            lsu_flush_o
+    input  type_dbus2lsu_s                   dbus2lsu_i,
+    output type_lsu2dbus_s                   lsu2dbus_o,                // Signal to data bus 
+    output logic                             lsu_flush_o
 
 );
 

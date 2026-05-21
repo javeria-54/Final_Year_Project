@@ -332,7 +332,7 @@ module rob (
         end
     end
     always_comb begin
-        do_fetch        = fetch_valid_i & ~rob_full & ~is_nop & ~is_repeat;
+        do_fetch        = fetch_valid_i & ~rob_full & ~is_nop & ~is_repeat & ~flush_valid_i;
         do_commit       = commit_valid_o;
         de_vec_dispatch_now = de_valid_i    & de_is_vector_i    & ~viq_full_i    & ~flush_valid_i & ~stall_fetch_o;
         do_viq_dispatch =  ~viq_full_i   & viq_rs1_ready & ~block_viq_after_stall & (found_vec_to_dispatch | de_vec_dispatch_now);
@@ -524,7 +524,7 @@ module rob (
             end
 
             // ── Flush ─────────────────────────────────────────────
-            if (flush_valid_i) begin
+            /*if (flush_valid_i) begin
                 for (int i = 0; i < `ROB_DEPTH; i++) begin
                     if (rob[i].valid &&
                         (entry_age_arr[i] > (flush_seq_i[PTR_W-1:0] - head))) begin
@@ -535,6 +535,19 @@ module rob (
                 end
                 tail  <= flush_seq_i[PTR_W-1:0] + PTR_W'(1);
                 count <= (PTR_W+1)'(flush_seq_i[PTR_W-1:0] - head + 1);
+            end*/
+
+            if (flush_valid_i) begin
+                rob[flush_seq_i[PTR_W-1:0]].valid  <= 1'b0;
+                rob[flush_seq_i[PTR_W-1:0]].filled <= 1'b0;
+                rob[flush_seq_i[PTR_W-1:0]].done   <= 1'b0;
+                tail  <= flush_seq_i[PTR_W-1:0];        // tail = 4
+                count <= (PTR_W+1)'(flush_seq_i[PTR_W-1:0] - head);
+            end else if (do_fetch && ~is_nop) begin     // flush nahi hai tabhi fetch karo
+                rob[tail].valid <= 1'b1;
+                rob[tail].instr <= fetch_instr_i;
+                tail  <= next_ptr(tail);
+                count <= count + (PTR_W+1)'(1);
             end
 
         end

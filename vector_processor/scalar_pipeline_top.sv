@@ -306,7 +306,23 @@ assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
                         fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush  |     //if2id_pipe_flush,id2exe,exe2lsu
                         fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush |
                         fwd2lsu.lsu_flush;
-assign flush_seq   = '0;
+//assign flush_seq   = (id2exe_data.instr[6:2] == 5'b11001) ? id2exe_data.seq_num : 'b0;
+logic [`Tag_Width-1:0] flush_seq_comb;
+logic [`Tag_Width-1:0] flush_seq_reg;
+
+// Current cycle — combinational
+assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001) ? id2exe_data.seq_num : 'b0;
+
+// Next cycle ke liye — register mein store karo
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        flush_seq_reg <= 'b0;
+    else
+        flush_seq_reg <= flush_seq_comb;  // ek cycle delay
+end
+
+// Dono OR karo — current aur next cycle dono valid
+assign flush_seq  = flush_seq_comb | flush_seq_reg;
 
 // Input assignment to local signals
 assign core2pipe.csr_mhartid = 'b0;//`CSR_MHARTID;
@@ -378,6 +394,7 @@ fetch fetch_module (
 `ifdef IF2ID_PIPELINE_STAGE
 type_if2id_data_s  if2id_data_pipe_ff;
 type_if2id_ctrl_s  if2id_ctrl_pipe_ff;
+logic is_jal_ff, is_jal_next;
 
 always_ff @(posedge clk) begin
     if (~rst_n) begin
@@ -387,15 +404,18 @@ always_ff @(posedge clk) begin
         if2id_data_pipe_ff.instr_flushed <= 1'b0;
         if2id_data_pipe_ff.exc_code      <= EXC_CODE_NO_EXCEPTION;
         if2id_ctrl_pipe_ff               <= '0;
+        is_jal_ff <= 'b0;
     end else begin
         if2id_data_pipe_ff <= if2id_data_next;
         if2id_ctrl_pipe_ff <= if2id_ctrl_next;
+        is_jal_ff <= is_jal_next;
     end
 end
 
 always_comb begin
     if2id_data_next = if2id_data;
     if2id_ctrl_next = if2id_ctrl;
+    is_jal_next = is_jal;
 
     if (fwd2ptop.if2id_pipe_flush) begin
         if2id_data_next.instr         = `INSTR_NOP;
@@ -469,7 +489,7 @@ execute execute_module (
     .exe2if_fb_o             (exe2if_fb),
     .lsu2exe_fb_alu_result_i (lsu2exe_fb_alu_result),
     .exe_done_o              (exe_done),
-    .is_jal                  (is_jal),
+    .is_jal                  (is_jal_ff),
     .wrb2exe_fb_rd_data_i    (wrb2exe_fb_rd_data)
 );
 

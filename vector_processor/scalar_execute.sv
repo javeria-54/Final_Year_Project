@@ -142,18 +142,18 @@ always_comb begin
 end
 
 //============================== Preparing signals for ALU operations ============================//
-logic [31:0] imm_mux_out;
+logic [31:0] jal_result;
 // Operand for shift operations 
 assign shift_amt = alu_operand_2[4:0];
 
 // Prepare the two operands
 always_comb begin
-   imm_mux_out = is_jal ? 'b100 : id2exe_data.imm;
+   jal_result = is_jal ? id2exe_data.pc_next : id2exe_data.imm;
    alu_operand_1 = (id2exe_ctrl.alu_opr1_sel == ALU_OPR1_PC)
                  ? (id2exe_data.pc)                               // Operand 1 is PC
                  : (operand_rs1_data);                            // Operand 1 is register
    alu_operand_2 = (id2exe_ctrl.alu_opr2_sel == ALU_OPR2_IMM) ?   // Operand 2 is immediate
-                   (imm_mux_out) : (operand_rs2_data);            // Operand 2 is register
+                   (id2exe_data.imm) : (operand_rs2_data);            // Operand 2 is register
 end
 
 // Implementation of different ALU operations
@@ -526,7 +526,11 @@ assign exe2div.rd_addr       = rd_addr;
 assign exe2div.alu_d_ops  = id2exe_ctrl.alu_d_ops;
 
 // Update the output data signals for LSU
-assign exe2lsu_data.alu_result = mul_cmd ? alu_m_result : (bitmanip_cmd ? alu_b_result : alu_result);
+//assign exe2lsu_data.alu_result = mul_cmd ? alu_m_result : (bitmanip_cmd ? alu_b_result : alu_result);
+assign exe2lsu_data.alu_result = mul_cmd     ? alu_m_result  :
+                                 bitmanip_cmd ? alu_b_result  :
+                                 is_jal       ? jal_result :  // PC+4 return addr
+                                 alu_result;
 assign exe2lsu_data.pc_next    = id2exe_data.pc_next;
 assign exe2lsu_data.rs2_data   = operand_rs2_data; // MT: This should be verified due to forwarding
 assign exe2lsu_data.seq_num    = exe_seq_num;

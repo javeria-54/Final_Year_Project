@@ -53,8 +53,10 @@ module memory(
     logic vec_addr_valid;
     logic imem_addr_valid;
 
-    assign dmem_addr_valid = (exe2mem.addr >= `DMEM_BASE_ADDR)  && (exe2mem.addr <  `DMEM_BASE_ADDR + `DMEM_SIZE);
-    assign vec_addr_valid  = (addr_a       >= `DMEM_BASE_ADDR)  && (addr_a       <  `DMEM_BASE_ADDR + `DMEM_SIZE);
+    //assign dmem_addr_valid = (exe2mem.addr >= `DMEM_BASE_ADDR)  && (exe2mem.addr <  `DMEM_BASE_ADDR + `DMEM_SIZE);
+    assign dmem_addr_valid = (exe2mem.addr < `DMEM_SIZE)  && (exe2mem.addr <  `DMEM_BASE_ADDR + `DMEM_SIZE) ;
+    //assign vec_addr_valid  = (addr_a       >= `DMEM_BASE_ADDR)  && (addr_a       <  `DMEM_BASE_ADDR + `DMEM_SIZE);
+    assign vec_addr_valid = (addr_a < `DMEM_SIZE) && (addr_a       <  `DMEM_BASE_ADDR + `DMEM_SIZE);
     assign imem_addr_valid = (if2mem.addr  >= `IMEM_BASE_ADDR)  && (if2mem.addr  <  `IMEM_BASE_ADDR + `IMEM_SIZE);
 
     // =====================================================
@@ -65,8 +67,8 @@ module memory(
     logic [`XLEN-1:0] addr_a_local;
 
     assign instr_local_addr = imem_addr_valid ? (if2mem.addr  - `IMEM_BASE_ADDR) : '0;
-    assign addr_b_local     = dmem_addr_valid ? (exe2mem.addr - `DMEM_BASE_ADDR) : '0;
-    assign addr_a_local     = vec_addr_valid  ? (addr_a       - `DMEM_BASE_ADDR) : '0;
+    assign addr_b_local     = dmem_addr_valid ? (exe2mem.addr + `DMEM_BASE_ADDR) : '0;
+    assign addr_a_local     = vec_addr_valid  ? (addr_a       + `DMEM_BASE_ADDR) : '0;
 
     // =====================================================
     // Address Decode — 32-bit bank
