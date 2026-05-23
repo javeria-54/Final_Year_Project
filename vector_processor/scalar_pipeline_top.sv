@@ -311,7 +311,7 @@ logic [`Tag_Width-1:0] flush_seq_comb;
 logic [`Tag_Width-1:0] flush_seq_reg;
 
 // Current cycle — combinational
-assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001) ? id2exe_data.seq_num : 'b0;
+assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001 | id2exe_data.instr[6:2] == 5'b11000) ? id2exe_data.seq_num : 'b0;
 
 // Next cycle ke liye — register mein store karo
 always_ff @(posedge clk or negedge rst_n) begin

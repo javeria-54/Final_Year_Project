@@ -10,6 +10,7 @@
 
 `include "scalar_m_ext_defs.svh"
 `include "vector_processor_defs.svh"
+`include "scalar_pcore_interface_defs.svh"
 
 
 module execute (

@@ -10,13 +10,12 @@
 // Modified By: Shehzeen Malik
 // Updated: 11.4.2024
 
-
 `timescale 1 ns / 100 ps
 
-
+`include "scalar_pcore_config_defs.svh"
 `include "scalar_pcore_interface_defs.svh"
 `include "vector_processor_defs.svh"
-
+`include "scalar_csr_defs.svh"
 
 module csr (
 

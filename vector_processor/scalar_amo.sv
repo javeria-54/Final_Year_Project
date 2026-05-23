@@ -7,7 +7,10 @@
 //
 // Author: Umer Shahid, UET Lahore
 // Date: 11.8.2022
+import pcore_types_pkg::*;
 
+`include "scalar_pcore_interface_defs.svh"
+`include "scalar_pcore_config_defs.svh"
 `include "scalar_a_ext_defs.svh"
 `include "vector_processor_defs.svh"
 
