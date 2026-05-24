@@ -170,15 +170,21 @@ logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe,seq_num_csr;
 logic   [1:0]               sew_execution;    
 
 logic   [`VLEN-1:0]         vs1,vs2;
+logic [4:0] vector_write_address; 
 
 
 logic    [(`VLEN/8)-1:0]              adder_carry_out;
 logic [1:0] sew_sel;
 logic  [(`VLEN/8)-1:0] carry_out_mask;
 logic [`Tag_Width-1:0] seq_num_mask;
+logic [`MAX_VLEN-1:0] lanes_data;
+logic mult_done;
+logic [4:0] vec_imm_selected;
+logic [`MAX_VLEN-1:0] vec_imm_extended;
 
 assign inst_done =  rob_commit_valid_i;//data_written || csr_done || is_stored || error || execution_done;
 assign error     = error_flag || wrong_addr;
+
 always_comb begin
     if (execution_done ) begin
         seq_num_o = seq_num_exe;
@@ -197,10 +203,44 @@ always_comb begin
     end
 end
 
+    assign vs1 = vec_mask ? vec_data_1[`VLEN-1:0] : 'b0; 
+    assign vs2 = vec_mask ? vec_data_2[`VLEN-1:0] : 'b0;
+    assign vec_imm_selected = vec_imm[4:0];
+    assign vec_wr_data = (execution_inst | mult_done) ? lanes_data : vd_data ;
+    
+    always_comb begin
+        if (execution_inst) begin
+            case (sew_execution)
+                2'b00: vec_imm_extended = {(`MAX_VLEN/8) {{{3{vec_imm_selected[4]}}, vec_imm_selected}}};
+                2'b01: vec_imm_extended = {(`MAX_VLEN/16){{{11{vec_imm_selected[4]}}, vec_imm_selected}}};
+                2'b10: vec_imm_extended = {(`MAX_VLEN/32){{{27{vec_imm_selected[4]}}, vec_imm_selected}}};            
+                default: vec_imm_extended = '0;
+            endcase
+        end else begin
+            vec_imm_extended = '0;
+        end
+    end
+
+    always_comb begin 
+        if (execution_inst) begin
+            scaler1_extended = {(`MAX_VLEN/`XLEN){scalar1}};
+        end 
+        else begin
+            scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
+        end
+        if (execution_inst) begin
+            scaler2_extended = {(`MAX_VLEN/`XLEN){scalar2}};
+        end 
+        else begin
+            scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
+        end
+    end
+
+
              //////////////////////
             //      DECODE      //
            //////////////////////   
-logic [4:0] vector_write_address;       
+      
 
     vec_decode DECODER(
         // scalar_processor -> vec_decode
@@ -354,51 +394,7 @@ logic [4:0] vector_write_address;
         .data_written   (data_written       )  
     );
 
-    logic [4:0] vec_imm_selected;
-    logic [`MAX_VLEN-1:0] vec_imm_extended;
-    assign vec_imm_selected = vec_imm[4:0];
-
-    always_comb begin
-        if (execution_inst) begin
-            case (sew_execution)
-                // SEW=8  → 5-bit to 8-bit sign extend, phir replicate
-                2'b00: vec_imm_extended = {(`MAX_VLEN/8) {{{3{vec_imm_selected[4]}}, vec_imm_selected}}};
-                
-                // SEW=16 → 5-bit to 16-bit sign extend, phir replicate
-                2'b01: vec_imm_extended = {(`MAX_VLEN/16){{{11{vec_imm_selected[4]}}, vec_imm_selected}}};
-                
-                // SEW=32 → 5-bit to 32-bit sign extend, phir replicate
-                2'b10: vec_imm_extended = {(`MAX_VLEN/32){{{27{vec_imm_selected[4]}}, vec_imm_selected}}};
-                
-                default: vec_imm_extended = '0;
-            endcase
-        end else begin
-            vec_imm_extended = '0;
-        end
-    end
-
-    always_comb begin 
-         // Zero-extend  scalar1 dynamically
-        if (execution_inst) begin
-            scaler1_extended = {(`MAX_VLEN/`XLEN){scalar1}};
-        end 
-        else begin
-            scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
-        end
-        //assign scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
-        //assign scaler1_extended = {(`MAX_VLEN/`XLEN){scalar1}};
-
-        // Zero-extend  scalar1 dynamically
-        if (execution_inst) begin
-            scaler2_extended = {(`MAX_VLEN/`XLEN){scalar2}};
-        end 
-        else begin
-            scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
-        end
-        //assign scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
-        //assign scaler2_extended = {(`MAX_VLEN/`XLEN){scalar2}};
-    end
-
+    
              /////////////////////
             //    DATA_1 MUX   //
            /////////////////////
@@ -426,7 +422,7 @@ logic [4:0] vector_write_address;
 
     data_mux_2x1 #(.width(`MAX_VLEN)) DATA3_MUX( 
         
-        .operand1       (4096'b0            ),
+        .operand1       (`MAX_VLEN'b0            ),
         .operand2       (vec_data_3         ),
         .sel            (data_mux3_sel      ),
         .mux_out        (data_mux3_out      )     
@@ -498,20 +494,6 @@ logic [4:0] vector_write_address;
     
     );
 
-    logic [`MAX_VLEN-1:0] lanes_data;
-
-    /*always_ff @(posedge clk) begin
-        if (!reset) 
-            vec_wr_data <= 'b0;
-        else if (execution_inst) 
-            vec_wr_data <= lanes_data;
-        else 
-            vec_wr_data <= vd_data;
-    end*/
-    logic mult_done;
-   assign vec_wr_data = (execution_inst | mult_done) ? lanes_data : vd_data ;
-    
-    
     vector_execution_unit EXECUTION_UNIT(
 
         .clk                (clk),
@@ -521,11 +503,11 @@ logic [4:0] vector_write_address;
         .data_2             (data_mux2_out[`MAX_VLEN-1:0]), 
         .data_3             (vec_data_3),
 
-        .seq_num(seq_num_i),
-        .seq_num_exe(seq_num_exe),
+        .seq_num            (seq_num_i),
+        .seq_num_exe        (seq_num_exe),
         .Ctrl               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
-        .execution_inst(execution_inst),
+        .execution_inst     (execution_inst),
 
         .execution_op       (execution_op),
         .signed_mode        (signed_mode),
@@ -549,11 +531,7 @@ logic [4:0] vector_write_address;
         .execution_done     (execution_done)
 );
 
-    // vs1 mux — mask_operation ho to lower 512 bits, warna poora data
-    assign vs1 = vec_mask ? vec_data_1[`VLEN-1:0] : 'b0;
-
-    // vs2 mux — mask_operation ho to lower 512 bits, warna poora data  
-    assign vs2 = vec_mask ? vec_data_2[`VLEN-1:0] : 'b0;
+    
 
     vector_mask_unit MASK_UNIT(
         .clk                (clk),
@@ -564,12 +542,6 @@ logic [4:0] vector_write_address;
         .mask_en            (vec_mask),
         .vec_decode         (vec_decode),
         .mask_reg_en        (mask_reg_en),
-        //.execution_inst     (execution_inst),
-        //.execution_done     (execution_done),
-        //.ld_inst            (ld_inst),
-        //.st_inst            (st_inst),
-        //.is_loaded          (is_loaded),
-        //.is_stored          (is_stored),
         .vta                (tail_agnostic),
         .vma                (mask_agnostic),
         .vstart             (start_element),

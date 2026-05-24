@@ -7,16 +7,16 @@ module vec_lsu (
     input  logic                    clk,
     input  logic                    n_rst,
 
-    input  logic [`XLEN-1:0]        rs1_data,
-    input  logic [`XLEN-1:0]        rs2_data,
-    input  logic [9:0]              vlmax,
-    input  logic [6:0]              sew,
-
     input  logic                    stride_sel,
     input  logic                    ld_inst,
     input  logic                    st_inst,
     input  logic                    index_str,
     input  logic                    index_unordered,
+    input  logic [9:0]              vlmax,
+    input  logic [6:0]              sew,
+
+    input  logic [`XLEN-1:0]        rs1_data,
+    input  logic [`XLEN-1:0]        rs2_data,
 
     input  logic [`MAX_VLEN-1:0]    vs2_data,
     input  logic [`MAX_VLEN-1:0]    vs3_data,
@@ -25,14 +25,14 @@ module vec_lsu (
     input  logic [2:0]              width,
     input  logic                    inst_done,
 
-    output logic [`XLEN-1:0]             mem_addr,
+    output logic [`XLEN-1:0]            mem_addr,
     output logic [`VLEN-1:0]            mem_wdata,
     output logic [`VLEN-1:0]            mem_wdata_unit,
-    output logic [63:0]             mem_byte_en,
-    output logic                    mem_wen,
-    output logic                    mem_ren,
-    output logic                    mem_elem_mode,
-    output logic [1:0]              mem_sew_enc,
+    output logic [63:0]                 mem_byte_en,
+    output logic                        mem_wen,
+    output logic                        mem_ren,
+    output logic                        mem_elem_mode,
+    output logic [1:0]                  mem_sew_enc,
     input  logic [`VLEN-1:0]            mem_rdata,
 
     input  logic [`Tag_Width-1:0] seq_num,

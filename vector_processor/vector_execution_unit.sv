@@ -15,9 +15,9 @@ module vector_execution_unit(
     input   logic [`MAX_VLEN-1:0]               data_2, 
     input   logic [`MAX_VLEN-1:0]               data_3,
 
-    input  logic [`Tag_Width-1:0]        seq_num,
-    output logic [`Tag_Width-1:0] seq_num_exe,
-    input logic execution_inst,
+    input  logic [`Tag_Width-1:0]               seq_num,
+    output logic [`Tag_Width-1:0]               seq_num_exe,
+    input logic                                 execution_inst,
 
     input   logic                               Ctrl,start,
     input   logic [6:0]                         sew_eew_mux_out,
@@ -28,16 +28,17 @@ module vector_execution_unit(
     input   logic                               reverse_sub_inst,add_inst,sub_inst,
     input   logic [4:0]                         bitwise_op, 
     input   logic [2:0]                         cmp_op,accum_op,shift_op, 
-    input   logic [`VLEN-1:0] mask_reg_updated,
-    output logic [`MAX_VLEN-1:0]               execution_result,
+    output  logic [(`VLEN/8)-1:0]               carry_out,
+    output  logic [1:0]                         sew,
 
-    output  logic [(`VLEN/8)-1:0] carry_out_mask,
-    output logic mult_done,
-    output  logic [`MAX_VLEN-1:0] execution_result_reg,
-    output  logic                               execution_done,
-    output  logic [(`VLEN/8)-1:0]                        carry_out,
-    output  logic [1:0]                         sew
-     
+    input   logic [`VLEN-1:0]                   mask_reg_updated,
+    output logic [`MAX_VLEN-1:0]                execution_result,
+
+    output  logic [(`VLEN/8)-1:0]               carry_out_mask,
+    output logic                                mult_done,
+    output  logic [`MAX_VLEN-1:0]               execution_result_reg,
+    output  logic                               execution_done
+        
 );
 
 logic [`Tag_Width-1:0] seq_num_held;

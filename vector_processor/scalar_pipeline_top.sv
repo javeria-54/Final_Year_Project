@@ -538,7 +538,6 @@ lsu lsu_module (
     .clk                        (clk),
     .rob_commit_scalar_mem_addr    (rob_commit_scalar_mem_addr),
     .rob_commit_scalar_mem_data (rob_commit_scalar_mem_data),
-    // FIX #18: Scalar store signals connected
     .rob_commit_scalar_store_op    (rob_commit_scalar_store_op),
     .rob_commit_scalar_rd_wr_req     (rob_commit_scalar_rd_wr_req),
 `ifdef EXE2LSU_PIPELINE_STAGE
@@ -557,7 +556,6 @@ lsu lsu_module (
     .fwd2lsu_i                  (fwd2lsu),
     .lsu2dbus_o                 (lsu2dbus),
     .dbus2lsu_i                 (dbus2lsu),
-    // FIX #13: lsu_flush ab declared signal se connected
     .lsu_flush_o                (lsu_flush),
     .lsu2amo_data_o             (lsu2amo_data),
     .lsu2amo_ctrl_o             (lsu2amo_ctrl),
@@ -757,7 +755,6 @@ viq viq (
     .instruction_i      (viq_dispatch_instr),
     .operand_rs1_i      (viq_dispatch_rs1_data),
     .operand_rs2_i      (viq_dispatch_rs2_data),
-    // FIX #19: viq_dispatch_is_load/store ab declared aur driven hain
     .instr_is_vec_i     (viq_dispatch_is_vec),
     .stall_vec          (viq_stall),
     .num_instr          (viq_num_instr),
