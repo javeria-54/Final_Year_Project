@@ -152,7 +152,9 @@ module vector_mask_unit(
         .mask_op         (mask_op),
         .sew_sel         (sew_sel),
         .carry_out       (carry_out),
-        .mask_reg_updated(mask_reg_updated)
+        .mask_reg_updated(mask_reg_updated),
+        .vl(vl),
+        .destination_data(destination_data)
     );
 
     sew_encoder UUT06(
@@ -204,7 +206,10 @@ module comb_mask_operations (
     input  logic [`VLEN-1:0] vs1,
     input  logic [`VLEN-1:0] vs2,
     input  logic [3:0]   mask_op,
-    input logic  [1:0]   sew_sel,     
+    input logic  [1:0]   sew_sel,   
+    input  logic [31:0]  vl,
+    input  logic [`MAX_VLEN-1:0]    destination_data,  
+
     input  logic  [(`VLEN/8)-1:0]  carry_out,
     output logic [`VLEN-1:0] mask_reg_updated
 );
@@ -214,44 +219,29 @@ module comb_mask_operations (
     //      is not set; use integer declared before the always block)
     integer i;
 
-    always_comb begin
-        mask_reg_updated = '0;
-
+// In comb_mask_operations module (or add post-processing):
+always_comb begin
+    // Start with current destination value (for tail bits)
+    mask_reg_updated = destination_data[`MAX_VLEN-1:0];
+    
+    // Only update first 'vl' bits with operation result
+    for (int i = 0; i < vl; i++) begin
         case (mask_op)
-            4'b0000:  mask_reg_updated = vs2 & vs1;
-            4'b0001:  mask_reg_updated = ~(vs2 & vs1);
-            4'b0010:  mask_reg_updated = vs2 & ~vs1;
-            4'b0011:  mask_reg_updated = vs2 ^ vs1;
-            4'b0100:  mask_reg_updated = vs2 | vs1;
-            4'b0101:  mask_reg_updated = ~(vs2 | vs1);
-            4'b0110:  mask_reg_updated = vs2 | ~vs1;
-            4'b0111:  mask_reg_updated = ~(vs2 ^ vs1);
-            4'b1000: begin
-                mask_reg_updated = 512'b0;
-                if (sew_sel == 2'b00) begin
-                    for (i = 0; i < `NUM_ELEMENT_SEW8; i = i + 1) begin
-                        mask_reg_updated[i] = carry_out[i];
-                    end
-                end
-                else if (sew_sel == 2'b01) begin
-                    for (i = 0; i < `NUM_ELEMENT_SEW16; i = i + 1) begin
-                        mask_reg_updated[i] = carry_out[i*2 + 1];
-                    end
-                end
-                else if (sew_sel == 2'b10) begin
-                    for (i = 0; i < `NUM_ELEMENT_SEW32; i = i + 1) begin
-                        mask_reg_updated[i] = carry_out[i*4 + 3];
-                    end
-                end
-            end
-
-            default: mask_reg_updated = '0;
+            4'b0000: mask_reg_updated[i] = vs2[i] & vs1[i];
+            4'b0001: mask_reg_updated[i] = ~(vs2[i] & vs1[i]);
+            4'b0010: mask_reg_updated[i] = vs2[i] & ~vs1[i];
+            4'b0011: mask_reg_updated[i] = vs2[i] ^ vs1[i];
+            4'b0100: mask_reg_updated[i] = vs2[i] | vs1[i];
+            4'b0101: mask_reg_updated[i] = ~(vs2[i] | vs1[i]);
+            4'b0110: mask_reg_updated[i] = vs2[i] | ~vs1[i];
+            4'b0111: mask_reg_updated[i] = ~(vs2[i] ^ vs1[i]);
+            4'b1000: mask_reg_updated[i] = carry_out[i];  // For VADC/VSBC
+            default: mask_reg_updated[i] = 1'b0;
         endcase
     end
+end
 
 endmodule
-
-
 //////////////////////////////////////////////////////////////////////////////////
 //  MODULE: sew_encoder
 //////////////////////////////////////////////////////////////////////////////////
@@ -308,7 +298,7 @@ endmodule
 //////////////////////////////////////////////////////////////////////////////////
 module comb_for_vsew_08 #(
     parameter SEW = 8,
-    parameter VAR = 512
+    parameter VAR = 16
 )(
     input  logic [`MAX_VLEN-1:0] lanes_data_out,
     input  logic [`MAX_VLEN-1:0] destination_data,
@@ -351,7 +341,7 @@ endmodule
 //////////////////////////////////////////////////////////////////////////////////
 module comb_for_vsew_16 #(
     parameter SEW = 16,
-    parameter VAR = 256
+    parameter VAR = 8
 )(
     input  logic [`MAX_VLEN-1:0] lanes_data_out,
     input  logic [`MAX_VLEN-1:0] destination_data,
@@ -394,7 +384,7 @@ endmodule
 //////////////////////////////////////////////////////////////////////////////////
 module comb_for_vsew_32 #(
     parameter SEW = 32,
-    parameter VAR = 128
+    parameter VAR = 4
 )(
     input  logic [`MAX_VLEN-1:0] lanes_data_out,
     input  logic [`MAX_VLEN-1:0] destination_data,
@@ -437,7 +427,7 @@ endmodule
 //////////////////////////////////////////////////////////////////////////////////
 module comb_for_vsew_64 #(
     parameter SEW = 64,
-    parameter VAR = 64
+    parameter VAR = 2
 )(
     input  logic [`MAX_VLEN-1:0] lanes_data_out,
     input  logic [`MAX_VLEN-1:0] destination_data,
