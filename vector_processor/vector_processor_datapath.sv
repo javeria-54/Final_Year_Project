@@ -433,15 +433,29 @@ end
            //////////////////////          
 
     logic elem_mode;
+    logic [`MAX_VLEN-1:0]        data_mux1_out_held;
+    logic [`MAX_VLEN-1:0]       data_mux2_out_held;
+    logic [`MAX_VLEN-1:0]    dst_vec_data_held;
 
+    always_ff @(posedge clk or negedge reset) begin
+        if (!reset) begin
+            data_mux1_out_held <= '0;
+            data_mux2_out_held<= '0;
+             dst_vec_data_held <= '0;
+        end else if (ld_inst || st_inst) begin
+            dst_vec_data_held <= dst_vec_data;      // data_mux1_out capture
+            data_mux1_out_held <=  data_mux1_out;      // data_mux2_out scalar slice capture  
+            data_mux2_out_held <=  data_mux2_out;      // data_mux2_out full vector capture
+        end
+    end
 
     vec_lsu VLSU(
         .clk                (clk                        ),
         .n_rst              (reset                      ),
 
         // scalar-processor -> vec_lsu
-        .rs1_data           (data_mux1_out[`XLEN-1:0]   ),  
-        .rs2_data           (data_mux2_out[`XLEN-1:0]   ),
+        .rs1_data           (data_mux1_out_held[`XLEN-1:0]   ),  
+        .rs2_data           (data_mux2_out_held[`XLEN-1:0]   ),
 
         // vector_processor_controller -> vec_lsu
         .stride_sel         (stride_sel                 ), 
@@ -459,8 +473,8 @@ end
         .vlmax              (vlmax_evlmax_mux_out       ),      
 
         // vec_register_file -> vec_lsu
-        .vs2_data           (data_mux2_out              ),       
-        .vs3_data           (dst_vec_data               ),      
+        .vs2_data           (data_mux2_out_held              ),       
+        .vs3_data           (dst_vec_data_held               ),      
         
         // datapath -->  vec_lsu        
         .inst_done          (inst_done                  ),

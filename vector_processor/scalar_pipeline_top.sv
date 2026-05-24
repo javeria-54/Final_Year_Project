@@ -432,7 +432,7 @@ logic [`XLEN-1:0]          rob_de_instr_ff;
 logic [`Tag_Width-1:0]     rob_de_seq_num_ff;
 logic                      de_valid_ff;
 
-always_ff @(posedge clk or negedge rst_n) begin
+/*always_ff @(posedge clk or negedge rst_n) begin
     if (~rst_n) begin
         rob_de_instr_ff   <= 32'h00000013;  // NOP
         rob_de_seq_num_ff <= '0;
@@ -442,6 +442,21 @@ always_ff @(posedge clk or negedge rst_n) begin
         rob_de_seq_num_ff <= rob_de_seq_num;
         de_valid_ff       <= de_valid;
     end
+end*/
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        rob_de_instr_ff   <= 32'h00000013;
+        rob_de_seq_num_ff <= '0;
+        de_valid_ff       <= 1'b0;
+    end else begin
+        // stall_fetch guard hatao — sirf NOP check rakho
+        if (rob_de_instr != 32'h00000013) begin
+            rob_de_instr_ff   <= rob_de_instr;
+            rob_de_seq_num_ff <= rob_de_seq_num;
+        end
+        de_valid_ff <= de_valid;
+    end
 end
 `endif
 logic [`XLEN-1:0] instr_codeword;
@@ -450,6 +465,7 @@ decode decode_module (
     .clk             (clk),
     .is_vector       (is_vector),
     .rob_instr_i     (rob_de_instr_ff),
+    .if_stall        (stall_fetch),
     .rob_seq_num     (rob_de_seq_num_ff),
     .is_scalar_store (is_scalar_store),
     .is_scalar_load  (is_scalar_load),

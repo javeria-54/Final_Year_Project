@@ -402,7 +402,7 @@ module rob (
     // =========================================================
     // Memory stall
     // =========================================================
-    always_comb begin
+    /*always_comb begin
         any_unretired_vec_mem    = 1'b0;
         any_unretired_scalar_mem = 1'b0;
         for (int i = 0; i < `ROB_DEPTH; i++) begin
@@ -411,11 +411,24 @@ module rob (
                 if (!rob[i].is_vector) any_unretired_scalar_mem = 1'b1;
             end
         end
+    end*/
+
+    always_comb begin
+        any_unretired_vec_mem    = 1'b0;
+        any_unretired_scalar_mem = 1'b0;
+        for (int i = 0; i < `ROB_DEPTH; i++) begin
+            // commit wali entry ko is cycle mein count mat karo
+            if (rob[i].valid && rob[i].filled && rob[i].is_mem  && !(commit_valid_o && (i == head))) begin  // ← yeh add karo
+                if ( rob[i].is_vector) any_unretired_vec_mem    = 1'b1;
+                if (!rob[i].is_vector) any_unretired_scalar_mem = 1'b1;
+            end
+        end
     end
 
     assign stall_scalar_mem = any_unretired_vec_mem;
     assign stall_vec_mem    = any_unretired_scalar_mem;
-    assign stall_fetch_o    = stall_scalar_mem | stall_vec_mem | rob_full;
+    assign stall_fetch_o    = stall_scalar_mem  | stall_vec_mem    | rob_full ;//       | de_scalar_store_i | 
+                              //de_vector_store_i | de_scalar_load_i | de_vector_load_i;
 
     // =========================================================
     // Decode output registers
@@ -457,13 +470,13 @@ module rob (
                 rob[head].valid <= 1'b0;
                 // count unchanged: one in, one out
             end
-            if (do_fetch && ~is_nop) begin
+            else if (do_fetch && ~is_nop) begin
                 rob[tail].valid <= 1'b1;
                 rob[tail].instr <= fetch_instr_i;
                 tail <= next_ptr(tail);
                 count           <= count + (PTR_W+1)'(1);
             end
-            if (do_commit) begin
+            else if (do_commit) begin
                 rob[head].valid <= 1'b0;
                 head <= next_ptr(head);
                 count           <= count - (PTR_W+1)'(1);

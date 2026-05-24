@@ -47,19 +47,19 @@ module vec_lsu (
 
 logic [`Tag_Width-1:0] seq_num_held;
 // Holding register - captures seq_num_i when enable is high
-always_ff @(posedge clk ) begin
-    if (!n_rst)
-        seq_num_held <= 'b0;
-    else if (ld_inst | st_inst)       
-        seq_num_held <= seq_num;
-end
+    always_ff @(posedge clk ) begin
+        if (!n_rst)
+            seq_num_held <= 'b0;
+        else if (ld_inst | st_inst)       
+            seq_num_held <= seq_num;
+    end
 
-always_comb begin
-    if (!n_rst)
-        seq_num_lsu = 'b0;
-    else if (is_loaded | is_stored)        
-        seq_num_lsu = seq_num_held;
-end
+    always_comb begin
+        if (!n_rst)
+            seq_num_lsu = 'b0;
+        else if (is_loaded | is_stored)        
+            seq_num_lsu = seq_num_held;
+    end
 
     // =========================================================================
     // FSM states
@@ -508,9 +508,9 @@ end
 
                 // ── IDLE ──────────────────────────────────────────────────
                 ST_IDLE: begin
-                    if (ld_inst && new_inst) begin
+                    if (ld_inst ) begin
                         n_state = index_unordered ? ST_UNORD_SETUP : ST_RD_ISSUE;
-                    end else if (st_inst && new_inst) begin
+                    end else if (st_inst) begin
                         n_state = index_unordered ? ST_UNORD_SETUP : ST_WR_ISSUE;
                     end
                 end
