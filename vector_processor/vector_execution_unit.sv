@@ -404,7 +404,7 @@ end
                         end 
                     endcase
                 end
-                if (mult_done_internal && product_sum_done_internal && sum_done_internal) begin
+                else if (mult_done_internal && product_sum_done_internal && sum_done_internal) begin
                     product_sum_done = product_sum_done_internal;
                     sum_done = 1'b0;
                     shift_done = 1'b0;

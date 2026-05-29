@@ -19,27 +19,27 @@ module forward_stall (
     input   logic                        clk,                      // clock
 
     // Writeback <---> Forward_stall interface signals
-    input  type_wrb2fwd_s             wrb2fwd_i,
+    input  var type_wrb2fwd_s             wrb2fwd_i,
 
     // Memory <---> Forward_stall interface signals
-    input type_lsu2fwd_s             lsu2fwd_i, 
+    input  var  type_lsu2fwd_s             lsu2fwd_i, 
 
     // M-extension <---> Forward_stall interface signals
-    input type_div2fwd_s             div2fwd_i,
+    input  var type_div2fwd_s             div2fwd_i,
     
     // EXE/CSR <---> Forward_stall interface signals
-    input type_exe2fwd_s             exe2fwd_i,  
-    input type_csr2fwd_s             csr2fwd_i,
+    input  var type_exe2fwd_s             exe2fwd_i,  
+    input  var type_csr2fwd_s             csr2fwd_i,
 
     // Fetch <---> Forward_stall interface signals
  //   input wire                            if2fwd_stall_i,
 
     // Output signals from forward to different modules
-    output type_fwd2if_s                  fwd2if_o,
-    output type_fwd2exe_s                 fwd2exe_o,
-    output type_fwd2csr_s                 fwd2csr_o,
-    output type_fwd2lsu_s                 fwd2lsu_o,
-    output type_fwd2ptop_s                fwd2ptop_o
+    output  var  type_fwd2if_s                  fwd2if_o,
+    output  var  type_fwd2exe_s                 fwd2exe_o,
+    output  var  type_fwd2csr_s                 fwd2csr_o,
+    output  var  type_fwd2lsu_s                 fwd2lsu_o,
+    output  var  type_fwd2ptop_s                fwd2ptop_o
 );
 
 //============================= Local signals and their assignments =============================//

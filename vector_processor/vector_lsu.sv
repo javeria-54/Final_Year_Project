@@ -450,8 +450,8 @@ logic [`Tag_Width-1:0] seq_num_held;
     always_ff @(posedge clk or negedge n_rst) begin
         if (!n_rst)
             is_loaded <= 1'b0;
-        else if (inst_done || ((c_state == ST_IDLE) && (ld_inst || st_inst) && new_inst))
-            is_loaded <= 1'b0;
+        //else if (((c_state == ST_IDLE) && (ld_inst || st_inst) && new_inst))
+          //  is_loaded <= 1'b0;
         else
             is_loaded <= is_loaded_comb;
     end

@@ -18,11 +18,11 @@ module memory(
 
     // ---------- PORT B : Scalar ----------
     input  logic               vec_pro_ack,
-    input  type_if2imem_s      if2mem_i,
-    output type_imem2if_s      mem2if_o,
+    input   var type_if2imem_s      if2mem_i,
+    output  var type_imem2if_s      mem2if_o,
     input  logic               dmem_sel,
-    input  type_dbus2peri_s    exe2mem_i,
-    output type_peri2dbus_s    mem2wrb_o
+    input   var type_dbus2peri_s    exe2mem_i,
+    output  var type_peri2dbus_s    mem2wrb_o
 );
 
     // =====================================================
@@ -91,14 +91,15 @@ module memory(
     assign instr_row      = instr_local_addr[ROW_W+BYTE_BITS+BANK_BITS-1 : BYTE_BITS+BANK_BITS];
 
     // Scalar DMEM decode
-    assign byte_off_b = addr_b_local[BYTE_BITS-1 : 0];
-    assign bank_sel_b = addr_b_local[BYTE_BITS+BANK_BITS-1 : BYTE_BITS];
-    assign row_b      = addr_b_local[ROW_W+BYTE_BITS+BANK_BITS-1 : BYTE_BITS+BANK_BITS];
+    assign byte_off_b = exe2mem.addr[BYTE_BITS-1 : 0];
+    //assign bank_sel_b = addr_b_local[BYTE_BITS+BANK_BITS-1 : BYTE_BITS];
+    assign bank_sel_b = exe2mem.addr[BYTE_BITS+BANK_BITS-1 : BYTE_BITS];
+    assign row_b      = exe2mem.addr[ROW_W+BYTE_BITS+BANK_BITS-1 : BYTE_BITS+BANK_BITS];
 
     // Vector DMEM decode
-    assign byte_off_a_elem = addr_a_local[BYTE_BITS-1 : 0];
-    assign bank_sel_a_elem = addr_a_local[BYTE_BITS+BANK_BITS-1 : BYTE_BITS];
-    assign row_a           = addr_a_local[ROW_W+BYTE_BITS+BANK_BITS-1 : BYTE_BITS+BANK_BITS];
+    assign byte_off_a_elem = addr_a[BYTE_BITS-1 : 0];
+    assign bank_sel_a_elem = addr_a[BYTE_BITS+BANK_BITS-1 : BYTE_BITS];
+    assign row_a           = addr_a[ROW_W+BYTE_BITS+BANK_BITS-1 : BYTE_BITS+BANK_BITS];
 
     // =====================================================
     // Scalar interface signals
@@ -185,7 +186,7 @@ module memory(
         bank_rdata_a[3] = (ren_a && vec_addr_valid) ? mem_bank_3[row_a] : 'b0;
     end
 
-    always_comb begin
+    /*always_comb begin
         rdata_a = 'b0;
         if (ren_a && !addr_misaligned_a) begin
             if (!elem_mode_a) begin
@@ -204,8 +205,36 @@ module memory(
                 endcase
             end
         end
-    end
+    end*/
 
+    always_comb begin
+        rdata_a = 'b0;
+        if (ren_a && !addr_misaligned_a) begin
+            if (!elem_mode_a) begin
+                for (int i = 0; i < 4; i++) begin
+                    automatic logic [1:0] bank_idx;
+                    automatic logic [ROW_W-1:0] row_idx;
+                    bank_idx = (bank_sel_a_elem + i) % 4;
+                    row_idx = ((bank_sel_a_elem + i) > 3) ? (row_a + 1) : row_a;
+                    case (bank_idx)
+                        2'd0: rdata_a[i*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = mem_bank_0[row_idx];
+                        2'd1: rdata_a[i*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = mem_bank_1[row_idx];
+                        2'd2: rdata_a[i*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = mem_bank_2[row_idx];
+                        2'd3: rdata_a[i*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = mem_bank_3[row_idx];
+                    endcase
+                end
+            end else begin
+                automatic logic [`MEM_BANK_WIDTH-1:0] sel_bank;
+                sel_bank = bank_rdata_a[bank_sel_a_elem];
+                case (sew_a)
+                    2'd0: rdata_a[ 7:0] = sel_bank[byte_off_a_elem*8 +:  8];
+                    2'd1: rdata_a[15:0] = sel_bank[byte_off_a_elem*8 +: 16];
+                    2'd2: rdata_a[31:0] = sel_bank[byte_off_a_elem*8 +: 32];
+                    default: rdata_a[7:0] = sel_bank[byte_off_a_elem*8 +: 8];
+                endcase
+            end
+        end
+    end
     // =====================================================
     // SINGLE always_ff
     // =====================================================

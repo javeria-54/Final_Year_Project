@@ -15,24 +15,24 @@ module fetch (
     input   logic                                   clk,             // clock
 
    // IF <---> IMEM interface
-    output type_if2imem_s                            if2mem_o,     // Instruction memory request
-    input  type_imem2if_s                            mem2if_i,     // Instruction memory response
+    output var type_if2imem_s                            if2mem_o,     // Instruction memory request
+    input  var type_imem2if_s                            mem2if_i,     // Instruction memory response
 
     // IF <---> ID interface
-    output type_if2id_data_s                        if2id_data_o,
-    output type_if2id_ctrl_s                        if2id_ctrl_o, 
+    output var type_if2id_data_s                        if2id_data_o,
+    output var type_if2id_ctrl_s                        if2id_ctrl_o, 
 
     // EXE <---> Fetch feedback interface
-    input  type_exe2if_fb_s                     exe2if_fb_i,
+    input  var type_exe2if_fb_s                     exe2if_fb_i,
 
     // CSR <---> Fetch feedback interface
-    input  type_csr2if_fb_s                     csr2if_fb_i,
+    input  var type_csr2if_fb_s                     csr2if_fb_i,
     input logic stall_fetch,
     output logic [`XLEN-1:0]                        instr_word,
     output   logic                                  is_jal,
     
     // Forward <---> Fetch interface
-    input  type_fwd2if_s                        fwd2if_i
+    input  var type_fwd2if_s                        fwd2if_i
    // output logic                                    if2fwd_stall_o
 );
 

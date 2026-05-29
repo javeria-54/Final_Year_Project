@@ -17,13 +17,13 @@
 // Write stobe for memory
 parameter WR_STROB = `DATA_BUS/8;
 
-`define ROB_DEPTH  256
-`define Tag_Width  8
+`define ROB_DEPTH  512
+`define Tag_Width  9
 `define REG_ADDR_W  5
 `define VREG_ADDR_W 5
 
-`define VIQ_DEPTH  256
-`define VIQ_tag_width 8
+`define VIQ_DEPTH  512
+`define VIQ_tag_width 9
 `define INSTR_W    32
 `define OPERAND_W  32
 //`define ENTRY_W  101

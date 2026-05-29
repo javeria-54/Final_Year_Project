@@ -16,16 +16,16 @@ module dbus_interconnect (
     input logic                                    clk,                      // clock
 
     // Core <----> dbus interface
-    input  type_lsu2dbus_s                     lsu2dbus_i,
-    output type_dbus2lsu_s                         dbus2lsu_o,               // Signals to core
+    input  var type_lsu2dbus_s                     lsu2dbus_i,
+    output var type_dbus2lsu_s                         dbus2lsu_o,               // Signals to core
 
     // dbus <----> Peripheral module interface
-    input type_peri2dbus_s                    mem2dbus_i,               // Signals from DATA memory 
-    input type_peri2dbus_s                    uart2dbus_i,              // Signals from UART module
-    input type_peri2dbus_s                    clint2dbus_i,             // Signals from CLINT module
-    input type_peri2dbus_s                    plic2dbus_i,              // Signals from PLIC module
-    input type_peri2dbus_s                    spi2dbus_i,               // Signals from SPI module
-    input type_peri2dbus_s                    gpio2dbus_i,              // Signals from GPIO module
+    input var type_peri2dbus_s                    mem2dbus_i,               // Signals from DATA memory 
+    input var type_peri2dbus_s                    uart2dbus_i,              // Signals from UART module
+    input var type_peri2dbus_s                    clint2dbus_i,             // Signals from CLINT module
+    input var type_peri2dbus_s                    plic2dbus_i,              // Signals from PLIC module
+    input var type_peri2dbus_s                    spi2dbus_i,               // Signals from SPI module
+    input var type_peri2dbus_s                    gpio2dbus_i,              // Signals from GPIO module
 
     output logic                                   dmem_sel_o,               // DATA memory selection line
     output logic                                   uart0_sel_o,               // UART0 selection line
@@ -40,7 +40,7 @@ module dbus_interconnect (
     output logic                                   gpsw_sel_o ,               // GPSW selection line
     output logic                                   gpled_sel_o,              // GPLEDS selection line
 
-    output type_dbus2peri_s                        dbus2peri_o               // Signals from dbus to peripheral 
+    output var type_dbus2peri_s                        dbus2peri_o               // Signals from dbus to peripheral 
                                                                              // modules
 );
 

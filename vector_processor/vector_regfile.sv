@@ -171,7 +171,7 @@ module vec_regfile (
      
     
     // Write operation and error handling for both read and write addresses
-    always_ff @(negedge clk or negedge reset) begin
+    always_ff @(posedge clk ) begin
         if (!reset) begin
             // Reset all registers
             for (int i = 0; i < `MAX_VEC_REGISTERS; i++) begin
@@ -184,13 +184,13 @@ module vec_regfile (
             
             // Writing to  the v0 register to update the mask value          
             if (mask_wr_en)begin
-                vec_regfile[0] <= wdata[`VLEN-1:0];
+                vec_regfile[waddr] <= wdata[`VLEN-1:0];
                 data_written   <= 1'b1;
             end
 
             // If The write addr is 0 then the bits  for the v0 register will retain their value and others will bw updated    
 
-            else if (wr_en) begin
+            if (wr_en) begin
                 wrong_addr   <= 0;
                 data_written <= 0;
                 // Check for valid write addresses
@@ -199,14 +199,14 @@ module vec_regfile (
                         if (waddr >= `MAX_VEC_REGISTERS) begin
                             wrong_addr <= 1;
                         end
-                        else if (waddr == 0) begin
+                        /*else if (waddr == 0) begin
                             vec_regfile[0] <= wdata[`VLEN-1:0];
                             data_written   <= 1'b1;
-                        end 
+                        end*/ 
                         else begin
-                            if (waddr == 0)begin
+                            /*if (waddr == 0)begin
                                 vec_regfile[waddr] <= vec_regfile[0];
-                            end
+                            end*/
                             vec_regfile[waddr] <= wdata[`VLEN-1:0];
                             data_written       <= 1'b1;
                         end

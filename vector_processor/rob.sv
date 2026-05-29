@@ -2,6 +2,7 @@
 import pcore_types_pkg::*;
 `include "vector_processor_defs.svh"
 `include "scalar_pcore_interface_defs.svh"
+`include "scalar_pcore_config_defs.svh"
 
 module rob (
     input  logic clk,
@@ -332,7 +333,7 @@ module rob (
         end
     end
     always_comb begin
-        do_fetch        = fetch_valid_i & ~rob_full & ~is_nop & ~is_repeat & ~flush_valid_i;
+        do_fetch        = fetch_valid_i & ~rob_full & ~is_nop & ~is_repeat & ~flush_valid_i &  ~stall_fetch_o;
         do_commit       = commit_valid_o;
         de_vec_dispatch_now = de_valid_i    & de_is_vector_i    & ~viq_full_i    & ~flush_valid_i & ~stall_fetch_o;
         do_viq_dispatch =  ~viq_full_i   & viq_rs1_ready & ~block_viq_after_stall & (found_vec_to_dispatch | de_vec_dispatch_now);
@@ -446,8 +447,8 @@ module rob (
         end
     end
 
-    assign rob_de_instr_o   = (do_fetch && !is_nop) ? fetch_instr_i      : rob_de_instr_q;
-    assign rob_de_seq_num_o = (do_fetch && !is_nop) ? (`Tag_Width)'(tail) : rob_de_seq_num_q;
+    assign rob_de_instr_o   = (do_fetch && !is_nop && !stall_fetch_o) ? fetch_instr_i      : `INSTR_NOP;//rob_de_instr_q;
+    assign rob_de_seq_num_o = (do_fetch && !is_nop && !stall_fetch_o) ? (`Tag_Width)'(tail) : rob_de_seq_num_q;
 
     // =========================================================
     // Sequential logic

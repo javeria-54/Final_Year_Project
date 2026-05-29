@@ -302,16 +302,19 @@ assign de_valid = mem2if.ack; //| vec_decode_done; //left logic
 // rd address from execute stage
 assign id2rf_rd_addr = exe2lsu_ctrl.rd_addr;
 
-assign flush_valid =    exe2csr_data.instr_flushed | csr2fwd.irq_flush_lsu |
-                        fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush  |     //if2id_pipe_flush,id2exe,exe2lsu
-                        fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush |
-                        fwd2lsu.lsu_flush;
-//assign flush_seq   = (id2exe_data.instr[6:2] == 5'b11001) ? id2exe_data.seq_num : 'b0;
+assign flush_valid =    exe2csr_data.instr_flushed  | csr2fwd.irq_flush_lsu              |
+                        fwd2ptop.if2id_pipe_flush   | fwd2ptop.id2exe_pipe_flush         |
+                        fwd2ptop.exe2lsu_pipe_flush | fwd2ptop.lsu2wrb_pipe_flush        |
+                        fwd2lsu.lsu_flush           | id2exe_data.instr[6:2] == 5'b11001 | 
+			id2exe_data.instr[6:2] == 5'b11000;     // | if2id_data.r_data[6:2] == 5'b11011;
+
+//OPCODE_JAL_INST       = 5'b11011,
 logic [`Tag_Width-1:0] flush_seq_comb;
 logic [`Tag_Width-1:0] flush_seq_reg;
 
 // Current cycle — combinational
-assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001 | id2exe_data.instr[6:2] == 5'b11000) ? id2exe_data.seq_num : 'b0;
+assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001 | id2exe_data.instr[6:2] == 5'b11000) ? id2exe_data.seq_num : 'b0
+                       // (if2id_data.r_data[6:2] == 5'b11011) ? rob_de_seq_num : 'b0;
 
 // Next cycle ke liye — register mein store karo
 always_ff @(posedge clk or negedge rst_n) begin
@@ -351,6 +354,10 @@ always_comb begin
     end else if (cs_done) begin
         scalar_result_to_rob  = csr2wrb_data.csr_rdata;
         scalar_seq_to_rob     = csr2wrb_data.seq_num;
+        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
+    end else if (exe_done) begin
+        scalar_result_to_rob  = exe2lsu_data.alu_result;
+        scalar_seq_to_rob     = exe2lsu_data.seq_num;
         scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
     end else begin
         scalar_result_to_rob  = exe2lsu_data.alu_result;
@@ -450,14 +457,12 @@ always_ff @(posedge clk or negedge rst_n) begin
         rob_de_seq_num_ff <= '0;
         de_valid_ff       <= 1'b0;
     end else begin
-        // stall_fetch guard hatao — sirf NOP check rakho
-        if (rob_de_instr != 32'h00000013) begin
-            rob_de_instr_ff   <= rob_de_instr;
-            rob_de_seq_num_ff <= rob_de_seq_num;
-        end
+        rob_de_instr_ff   <= rob_de_instr;
+        rob_de_seq_num_ff <= rob_de_seq_num;
         de_valid_ff <= de_valid;
-    end
+    end    
 end
+
 `endif
 logic [`XLEN-1:0] instr_codeword;
 decode decode_module (
@@ -816,21 +821,20 @@ vector_processor vector (
     .execution_inst     (execution_inst),
     .data_written(data_written),
 
-    .rob_commit_vd           (rob_commit_vd),
-    .rob_commit_vector_result (rob_commit_vector_result),
+    .rob_commit_vd              (rob_commit_vd),
+    .rob_commit_vector_result   (rob_commit_vector_result),
     .rob_commit_valid_i         (rob_commit_valid),
 
-    .execution_done(execution_done),
-    .csr_done(csr_done),
-    .is_stored(is_stored),
-    .is_loaded(is_loaded),
-    .execution_result(execution_result),
-    .vd_data(vd_data),
-    .rob_commit_is_vec_o(rob_commit_is_vec),
-    .mask_reg_updated(mask_reg_updated),
-    .mask_done(mask_done),
-    .mask_unit_output(mask_unit_output),
-
+    .execution_done             (execution_done),
+    .csr_done                   (csr_done),
+    .is_stored                  (is_stored),
+    .is_loaded                  (is_loaded),
+    .execution_result           (execution_result),
+    .vd_data                    (vd_data),
+    .rob_commit_is_vec_o        (rob_commit_is_vec),
+    .mask_reg_updated           (mask_reg_updated),
+    .mask_done                  (mask_done),
+    .mask_unit_output           (mask_unit_output),
 
     .mem_addr               (vec_mem_addr),
     .mem_wdata              (vec_mem_wdata),
@@ -879,7 +883,7 @@ memory memory (
     .ren_a       (vec_mem_ren),
     .rdata_a     (vec_mem_rdata),
     // FIX #24: Direct vector commit signals use kiye — no undefined aliases
-    .addr_a      (rob_commit_vector_mem_addr),
+    .addr_a      ((vec_mem_ren) ? vec_mem_addr : rob_commit_vector_mem_addr),
     .wdata_a     (rob_commit_vector_mem_data),
     .wen_a       (rob_commit_vec_mem_wen),
     .byte_en_a   (rob_commit_vec_mem_byte_en),

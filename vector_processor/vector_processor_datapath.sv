@@ -223,16 +223,16 @@ end
 
     always_comb begin 
         if (execution_inst) begin
-            scaler1_extended = {(`MAX_VLEN/`XLEN){scalar1}};
+            scaler1_extended = {(`MAX_VLEN/`XLEN){rs1_data}};
         end 
         else begin
-            scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar1[`XLEN-1:0]};
+            scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, rs1_data[`XLEN-1:0]};
         end
         if (execution_inst) begin
-            scaler2_extended = {(`MAX_VLEN/`XLEN){scalar2}};
+            scaler2_extended = {(`MAX_VLEN/`XLEN){rs2_data}};
         end 
         else begin
-            scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, scalar2[`XLEN-1:0]};
+            scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, rs2_data[`XLEN-1:0]};
         end
     end
 

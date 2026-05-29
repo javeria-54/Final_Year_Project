@@ -23,33 +23,33 @@ module csr (
     input   logic                           clk,                      // clock
 
     // EXE <---> CSR interface
-    input  type_exe2csr_data_s         exe2csr_data_i,
-    input  type_exe2csr_ctrl_s         exe2csr_ctrl_i,            
+    input  var type_exe2csr_data_s         exe2csr_data_i,
+    input  var type_exe2csr_ctrl_s         exe2csr_ctrl_i,            
 
     // LSU <---> CSR interface
-    input  type_lsu2csr_data_s         lsu2csr_data_i,
-    input  type_lsu2csr_ctrl_s         lsu2csr_ctrl_i,
+    input  var type_lsu2csr_data_s         lsu2csr_data_i,
+    input  var type_lsu2csr_ctrl_s         lsu2csr_ctrl_i,
 
     // CLINT to CSR interface  
-    input  type_clint2csr_s             clint2csr_i,
+    input  var type_clint2csr_s             clint2csr_i,
 
     // Pipeline <---> CSR interface
-    input  type_pipe2csr_s              pipe2csr_i,
+    input  var type_pipe2csr_s              pipe2csr_i,
 
     // CSR <---> WRB interface
-    output type_csr2wrb_data_s              csr2wrb_data_o,
+    output var  type_csr2wrb_data_s              csr2wrb_data_o,
 
     // CSR <---> Forward_stall interface
-    input  type_fwd2csr_s               fwd2csr_i,
-    output type_csr2fwd_s                   csr2fwd_o,
+    input  var type_fwd2csr_s               fwd2csr_i,
+    output var type_csr2fwd_s                   csr2fwd_o,
 
     // CSR <---> Decode feedback interface
-    output type_csr2id_fb_s                 csr2id_fb_o,
+    output var type_csr2id_fb_s                 csr2id_fb_o,
 
-    output logic csr_done_o,
+    output var logic csr_done_o,
 
     // CSR <---> Fetch feedback interface
-    output type_csr2if_fb_s                 csr2if_fb_o
+    output var type_csr2if_fb_s                 csr2if_fb_o
 
 );
 

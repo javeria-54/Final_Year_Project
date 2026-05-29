@@ -15,17 +15,17 @@ module writeback (
     input   logic                            clk,                      // clock
 
     // LSU <---> Writeback interface
-    input type_lsu2wrb_data_s               lsu2wrb_data_i,
-    input type_lsu2wrb_ctrl_s               lsu2wrb_ctrl_i,
+    input  var  type_lsu2wrb_data_s               lsu2wrb_data_i,
+    input  var  type_lsu2wrb_ctrl_s               lsu2wrb_ctrl_i,
 
     // CSR <---> Writeback interface
-    input type_csr2wrb_data_s               csr2wrb_data_i,
+    input  var  type_csr2wrb_data_s               csr2wrb_data_i,
 
     // M-extension <---> Writeback interface
-    input type_div2wrb_s                    div2wrb_i,
+    input  var type_div2wrb_s                    div2wrb_i,
 
     // Writeback <---> ID interface for feedback signals
-    output type_wrb2id_fb_s                  wrb2id_fb_o,
+    output  var type_wrb2id_fb_s                  wrb2id_fb_o,
 
     input logic                              rob_commit_valid_i,
     input logic [`REG_ADDR_W-1:0]            rob_commit_rd_i,
@@ -36,7 +36,7 @@ module writeback (
     output logic [`XLEN-1:0]                 wrb2exe_fb_rd_data_o,
 
     // Writeback <---> Forward_stall interface for forwarding
-    output type_wrb2fwd_s                    wrb2fwd_o
+    output var type_wrb2fwd_s                    wrb2fwd_o
 );
 
 // Local signals

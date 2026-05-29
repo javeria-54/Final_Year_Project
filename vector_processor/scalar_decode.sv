@@ -17,8 +17,8 @@ module decode (
     input   logic                             clk,                    // clock
 
     // Fetch <---> Decode interface
-    input  type_if2id_data_s              if2id_data_i,
-    input  type_if2id_ctrl_s              if2id_ctrl_i,
+    input  var type_if2id_data_s              if2id_data_i,
+    input  var type_if2id_ctrl_s              if2id_ctrl_i,
 
     input  logic     [`XLEN-1:0]              rob_instr_i,
     input  logic    [`Tag_Width-1:0]          rob_seq_num,
@@ -34,8 +34,8 @@ module decode (
     output logic [`XLEN-1:0]                    rf2id_rs2_data,            // RF rs2 data
     
     // Decode <---> Execute interface
-    output type_id2exe_data_s                 id2exe_data_o,
-    output type_id2exe_ctrl_s                 id2exe_ctrl_o,          // Structure for control signals  
+    output var type_id2exe_data_s                 id2exe_data_o,
+    output var type_id2exe_ctrl_s                 id2exe_ctrl_o,          // Structure for control signals  
     output logic [`XLEN-1:0]                    instr_codeword,
 
     // Decode <---> Vector_processor
@@ -43,10 +43,10 @@ module decode (
     input logic                               if_stall,
 
     // CSR <---> Decode feedback interface
-    input type_csr2id_fb_s               csr2id_fb_i,
+    input var type_csr2id_fb_s               csr2id_fb_i,
 
     // Writeback <---> Decode feedback interface
-    input  type_wrb2id_fb_s               wrb2id_fb_i
+    input  var type_wrb2id_fb_s               wrb2id_fb_i
 
   //  input wire type_debug_port_s              debug_port_i
 );
@@ -80,8 +80,10 @@ assign if2id_ctrl = if2id_ctrl_i;
 assign if2id_data = if2id_data_i;
 assign csr2id_fb  = csr2id_fb_i;
 
+assign instr_codeword = rob_instr_i;
+
 // Instruction opcodes
-always_comb begin
+/*always_comb begin
     if (!rst_n)
         instr_codeword = 'b0;
     else if (if_stall)
@@ -89,6 +91,7 @@ always_comb begin
     else 
         instr_codeword = if2id_data.instr;
 end
+*/
 assign instr_opcode   = type_rv_opcode_e'(instr_codeword[6:2]); 
 assign funct7_opcode  = instr_codeword[31:25];
 assign funct3_opcode  = instr_codeword[14:12];
@@ -130,6 +133,15 @@ always_comb begin
     id2exe_ctrl.jump_req         = 1'b0;
     id2exe_ctrl.branch_req       = 1'b0;
     id2exe_ctrl.exc_req          = 1'b0;
+
+    id2exe_data.imm      = {{21{instr_codeword[31]}}, instr_codeword[30:20]};
+    id2exe_data.rs1_data = rf2id_rs1_data;   // These operands need to be updated in case of forwarding
+    id2exe_data.rs2_data = rf2id_rs2_data;   // These operands need to be updated in case of forwarding
+    id2exe_data.instr    = instr_codeword;
+    id2exe_data.pc       = if2id_data.pc;
+    id2exe_data.pc_next  = if2id_data.pc_next;
+    id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
+    id2exe_data.instr_flushed = if2id_data.instr_flushed;
 
     // Default values for local signals
     illegal_instr       = 1'b0;
@@ -585,18 +597,6 @@ always_comb begin
             end
         endcase // instr_opcode (Instruction opcode) 
   //  end // no instruction memory fault
-
-    if (~is_vector) begin 
-        // Default values for datapath signals
-        id2exe_data.imm      = {{21{instr_codeword[31]}}, instr_codeword[30:20]};
-        id2exe_data.rs1_data = rf2id_rs1_data;   // These operands need to be updated in case of forwarding
-        id2exe_data.rs2_data = rf2id_rs2_data;   // These operands need to be updated in case of forwarding
-        id2exe_data.instr    = instr_codeword;
-        id2exe_data.pc       = if2id_data.pc;
-        id2exe_data.pc_next  = if2id_data.pc_next;
-        id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
-        id2exe_data.instr_flushed = if2id_data.instr_flushed;
-    end
     if (is_vector) begin
         // Default values for datapath signals
         id2exe_data.imm      = 'b0;
@@ -608,6 +608,21 @@ always_comb begin
         id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
         id2exe_data.instr_flushed = 'b0;
     end
+    /*if (~is_vector) begin 
+        // Default values for datapath signals
+        id2exe_data.rs1_data = rf2id_rs1_data;   // These operands need to be updated in case of forwarding
+        id2exe_data.rs2_data = rf2id_rs2_data;   // These operands need to be updated in case of forwarding
+        id2exe_data.instr    = instr_codeword;
+        id2exe_data.pc       = if2id_data.pc;
+        id2exe_data.pc_next  = if2id_data.pc_next;
+        id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
+        id2exe_data.instr_flushed = if2id_data.instr_flushed;
+        if (is_scalar_store)
+            id2exe_data.imm = 'b0;
+        else 
+            id2exe_data.imm      = {{21{instr_codeword[31]}}, instr_codeword[30:20]};    
+    end
+    */
     if (instr_codeword == `INSTR_NOP) begin
         id2exe_data.seq_num      = 'b0;
     end 

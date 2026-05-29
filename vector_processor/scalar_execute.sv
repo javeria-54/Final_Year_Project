@@ -19,28 +19,28 @@ module execute (
     input   logic                        clk,                      // clock
 
     // ID <---> EXE interface
-    input  type_id2exe_data_s       id2exe_data_i,
-    input  type_id2exe_ctrl_s       id2exe_ctrl_i,            // Structure for control signals from decode to execute 
+    input  var type_id2exe_data_s       id2exe_data_i,
+    input  var type_id2exe_ctrl_s       id2exe_ctrl_i,            // Structure for control signals from decode to execute 
 
     // EXE <---> M-Extension interface
-    output type_exe2div_s                exe2div_o,
+    output var type_exe2div_s                exe2div_o,
 
     // EXE <---> LSU interface
-    output type_exe2lsu_data_s           exe2lsu_data_o,
-    output type_exe2lsu_ctrl_s           exe2lsu_ctrl_o,
+    output var type_exe2lsu_data_s           exe2lsu_data_o,
+    output var type_exe2lsu_ctrl_s           exe2lsu_ctrl_o,
 
     // EXE <---> CSR interface
-    output type_exe2csr_data_s           exe2csr_data_o,
-    output type_exe2csr_ctrl_s           exe2csr_ctrl_o,
+    output var type_exe2csr_data_s           exe2csr_data_o,
+    output var type_exe2csr_ctrl_s           exe2csr_ctrl_o,
 
     // EXE <---> Forwarding module interface
-    input  type_fwd2exe_s            fwd2exe_i,
-    output type_exe2fwd_s                exe2fwd_o,    
+    input  var type_fwd2exe_s            fwd2exe_i,
+    output var type_exe2fwd_s                exe2fwd_o,    
 
     output logic exe_done_o,
     output logic [`RF_AWIDTH-1:0]        rd_addr,
     // EXE <---> IF feedback interface
-    output type_exe2if_fb_s              exe2if_fb_o,
+    output var type_exe2if_fb_s              exe2if_fb_o,
     input logic                           is_jal,
 
     // WB/LSU <---> EXE feedback interface
