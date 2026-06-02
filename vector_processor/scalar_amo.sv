@@ -7,8 +7,9 @@
 //
 // Author: Umer Shahid, UET Lahore
 // Date: 11.8.2022
-import pcore_types_pkg::*;
 
+`include "pcore_types_pkg.sv"
+import pcore_types_pkg::*;
 `include "scalar_pcore_interface_defs.svh"
 `include "scalar_pcore_config_defs.svh"
 `include "scalar_a_ext_defs.svh"
@@ -261,11 +262,13 @@ end
 
 assign amo2lsu_data.amo_wrb_data = amo_wrb_data;
 assign amo2lsu_data.w_data       = w_data;
+assign amo2lsu_data.seq_num       = lsu2amo_data.seq_num;
 
 assign amo2lsu_ctrl.rd_wr_req    = rd_wr_req;
 assign amo2lsu_ctrl.ld_req       = ld_req;
 assign amo2lsu_ctrl.st_req       = st_req;
 assign amo2lsu_ctrl.amo_done     = amo_done;
+
 
 // Update the output signals with proper assignment
 assign amo2lsu_data_o = amo2lsu_data;

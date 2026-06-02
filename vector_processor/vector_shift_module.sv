@@ -39,8 +39,68 @@ module vector_shift_unit (
     // Main shift logic
     always_comb begin
         raw_result = '0;
+        case (sew) 
+            2'b00: begin // 8-bit
+                for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
+                    logic [7:0]  a, b, res;
+                    logic [2:0]  shamt;          // ← 3-bit mask
+                    a     = dataA[i*8  +: 8];
+                    b     = dataB[i*8  +: 8];
+                    shamt = a[2:0];              // ← lower 3 bits only
 
-        case (sew)
+                    case (shift_op_e'(shift_op))
+                        SHIFT_SLL: res = b << shamt;
+                        SHIFT_SRL: res = b >> shamt;
+                        SHIFT_SRA: res = $signed(b) >>> shamt;
+                        default:   res = b;
+                    endcase
+                    raw_result[i*8 +: 8] = res;
+                    shift_done = 1'b1;
+                end
+            end
+
+            2'b01: begin // 16-bit
+                for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin
+                    logic [15:0] a, b, res;
+                    logic [3:0]  shamt;          // ← 4-bit mask
+                    a     = dataA[i*16 +: 16];
+                    b     = dataB[i*16 +: 16];
+                    shamt = a[3:0];              // ← lower 4 bits only
+
+                    case (shift_op_e'(shift_op))
+                        SHIFT_SLL: res = b << shamt;
+                        SHIFT_SRL: res = b >> shamt;
+                        SHIFT_SRA: res = $signed(b) >>> shamt;
+                        default:   res = b;
+                    endcase
+                    raw_result[i*16 +: 16] = res;
+                    shift_done = 1'b1;
+                end
+            end
+
+            2'b10: begin // 32-bit
+                for (int i = 0; i < `NUM_ELEMENT_SEW32; i++) begin
+                    logic [31:0] a, b, res;
+                    logic [4:0]  shamt;          // ← 5-bit mask
+                    a     = dataA[i*32 +: 32];
+                    b     = dataB[i*32 +: 32];
+                    shamt = a[4:0];              // ← lower 5 bits only
+
+                    case (shift_op_e'(shift_op))
+                        SHIFT_SLL: res = b << shamt;
+                        SHIFT_SRL: res = b >> shamt;
+                        SHIFT_SRA: res = $signed(b) >>> shamt;
+                        default:   res = b;
+                    endcase
+                    raw_result[i*32 +: 32] = res;
+                    shift_done = 1'b1;
+                end
+            end
+            default: raw_result = '0;
+        endcase
+    end
+
+        /*case (sew)
             2'b00: begin // 8-bit elements
                 for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
                     logic [7:0] a, b, res;
@@ -97,7 +157,7 @@ module vector_shift_unit (
 
             default: raw_result = '0;
         endcase
-    end
+        */
 
     assign shift_result = raw_result;
     

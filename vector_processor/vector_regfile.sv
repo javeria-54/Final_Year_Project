@@ -171,7 +171,7 @@ module vec_regfile (
      
     
     // Write operation and error handling for both read and write addresses
-    always_ff @(posedge clk ) begin
+    always_ff @(negedge clk ) begin
         if (!reset) begin
             // Reset all registers
             for (int i = 0; i < `MAX_VEC_REGISTERS; i++) begin

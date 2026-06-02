@@ -1,0 +1,302 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="5.0" etag="rob-block" version="22.1.0" type="device">
+  <diagram id="rob-block-diagram" name="ROB Block Diagram">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- Title -->
+        <mxCell id="title" value="ROB (Reorder Buffer) - Complete Internal Block Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="10" width="800" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- FETCH STAGE BOX -->
+        <!-- ============================================ -->
+        <mxCell id="fetch-box" value="FETCH STAGE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="350" height="180" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fetch-valid" value="fetch_valid_i ──────────────────┐" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="fetch-box">
+          <mxGeometry y="30" width="350" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fetch-instr" value="fetch_instr_i [XLEN-1:0] ─────────┤" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;" vertex="1" parent="fetch-box">
+          <mxGeometry y="55" width="350" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fetch-nop" value="is_nop = (fetch_instr_i == NOP_INSTR) ─┤" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="fetch-box">
+          <mxGeometry y="80" width="350" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fetch-repeat" value="is_repeat = (fetch_instr_i == last_instr) &amp; ~is_nop" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="fetch-box">
+          <mxGeometry y="105" width="350" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fetch-do" value="do_fetch = fetch_valid_i &amp; ~rob_full &amp; ~is_nop &amp; ~is_repeat &amp; ~flush_valid_i &amp; ~stall_fetch_o" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;fontStyle=1;" vertex="1" parent="fetch-box">
+          <mxGeometry y="130" width="350" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- DECODE INPUT BOX -->
+        <!-- ============================================ -->
+        <mxCell id="decode-box" value="DECODE STAGE INPUTS" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="350" height="220" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-valid" value="de_valid_i" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="decode-box">
+          <mxGeometry y="30" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-seq" value="de_seq_num_i [Tag_Width-1:0]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="decode-box">
+          <mxGeometry y="52" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-instr" value="de_instr_i [XLEN-1:0]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="decode-box">
+          <mxGeometry y="74" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-isvec" value="de_is_vector_i / de_scalar/vector_store/load_i" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="decode-box">
+          <mxGeometry y="96" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-addr" value="de_scalar_rd_addr_i / de_vector_vd_addr_i" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="decode-box">
+          <mxGeometry y="118" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-rs" value="de_rs1_addr_i / de_rs2_addr_i / de_vs1_addr_i / de_vs2_addr_i" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="decode-box">
+          <mxGeometry y="140" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="de-decoding" value="▼ DECODING: rob[de_seq_num_i].filled &lt;= 1, is_vector &lt;= ..., rd &lt;= ..., vd &lt;= ..." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=10;fontStyle=1;" vertex="1" parent="decode-box">
+          <mxGeometry y="162" width="350" height="38" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- ROB ARRAY BOX (CENTER) -->
+        <!-- ============================================ -->
+        <mxCell id="rob-box" value="ROB ENTRY ARRAY [0 to ROB_DEPTH-1]" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=35;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="450" y="60" width="500" height="420" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-entry-title" value="ROB Entry Structure (packed struct)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=center;fontStyle=1;" vertex="1" parent="rob-box">
+          <mxGeometry y="35" width="500" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line1" value="valid │ filled │ done │ is_vector │ is_mem │ viq_dispatched" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="63" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line2" value="instr [XLEN-1:0] │ rd │ vd │ vs1 │ vs2 │ rs1 │ rs2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="87" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line3" value="rs1_data [XLEN-1:0] │ rs2_data [XLEN-1:0]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="111" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line4" value="scalar_result [XLEN-1:0] │ vector_result [MAX_VLEN-1:0]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="135" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line5" value="mem_addr [XLEN-1:0] │ scalar_mem_data [XLEN-1:0] │ vector_mem_data [VLEN-1:0]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="159" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line6" value="mem_byte_en [63:0] │ mem_wen │ mem_elem_mode │ mem_sew_enc [1:0]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="183" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-fields-line7" value="scalar_store_op [type_st_ops_e] │ scalar_rd_wr_req" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;" vertex="1" parent="rob-box">
+          <mxGeometry y="207" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-ptrs-title" value="POINTERS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=center;fontStyle=1;" vertex="1" parent="rob-box">
+          <mxGeometry y="245" width="500" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-head" value="head [PTR_W-1:0] ──► Points to oldest instruction (next to commit)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;" vertex="1" parent="rob-box">
+          <mxGeometry y="273" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-tail" value="tail [PTR_W-1:0] ──► Points to next free entry (where new instruction allocated)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;" vertex="1" parent="rob-box">
+          <mxGeometry y="297" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-count" value="count [PTR_W+1:0] ──► Number of valid entries currently in ROB" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;" vertex="1" parent="rob-box">
+          <mxGeometry y="321" width="500" height="24" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="rob-full" value="rob_full = (count == ROB_DEPTH)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;" vertex="1" parent="rob-box">
+          <mxGeometry y="355" width="500" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- FORWARDING BOX -->
+        <!-- ============================================ -->
+        <mxCell id="fwd-box" value="FORWARDING LOGIC (Decode Time)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="60" width="400" height="250" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scalar" value="SCALAR FORWARDING" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;" vertex="1" parent="fwd-box">
+          <mxGeometry y="30" width="400" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scan1" value="Scan ROB for done scalar instructions:" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="fwd-box">
+          <mxGeometry y="55" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scan1a" value="if(rob[i].rd == de_rs1_addr_i &amp;&amp; rob[i].done) → fwd_rs1_val = rob[i].scalar_result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="fwd-box">
+          <mxGeometry y="75" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scan1b" value="if(rob[i].rd == de_rs2_addr_i &amp;&amp; rob[i].done) → fwd_rs2_val = rob[i].scalar_result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="fwd-box">
+          <mxGeometry y="95" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-vector" value="VECTOR FORWARDING" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;" vertex="1" parent="fwd-box">
+          <mxGeometry y="125" width="400" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scan2" value="Scan ROB for done vector instructions:" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;" vertex="1" parent="fwd-box">
+          <mxGeometry y="150" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scan2a" value="if(rob[i].vd == de_vs1_addr_i &amp;&amp; rob[i].done) → fwd_vs1_val = rob[i].vector_result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="fwd-box">
+          <mxGeometry y="170" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-scan2b" value="if(rob[i].vd == de_vs2_addr_i &amp;&amp; rob[i].done) → fwd_vs2_val = rob[i].vector_result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="fwd-box">
+          <mxGeometry y="190" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="fwd-output" value="fwd_rs1_data_o / fwd_rs2_data_o / fwd_vs1_data_o / fwd_vs2_data_o" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;fontStyle=1;" vertex="1" parent="fwd-box">
+          <mxGeometry y="220" width="400" height="22" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- VIQ DISPATCH BOX -->
+        <!-- ============================================ -->
+        <mxCell id="viq-box" value="VIQ DISPATCH LOGIC" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="330" width="400" height="250" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-scan-title" value="SCAN ROB FOR READY VECTOR INSTRUCTION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=center;fontStyle=1;" vertex="1" parent="viq-box">
+          <mxGeometry y="30" width="400" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-scan-cond" value="Condition: valid=1, filled=1, is_vector=1, viq_dispatched=0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;" vertex="1" parent="viq-box">
+          <mxGeometry y="58" width="400" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-fwd-title" value="FORWARDING + RAW HAZARD CHECK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=center;fontStyle=1;" vertex="1" parent="viq-box">
+          <mxGeometry y="90" width="400" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-fwd-cond1" value="Check older scalar instructions for rs1/rs2 RAW hazards" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="viq-box">
+          <mxGeometry y="118" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-fwd-cond2" value="Check older vector instructions for vd→rs1/rs2 hazards (VX instructions)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="viq-box">
+          <mxGeometry y="138" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-ready" value="viq_rs1_ready = 1 / viq_rs2_ready = 1 (if no RAW or data ready)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;fontSize=10;" vertex="1" parent="viq-box">
+          <mxGeometry y="168" width="400" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="viq-do" value="do_viq_dispatch = ~viq_full_i &amp; viq_rs1_ready &amp; ~block_viq_after_stall &amp; (found_vec_to_dispatch | de_vec_dispatch_now)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;fontSize=10;" vertex="1" parent="viq-box">
+          <mxGeometry y="200" width="400" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- WRITEBACK BOX -->
+        <!-- ============================================ -->
+        <mxCell id="wb-box" value="WRITEBACK STAGE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="450" y="500" width="500" height="160" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-scalar-title" value="SCALAR WRITEBACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontStyle=1;" vertex="1" parent="wb-box">
+          <mxGeometry y="30" width="245" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-scalar-desc" value="scalar_done_i = 1 → rob[scalar_seq_num_i].done = 1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="wb-box">
+          <mxGeometry y="55" width="245" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-scalar-res" value="scalar_result_i → rob[].scalar_result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="wb-box">
+          <mxGeometry y="75" width="245" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-scalar-mem" value="scalar_mem_addr/data → rob[].mem_addr/scalar_mem_data" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="wb-box">
+          <mxGeometry y="95" width="245" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-vector-title" value="VECTOR WRITEBACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontStyle=1;" vertex="1" parent="wb-box">
+          <mxGeometry y="30" width="245" height="25" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-vector-desc" value="vector_done_i = 1 → rob[vector_seq_num_i].done = 1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="wb-box">
+          <mxGeometry x="255" y="55" width="245" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-vector-res" value="vector_result_i → rob[].vector_result" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="wb-box">
+          <mxGeometry x="255" y="75" width="245" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="wb-vector-mem" value="vector_mem_addr/data, mem_byte_en, mem_wen, etc." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="wb-box">
+          <mxGeometry x="255" y="95" width="245" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- COMMIT BOX -->
+        <!-- ============================================ -->
+        <mxCell id="commit-box" value="COMMIT LOGIC (Retirement)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="600" width="400" height="220" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-cond-title" value="COMMIT CONDITION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;" vertex="1" parent="commit-box">
+          <mxGeometry y="30" width="400" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-cond" value="commit_valid_o = head_entry.valid &amp;&amp; head_entry.filled &amp;&amp; head_entry.done" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;fontStyle=1;fontSize=11;" vertex="1" parent="commit-box">
+          <mxGeometry y="58" width="400" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-outputs-title" value="COMMIT OUTPUTS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;" vertex="1" parent="commit-box">
+          <mxGeometry y="96" width="400" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-rd" value="commit_rd_o / commit_vd_o" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;" vertex="1" parent="commit-box">
+          <mxGeometry y="124" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-result" value="commit_scalar_result_o / commit_vector_result_o" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;" vertex="1" parent="commit-box">
+          <mxGeometry y="144" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-mem" value="commit_mem_addr_o / commit_mem_data_o / commit_mem_byte_en / commit_mem_wen" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="commit-box">
+          <mxGeometry y="164" width="400" height="20" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="commit-store" value="commit_scalar_store_op_o / commit_scalar_rd_wr_req_o" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontSize=9;" vertex="1" parent="commit-box">
+          <mxGeometry y="184" width="400" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ============================================ -->
+        <!-- STALL BOX -->
+        <!-- ============================================ -->
+        <mxCell id="stall-box" value="STALL &amp; FLUSH LOGIC" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="350" height="320" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="stall-mem-title" value="MEMORY STALL DETECTION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=center;fontStyle=1;" vertex="1" parent="stall-box">
+          <mxGeometry y="30" width="350" height="28" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="stall-mem-scan" value="any_unretired_vec_mem = scan ROB for vector memory instructions not at head" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;fontSize=9;" vertex="1" parent="stall-box">
+          <mxGeometry y="58" width="350" height="22" as="geometry"/>
+        </mxCell>
+        
+        <mxCell id="stall-mem-scan2" value="any_unretired_scalar_mem = scan ROB for scalar memory instructions not at head" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;fontSize=9;" vertex="1" parent="stall-box">
+          <mxGeometry y="80

@@ -175,7 +175,7 @@ module multiplier_8 (
     input logic [31:0]  data_in_A,
     input logic [31:0]  data_in_B,
     input logic [1:0]   sew,
-    input logic start,
+    input logic         start,
     input logic         signed_mode,
 
     output logic        count_0,    
@@ -322,7 +322,7 @@ module multiplier_8 (
         end
     end*/
 
-    always_ff @(posedge clk) begin
+    /*always_ff @(posedge clk) begin
         if (!reset) begin
             cycle_counter   <= 2'b00;
             count_0         <= 1'b0;
@@ -347,6 +347,14 @@ module multiplier_8 (
             if (sew == 2'b10 && cycle_counter == 2'b01 && start && !new_transaction) begin
                 count_0 <= 1'b1;  // ✅ Data stable hai, count_0 enable karo
             end
+        end
+    end*/
+
+    always_ff @(posedge clk) begin
+        if (start && sew == 2'b10) begin 
+            count_0 <= 1'b1;
+        end else begin 
+            count_0 <= 1'b0;
         end
     end
 
@@ -682,8 +690,8 @@ always_comb begin
             next_accum_1 =  mult_out_2;
             next_accum_2 =  mult_out_3;
             next_accum_3 =  mult_out_4; 
-            mult_done = 1;
-            next_state = IDLE;   
+            mult_done = 0;
+            next_state = DONE;   
         end
 
         PP_16: begin   
@@ -732,9 +740,9 @@ always_comb begin
             next_accum_1 =  {sum16_10[7:0], sum16_9[7:0]};
             next_accum_2 =  {sum16_11[7:0], result_4[7:0]};
             next_accum_3 =  {sum16_13[7:0], sum16_12[7:0]};
-            mult_done = 1;
+            mult_done = 0;
                       
-            next_state = IDLE ;            
+            next_state = DONE ;            
         end
 
         PP1_32: begin 
@@ -831,9 +839,9 @@ always_comb begin
             next_accum_1 = sum_accum_1[15:0];
             next_accum_2 = sum_accum_2[15:0];
             next_accum_3 = sum_accum_3[15:0];
-            mult_done = 1;
+            mult_done = 0;
 
-            next_state = IDLE ;
+            next_state = DONE ;
 
         end 
         DONE: begin

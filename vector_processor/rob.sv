@@ -403,17 +403,6 @@ module rob (
     // =========================================================
     // Memory stall
     // =========================================================
-    /*always_comb begin
-        any_unretired_vec_mem    = 1'b0;
-        any_unretired_scalar_mem = 1'b0;
-        for (int i = 0; i < `ROB_DEPTH; i++) begin
-            if (rob[i].valid && rob[i].filled && rob[i].is_mem) begin
-                if ( rob[i].is_vector) any_unretired_vec_mem    = 1'b1;
-                if (!rob[i].is_vector) any_unretired_scalar_mem = 1'b1;
-            end
-        end
-    end*/
-
     always_comb begin
         any_unretired_vec_mem    = 1'b0;
         any_unretired_scalar_mem = 1'b0;
@@ -536,20 +525,6 @@ module rob (
                 rob[vector_seq_num_i].mem_sew_enc      <= mem_sew_enc;
                 //rob[vector_seq_num_i].vd               <= rob[vector_seq_num_i].vd;//vector_vd_addr_i;
             end
-
-            // ── Flush ─────────────────────────────────────────────
-            /*if (flush_valid_i) begin
-                for (int i = 0; i < `ROB_DEPTH; i++) begin
-                    if (rob[i].valid &&
-                        (entry_age_arr[i] > (flush_seq_i[PTR_W-1:0] - head))) begin
-                        rob[i].valid  <= 1'b0;
-                        rob[i].filled <= 1'b0;
-                        rob[i].done   <= 1'b0;
-                    end
-                end
-                tail  <= flush_seq_i[PTR_W-1:0] + PTR_W'(1);
-                count <= (PTR_W+1)'(flush_seq_i[PTR_W-1:0] - head + 1);
-            end*/
 
             if (flush_valid_i) begin
                 rob[flush_seq_i[PTR_W-1:0]].valid  <= 1'b0;

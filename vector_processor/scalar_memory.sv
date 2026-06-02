@@ -186,27 +186,6 @@ module memory(
         bank_rdata_a[3] = (ren_a && vec_addr_valid) ? mem_bank_3[row_a] : 'b0;
     end
 
-    /*always_comb begin
-        rdata_a = 'b0;
-        if (ren_a && !addr_misaligned_a) begin
-            if (!elem_mode_a) begin
-                rdata_a[0*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = bank_rdata_a[0];
-                rdata_a[1*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = bank_rdata_a[1];
-                rdata_a[2*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = bank_rdata_a[2];
-                rdata_a[3*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = bank_rdata_a[3];
-            end else begin
-                automatic logic [`MEM_BANK_WIDTH-1:0] sel_bank;
-                sel_bank = bank_rdata_a[bank_sel_a_elem];
-                case (sew_a)
-                    2'd0: rdata_a[ 7:0] = sel_bank[byte_off_a_elem*8 +:  8];
-                    2'd1: rdata_a[15:0] = sel_bank[byte_off_a_elem*8 +: 16];
-                    2'd2: rdata_a[31:0] = sel_bank[byte_off_a_elem*8 +: 32];
-                    default: rdata_a[7:0] = sel_bank[byte_off_a_elem*8 +: 8];
-                endcase
-            end
-        end
-    end*/
-
     always_comb begin
         rdata_a = 'b0;
         if (ren_a && !addr_misaligned_a) begin
@@ -249,15 +228,27 @@ module memory(
             instr_ack  <= 1'b0;
             read_ack   <= 1'b0;
         end else begin
-
-            // ---- PORT A : Unit-stride write ----
-            // 32-bit bank: MEM_WIDTH_ELEM = 4 bytes per bank
             if (wen_a && !elem_mode_a && !addr_misaligned_a && vec_addr_valid) begin
-                for (int j = 0; j < `MEM_WIDTH_ELEM; j++) begin
-                    if (byte_en_a[0*`MEM_WIDTH_ELEM + j]) mem_bank_0[row_a][j*8 +: 8] <= wdata_a[0*`MEM_BANK_WIDTH + j*8 +: 8];
-                    if (byte_en_a[1*`MEM_WIDTH_ELEM + j]) mem_bank_1[row_a][j*8 +: 8] <= wdata_a[1*`MEM_BANK_WIDTH + j*8 +: 8];
-                    if (byte_en_a[2*`MEM_WIDTH_ELEM + j]) mem_bank_2[row_a][j*8 +: 8] <= wdata_a[2*`MEM_BANK_WIDTH + j*8 +: 8];
-                    if (byte_en_a[3*`MEM_WIDTH_ELEM + j]) mem_bank_3[row_a][j*8 +: 8] <= wdata_a[3*`MEM_BANK_WIDTH + j*8 +: 8];
+                for (int i = 0; i < 4; i++) begin
+                    automatic logic [1:0]       bank_idx;
+                    automatic logic [ROW_W-1:0] row_idx;
+                    
+                    bank_idx = (bank_sel_a_elem + i) % 4;
+                    row_idx  = ((bank_sel_a_elem + i) > 3) ? (row_a + 1) : row_a;
+                    
+                    for (int j = 0; j < `MEM_WIDTH_ELEM; j++) begin
+                        automatic logic [5:0] byte_pos;
+                        byte_pos = i * `MEM_WIDTH_ELEM + j;  // byte_en_a mein position
+                        
+                        if (byte_en_a[byte_pos]) begin
+                            case (bank_idx)
+                                2'd0: mem_bank_0[row_idx][j*8 +: 8] <= wdata_a[i*`MEM_BANK_WIDTH + j*8 +: 8];
+                                2'd1: mem_bank_1[row_idx][j*8 +: 8] <= wdata_a[i*`MEM_BANK_WIDTH + j*8 +: 8];
+                                2'd2: mem_bank_2[row_idx][j*8 +: 8] <= wdata_a[i*`MEM_BANK_WIDTH + j*8 +: 8];
+                                2'd3: mem_bank_3[row_idx][j*8 +: 8] <= wdata_a[i*`MEM_BANK_WIDTH + j*8 +: 8];
+                            endcase
+                        end
+                    end
                 end
             end
 

@@ -222,6 +222,7 @@ assign lsu2amo_ctrl.ack           = dbus2lsu.ack;
 assign lsu2amo_data.lsu_addr      = ld_st_addr;
 assign lsu2amo_data.rs2_operand   = exe2lsu_data.rs2_data;
 assign lsu2amo_data.r_data        = dbus2lsu.r_data;
+assign lsu2amo_data.seq_num       = exe2lsu_data.seq_num;
 
 // Update signals for writeback  
 assign lsu2wrb_data.alu_result    = exe2lsu_data.alu_result;  

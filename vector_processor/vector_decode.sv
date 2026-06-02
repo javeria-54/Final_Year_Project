@@ -7,7 +7,7 @@ module vec_decode(
     input   logic [`XLEN-1:0]       rs2_data,
 
     // vec_decode -> scalar_processor
-    input  logic                   is_vec,
+    input  logic                    is_vec,
 
     // vec_decode -> vec_regfile
     output  logic [4:0]       vec_read_addr_1,        // vs1_addr

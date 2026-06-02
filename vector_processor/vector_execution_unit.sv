@@ -1,10 +1,5 @@
 `include "vector_de_csr_defs.svh"
 `include "vector_processor_defs.svh"
-`include "vector_bitwise_unit.sv"
-`include "vector_compare_unit.sv"
-`include "vector_multiplier.sv"
-`include "vector_shift_module.sv"
-`include "vector_adder_subtractor_unit.sv"
 `include "vector_execution_unit.svh"
 
 module vector_execution_unit(
@@ -37,6 +32,7 @@ module vector_execution_unit(
     output  logic [(`VLEN/8)-1:0]               carry_out_mask,
     output logic                                mult_done,
     output  logic [`MAX_VLEN-1:0]               execution_result_reg,
+    input    logic                              accum_inst,  
     output  logic                               execution_done
         
 );
@@ -139,6 +135,7 @@ end
     logic [1:0] sew_latch;
     logic Ctrl_latch;
     logic [2:0] accum_op_latch, accum_op_mul;
+    logic accum_inst_latch;
 
     always_ff @(posedge clk) begin
         if (!reset) begin
@@ -152,6 +149,7 @@ end
             Ctrl_latch          <= 1'b0;
             signed_sum_mode_reg <= 1'b0;
             accum_op_latch <= 3'b0;
+            accum_inst_latch    <=1'b0;
         end else if (mult_add_en && !mult_sum_active) begin
                 mult_sum_data_1_reg <= data_1[`VLEN-1:0];
                 mult_sum_data_2_reg <= data_2[`VLEN-1:0];
@@ -163,6 +161,7 @@ end
                 Ctrl_latch          <= Ctrl;
                 signed_sum_mode_reg <= signed_mode;
                 accum_op_latch <= accum_op;
+                accum_inst_latch    <= accum_inst;
         end else if (mult_done_internal) begin
                 mult_sum_data_1_reg <= '0;
                 mult_sum_data_2_reg <= '0;
@@ -173,7 +172,8 @@ end
                 sew_latch           <= sew;
                 Ctrl_latch          <= Ctrl;
                 signed_sum_mode_reg <= 1'b0;
-                accum_op_latch <= 3'b0;
+                accum_op_latch      <= 3'b0;
+                accum_inst_latch    <=1'b0;
         end
     end
 
@@ -404,7 +404,7 @@ end
                         end 
                     endcase
                 end
-                else if (mult_done_internal && product_sum_done_internal && sum_done_internal) begin
+                if (mult_done_internal && product_sum_done_internal && sum_done_internal && accum_inst_latch) begin
                     product_sum_done = product_sum_done_internal;
                     sum_done = 1'b0;
                     shift_done = 1'b0;
@@ -412,42 +412,7 @@ end
                     bitwise_done = 1'b0;
                     sum_mask_done = 1'b0;
                     execution_result = sum_product_result;
-                        /*case (sew)
-                            2'b00: begin 
-                                for (int i = 0; i < `NUM_ELEMENT_SEW8; i++) begin
-                                    if (mul_sum_high_reg)
-                                        execution_result[i*8 +: 8] = sum_product_result[i*16 + 8 +: 8];
-                                    else if (mul_sum_low_reg)
-                                        execution_result[i*8 +: 8] = sum_product_result[i*16 +: 8];
-                                    else
-                                        execution_result[i*32 +: 32] = '0;
-                                end            
-                            end
-                            2'b01: begin 
-                                for (int i = 0; i < `NUM_ELEMENT_SEW16; i++) begin 
-                                    if (mul_sum_high_reg)
-                                        execution_result[i*16 +: 16] = sum_product_result[i*32 + 16 +: 16];
-                                    else if (mul_sum_low_reg)
-                                        execution_result[i*16 +: 16] = sum_product_result[i*32 +: 16];
-                                    else
-                                        execution_result[i*32 +: 32] = '0;
-                                end        
-                            end
-                            2'b10: begin 
-                                for (int i = 0; i < `NUM_ELEMENT_SEW32; i++) begin
-                                    if (mul_sum_high_reg)
-                                        execution_result[i*32 +: 32] = sum_product_result[i*64 + 32 +: 32];
-                                    else if (mul_sum_low_reg)
-                                        execution_result[i*32 +: 32] = sum_product_result[i*64 +: 32];
-                                    else
-                                        execution_result[i*32 +: 32] = '0;
-                                end
-                            end
-                            default: begin
-                                execution_result = '0;
-                            end
-                        endcase*/
-                    end
+                end
             end
             else begin 
                 execution_result = '0;

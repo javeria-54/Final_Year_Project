@@ -48,6 +48,7 @@ module vector_processor_controller (
     output  logic [2:0]          shift_op,
     output  logic [3:0]          mask_op,
     output  logic                mask_reg_en,
+    output  logic                accum_inst,
 
     output  logic                add_inst, sub_inst, reverse_sub_inst
                                                                    
@@ -1045,5 +1046,7 @@ always_comb begin
     end
     endcase    
 end
+
+assign accum_inst = mul_add_dest_inst| mul_sub_dest_inst | mul_add_source_inst | mul_sub_source_inst;
 
 endmodule

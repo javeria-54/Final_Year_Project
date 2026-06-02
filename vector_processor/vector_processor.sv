@@ -87,6 +87,7 @@ logic                               index_str;          // tells about indexed s
 logic                               index_unordered;    // tells about index unordered stride
 // datapath --> val_ready_controller
 logic                               inst_done;
+logic accum_inst;
 
 // val_ready_controller --> datapath
 //logic                               inst_reg_en;
@@ -211,6 +212,7 @@ logic mask_reg_en ;
         .accum_op           (accum_op),
         .mask_op            (mask_op),
         .start              (start),
+        .accum_inst         (accum_inst),
         .shift_op           (shift_op)
     );
 
@@ -264,6 +266,7 @@ logic mask_reg_en ;
         .start(start),
         .execution_inst(execution_inst),
         .mask_reg_en(mask_reg_en),
+        .accum_inst(accum_inst),
 
         .add_inst                   (add_inst), 
         .sub_inst                   (sub_inst), 

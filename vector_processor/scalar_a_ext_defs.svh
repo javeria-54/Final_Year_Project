@@ -55,6 +55,7 @@ typedef struct packed {
 
    // Response from memory load operation
     logic [`XLEN-1:0]                r_data;
+    logic [`Tag_Width-1:0]           seq_num;
     
 } type_lsu2amo_data_s;
 

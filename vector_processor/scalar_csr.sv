@@ -11,7 +11,8 @@
 // Updated: 11.4.2024
 
 `timescale 1 ns / 100 ps
-
+`include "pcore_types_pkg.sv"
+import pcore_types_pkg::*;
 `include "scalar_pcore_config_defs.svh"
 `include "scalar_pcore_interface_defs.svh"
 `include "vector_processor_defs.svh"

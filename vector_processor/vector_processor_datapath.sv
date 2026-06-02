@@ -96,6 +96,7 @@ module vector_processor_datapth (
     input   logic   [4:0]                       bitwise_op, 
     input   logic   [3:0]                       mask_op,
     input   logic   [2:0]                       cmp_op, accum_op,shift_op,
+    input   logic accum_inst,
     input   logic   [1:0]                       op_type
 );
 
@@ -221,7 +222,7 @@ end
         end
     end
 
-    always_comb begin 
+    /*always_comb begin 
         if (execution_inst) begin
             scaler1_extended = {(`MAX_VLEN/`XLEN){rs1_data}};
         end 
@@ -234,7 +235,37 @@ end
         else begin
             scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, rs2_data[`XLEN-1:0]};
         end
+    end*/
+
+    always_comb begin
+    // ?? Scalar 1 extend ??
+    if (execution_inst) begin
+        // VX form: har element mein same scalar replicate karo
+        case (sew_execution)
+            2'b00: scaler1_extended = {(`MAX_VLEN/8 ){rs1_data[7:0 ]}};  // 8-bit replicate
+            2'b01: scaler1_extended = {(`MAX_VLEN/16){rs1_data[15:0]}};  // 16-bit replicate
+            2'b10: scaler1_extended = {(`MAX_VLEN/32){rs1_data[31:0]}};  // 32-bit replicate
+            default: scaler1_extended = {(`MAX_VLEN/32){rs1_data[31:0]}};
+        endcase
     end
+    else begin
+        scaler1_extended = {{`MAX_VLEN-32{1'b0}}, rs1_data[31:0]};
+    end
+
+    // ?? Scalar 2 extend ??
+    if (execution_inst) begin
+        case (sew_execution)
+            2'b00: scaler2_extended = {(`MAX_VLEN/8 ){rs2_data[7:0 ]}};
+            2'b01: scaler2_extended = {(`MAX_VLEN/16){rs2_data[15:0]}};
+            2'b10: scaler2_extended = {(`MAX_VLEN/32){rs2_data[31:0]}};
+            default: scaler2_extended = {(`MAX_VLEN/32){rs2_data[31:0]}};
+        endcase
+    end
+    else begin
+        scaler2_extended = {{`MAX_VLEN-32{1'b0}}, rs2_data[31:0]};
+    end
+
+end
 
 
              //////////////////////
@@ -375,7 +406,7 @@ end
         .raddr_2        (vec_read_addr_2    ),  
         .wdata          (vec_commit_vector_result_i      ),          
         .waddr          (vec_commit_vd_i     ),
-        .wr_en          (rob_commit_is_vec_o ), 
+        .wr_en          (rob_commit_is_vec_o && rob_commit_valid_i ), 
         .lmul           (vlmul_emul_mux_out ),
         .emul           (emul               ),
         .offset_vec_en  (offset_vec_en      ),
@@ -443,7 +474,7 @@ end
             data_mux2_out_held<= '0;
              dst_vec_data_held <= '0;
         end else if (ld_inst || st_inst) begin
-            dst_vec_data_held <= dst_vec_data;      // data_mux1_out capture
+            dst_vec_data_held  <= dst_vec_data;      // data_mux1_out capture
             data_mux1_out_held <=  data_mux1_out;      // data_mux2_out scalar slice capture  
             data_mux2_out_held <=  data_mux2_out;      // data_mux2_out full vector capture
         end
@@ -522,6 +553,7 @@ end
         .Ctrl               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
         .execution_inst     (execution_inst),
+        .accum_inst         (accum_inst),
 
         .execution_op       (execution_op),
         .signed_mode        (signed_mode),

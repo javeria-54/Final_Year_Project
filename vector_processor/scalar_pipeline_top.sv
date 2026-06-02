@@ -6,7 +6,9 @@
 //
 // Author: Muhammad Tahir, UET Lahore
 // Date: 11.8.2022
+
 import pcore_types_pkg::*;
+
 `include "scalar_m_ext_defs.svh"
 `include "scalar_a_ext_defs.svh"
 `include "vector_processor_defs.svh"
@@ -313,7 +315,7 @@ logic [`Tag_Width-1:0] flush_seq_comb;
 logic [`Tag_Width-1:0] flush_seq_reg;
 
 // Current cycle — combinational
-assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001 | id2exe_data.instr[6:2] == 5'b11000) ? id2exe_data.seq_num : 'b0
+assign flush_seq_comb = (id2exe_data.instr[6:2] == 5'b11001 | id2exe_data.instr[6:2] == 5'b11000) ? id2exe_data.seq_num : 'b0;
                        // (if2id_data.r_data[6:2] == 5'b11011) ? rob_de_seq_num : 'b0;
 
 // Next cycle ke liye — register mein store karo
@@ -823,7 +825,7 @@ vector_processor vector (
 
     .rob_commit_vd              (rob_commit_vd),
     .rob_commit_vector_result   (rob_commit_vector_result),
-    .rob_commit_valid_i         (rob_commit_valid),
+    .rob_commit_valid_i         ((rob_commit_valid & rob_commit_is_vec & ~rob_commit_vec_mem_wen) ? 1'b1 : 1'b0),
 
     .execution_done             (execution_done),
     .csr_done                   (csr_done),
