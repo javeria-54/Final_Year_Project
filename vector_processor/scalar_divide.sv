@@ -65,6 +65,7 @@ assign alu_opr_2 = exe2div.alu_operand_2;
 assign alu_d_req = |alu_d_ops_ff;
 
 always_comb begin
+    div_seq_num = '0;
     if (alu_d_ops == ALU_D_OPS_DIV || alu_d_ops == ALU_D_OPS_REM) begin 
         alu_d_opr_1 = alu_opr_1[`XLEN-1] ? (~alu_opr_1 + 1) : alu_opr_1;
     end else begin

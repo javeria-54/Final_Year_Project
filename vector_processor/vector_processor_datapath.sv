@@ -135,7 +135,8 @@ logic   [`MAX_VLEN-1:0] scaler1_extended ,scaler2_extended;
 
 
 // vec_csr_regs ->
-logic   [3:0]                   vlmul,emul;             // Gives the value of the lmul that is to used  in the procesor
+logic   [3:0]                   vlmul;
+logic   [4:0]  emul;             // Gives the value of the lmul that is to used  in the procesor
 logic   [6:0]                   sew,eew;                // Gives the standard element width 
 logic   [9:0]                   vlmax,e_vlmax;          // the maximum number of elements vector will contain based on the lmul and sew and vlen
 logic                           tail_agnostic;          // vector tail agnostic
@@ -222,21 +223,6 @@ end
         end
     end
 
-    /*always_comb begin 
-        if (execution_inst) begin
-            scaler1_extended = {(`MAX_VLEN/`XLEN){rs1_data}};
-        end 
-        else begin
-            scaler1_extended = {{`MAX_VLEN -`XLEN{1'b0}}, rs1_data[`XLEN-1:0]};
-        end
-        if (execution_inst) begin
-            scaler2_extended = {(`MAX_VLEN/`XLEN){rs2_data}};
-        end 
-        else begin
-            scaler2_extended = {{`MAX_VLEN -`XLEN{1'b0}}, rs2_data[`XLEN-1:0]};
-        end
-    end*/
-
     always_comb begin
     // ?? Scalar 1 extend ??
     if (execution_inst) begin
@@ -266,7 +252,6 @@ end
     end
 
 end
-
 
              //////////////////////
             //      DECODE      //
@@ -305,11 +290,9 @@ end
         .lumop_sel          (lumop_sel      )             
     );
 
-
              /////////////////////
             //   CSR REGFILE   //
            /////////////////////
-
 
     vec_csr_regfile CSR_REGFILE(
         .clk                    (clk            ),
@@ -352,7 +335,6 @@ end
         .csr_done               (csr_done       )
     );
 
-
              /////////////////////
             //   SEW/EEW MUX   //
            /////////////////////
@@ -365,20 +347,28 @@ end
         .mux_out        (sew_eew_mux_out    )     
     );
 
-
              /////////////////////
             // LMUL/EMUL MUX   //
            /////////////////////
 
-    data_mux_2x1 #(.width(4)) LMUL_EMUL_MUX( 
+    /*data_mux_2x1 #(.width(5)) LMUL_EMUL_MUX( 
         
-        .operand1       (vlmul              ),
+        .operand1       (5'(vlmul)          ),
         .operand2       (emul               ),
         .sel            (emul_vlmul_sel     ),
-        .mux_out        (vlmul_emul_mux_out )     
+        .mux_out        (vlmul_emul_mux_out )      
+    );*/
+
+    data_mux_2x1_asymm #(
+        .IN1_WIDTH(4),
+        .IN2_WIDTH(5),
+        .OUT_WIDTH(4)
+    ) LMUL_EMUL_MUX (
+        .operand1    (vlmul              ),
+        .operand2    (emul               ),
+        .sel         (emul_vlmul_sel     ),
+        .mux_out     (vlmul_emul_mux_out )
     );
-
-
 
              ///////////////////////////
             //  VLMAX/ E_VLMAX MUX   //
@@ -550,13 +540,13 @@ end
 
         .seq_num            (seq_num_i),
         .seq_num_exe        (seq_num_exe),
-        .Ctrl               (Ctrl),
+        .Ctrl_add               (Ctrl),
         .sew_eew_mux_out    (sew_eew_mux_out),
         .execution_inst     (execution_inst),
         .accum_inst         (accum_inst),
 
         .execution_op       (execution_op),
-        .signed_mode        (signed_mode),
+        .signed_mode_mult   (signed_mode),
         .mul_high           (mul_high),
         .mul_low            (mul_low), 
         .reverse_sub_inst   (reverse_sub_inst),
@@ -571,7 +561,7 @@ end
         .execution_result   (lanes_data),
         .sew                (sew_execution),  
         .carry_out          (adder_carry_out),                 
-        .start              (start),
+        .mult_start              (start),
         .mask_reg_updated   (mask_reg_updated),
         .carry_out_mask     (carry_out_mask),
         .execution_done     (execution_done)
@@ -642,6 +632,26 @@ module data_mux_3x1 #(
            2'b00 : mux_out = operand1;
            2'b01 : mux_out = operand2;
            2'b10 : mux_out = operand3;
+            default: mux_out = 'h0;
+        endcase        
+    end
+    
+endmodule
+
+module data_mux_2x1_asymm #(
+    parameter IN1_WIDTH = 4,
+    parameter IN2_WIDTH = 5,
+    parameter OUT_WIDTH = 4
+) (
+    input  logic [IN1_WIDTH-1:0]  operand1,
+    input  logic [IN2_WIDTH-1:0]  operand2,
+    input  logic                  sel,
+    output logic [OUT_WIDTH-1:0]  mux_out
+);
+    always_comb begin 
+        case (sel)
+           1'b0 : mux_out = operand1;
+           1'b1 : mux_out = operand2[OUT_WIDTH-1:0];
             default: mux_out = 'h0;
         endcase        
     end

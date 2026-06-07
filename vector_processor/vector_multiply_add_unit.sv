@@ -31,6 +31,7 @@ module vector_multiply_add_unit (
     logic                 mult_done;
     logic [`VLEN-1:0] product_1,product_2;
     logic  [(`VLEN/8)-1:0] carry_out;
+    logic sum_done;
 
     typedef enum logic [2:0] {
         VMACC_VV   = 3'b000,  // vd = +(vs1 * vs2) + vd

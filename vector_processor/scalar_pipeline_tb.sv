@@ -5,7 +5,6 @@
 // aur fetch stage ko serve karta hai
 // ============================================================
 
-`timescale 1ns/1ps
 
 `include "scalar_pcore_interface_defs.svh"
 `include "scalar_m_ext_defs.svh"

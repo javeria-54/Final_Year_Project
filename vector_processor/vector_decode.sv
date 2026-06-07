@@ -127,7 +127,8 @@ always_comb begin : vec_decode
                         vec_read_addr_1 = '0;
                         vec_read_addr_2 = vs2_addr;
                         vec_read_addr_3 = '0;
-                        vec_imm         = imm;
+                        //vec_imm         = imm;
+                        vec_imm = {{(1024-5){1'b0}}, imm};
                         vec_mask        = vm;
                         vec_func6    = func_6; 
                         case (vfunc6_vix)
@@ -315,13 +316,16 @@ end
 
 always_comb begin
     // mux for selection of uimm or rs1 for scalar1
-    scalar1 = (vl_sel) ? $unsigned(uimm) : rs1_o;
+    //scalar1 = (vl_sel) ? $unsigned(uimm) : rs1_o;
+    scalar1 = (vl_sel) ? {{27{1'b0}}, $unsigned(uimm)} : rs1_o;
 
     // mux for selection of zimm or rs2 for scalar2
-    vtype_mux = (vtype_sel) ? {'0 ,zimm} : rs2_o;
+    //vtype_mux = (vtype_sel) ? {'0 ,zimm} : rs2_o;
+    vtype_mux = (vtype_sel) ? {{21{1'b0}}, zimm} : rs2_o;
 
     // mux for selection of lumop or vtype
-    scalar2   = (lumop_sel) ? $unsigned(lumop) : vtype_mux;
+    //scalar2   = (lumop_sel) ? $unsigned(lumop) : vtype_mux;
+    scalar2 = (lumop_sel) ? {{27{1'b0}}, $unsigned(lumop)} : vtype_mux;
 end
 
 endmodule

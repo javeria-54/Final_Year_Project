@@ -15,7 +15,9 @@ import pcore_types_pkg::*;
 
 module pipeline_top (
     input   logic                         rst_n,
-    input   logic                         clk
+    input   logic                         clk,
+    output type_lsu2dbus_s  lsu2dbus_o,  // add karo
+    output type_if2imem_s   if2mem_o     // add karo
 );
 
 // ============================================================
@@ -215,7 +217,7 @@ logic [`Tag_Width-1:0]                  flush_seq;
 // ============================================================
 logic                                   viq_full;
 logic                                   viq_stall;
-logic [`VIQ_tag_width-1:0]             viq_num_instr;
+logic [`VIQ_tag_width:0]              viq_num_instr;
 logic                                   viq_deq_valid_int;
 logic [`Tag_Width-1:0]                  viq_deq_seq;
 logic [`INSTR_W-1:0]                    viq_deq_instr;
@@ -285,7 +287,7 @@ logic                                   cs_done;
 logic                                   scalar_done, vector_done;
 logic [`XLEN-1:0]                       if2rob_instr;
 
-logic [`Tag_Width-1:0]                  vec_seq_num;
+logic [`Tag_Width-1:0]                  vec_seq_num, id2rob_seq_num;
 logic [`RF_AWIDTH-1:0]                  exe2rob_rd_addr;
 logic                                   is_jal;
 logic [`VLEN-1:0] mask_reg_updated;
@@ -344,7 +346,7 @@ logic [`XLEN-1:0]       scalar_result_to_rob;
 logic [`Tag_Width-1:0]  scalar_seq_to_rob;
 logic [`REG_ADDR_W-1:0] scalar_rd_addr_to_rob;
 
-always_comb begin
+/*always_comb begin
     if (div_done) begin
         scalar_result_to_rob  = div2wrb.alu_d_result;
         scalar_seq_to_rob     = div2wrb.seq_num;
@@ -366,7 +368,72 @@ always_comb begin
         scalar_seq_to_rob     = exe2lsu_data.seq_num;
         scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
     end
+end*/
+
+// ============================================================
+// EXE done delay — agar same cycle mein lsu/csr done aaye
+// toh exe result ek cycle baad ROB ko bhejo
+// ============================================================
+logic exe_done_delayed;
+logic [`XLEN-1:0]       exe_result_reg;
+logic [`Tag_Width-1:0]  exe_seq_reg;
+logic [`REG_ADDR_W-1:0] exe_rd_reg;
+
+logic exe_conflict;
+assign exe_conflict = exe_done && (lsu_done || cs_done || div_done);
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        exe_done_delayed <= 1'b0;
+        exe_result_reg   <= '0;
+        exe_seq_reg      <= '0;
+        exe_rd_reg       <= '0;
+    end else begin
+        if (exe_conflict) begin
+            // latch karo, next cycle bhejo
+            exe_done_delayed <= 1'b1;
+            exe_result_reg   <= exe2lsu_data.alu_result;
+            exe_seq_reg      <= exe2lsu_data.seq_num;
+            exe_rd_reg       <= exe2lsu_ctrl.rd_addr;
+        end else begin
+            exe_done_delayed <= 1'b0;
+            exe_result_reg   <= '0;
+            exe_seq_reg      <= '0;
+            exe_rd_reg       <= '0;
+        end
+    end
 end
+
+always_comb begin
+    if (div_done) begin
+        scalar_result_to_rob  = div2wrb.alu_d_result;
+        scalar_seq_to_rob     = div2wrb.seq_num;
+        scalar_rd_addr_to_rob = div2wrb.rd_addr;
+    end else if (lsu_done) begin
+        scalar_result_to_rob  = lsu2wrb_data.r_data;
+        scalar_seq_to_rob     = lsu2wrb_data.seq_num;
+        scalar_rd_addr_to_rob = lsu2wrb_data.rd_addr;
+    end else if (cs_done) begin
+        scalar_result_to_rob  = csr2wrb_data.csr_rdata;
+        scalar_seq_to_rob     = csr2wrb_data.seq_num;
+        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
+    end else if (exe_done_delayed) begin
+        // conflict tha — delayed version bhejo
+        scalar_result_to_rob  = exe_result_reg;
+        scalar_seq_to_rob     = exe_seq_reg;
+        scalar_rd_addr_to_rob = exe_rd_reg;
+    end else if (exe_done && !exe_conflict) begin
+        // no conflict — same cycle theek hai
+        scalar_result_to_rob  = exe2lsu_data.alu_result;
+        scalar_seq_to_rob     = exe2lsu_data.seq_num;
+        scalar_rd_addr_to_rob = exe2lsu_ctrl.rd_addr;
+    end else begin
+        scalar_result_to_rob  = '0;
+        scalar_seq_to_rob     = '0;
+        scalar_rd_addr_to_rob = '0;
+    end
+end
+
 logic [`MAX_VLEN-1:0] vector_result;
 logic   [`MAX_VLEN-1:0]     vd_data;
 always_comb begin
@@ -377,7 +444,8 @@ always_comb begin
     else if (is_loaded)
         vector_result = vd_data;
     else if (mask_done)
-        vector_result = mask_reg_updated;
+        //vector_result = mask_reg_updated;
+        vector_result = {{(`MAX_VLEN - `VLEN){1'b0}}, mask_reg_updated};
     else
         vector_result = '0;
 end
@@ -432,57 +500,36 @@ always_comb begin
         if2id_ctrl_next.exc_req       = 1'b0;
         if2id_ctrl_next.irq_req       = 1'b0;
         if2id_data_next.exc_code      = EXC_CODE_NO_EXCEPTION;
-    end else if (fwd2ptop.if2id_pipe_stall) begin
+    end else if (fwd2ptop.if2id_pipe_stall | stall_fetch) begin
         if2id_data_next = if2id_data_pipe_ff;
         if2id_ctrl_next = if2id_ctrl_pipe_ff;
     end
 end
-logic [`XLEN-1:0]          rob_de_instr_ff;
-logic [`Tag_Width-1:0]     rob_de_seq_num_ff;
-logic                      de_valid_ff;
 
-/*always_ff @(posedge clk or negedge rst_n) begin
-    if (~rst_n) begin
-        rob_de_instr_ff   <= 32'h00000013;  // NOP
-        rob_de_seq_num_ff <= '0;
-        de_valid_ff       <= 1'b0;
-    end else if (!stall_fetch) begin        // stall ka khayal rakho
-        rob_de_instr_ff   <= rob_de_instr;
-        rob_de_seq_num_ff <= rob_de_seq_num;
-        de_valid_ff       <= de_valid;
-    end
-end*/
-
-always_ff @(posedge clk or negedge rst_n) begin
-    if (~rst_n) begin
-        rob_de_instr_ff   <= 32'h00000013;
-        rob_de_seq_num_ff <= '0;
-        de_valid_ff       <= 1'b0;
-    end else begin
-        rob_de_instr_ff   <= rob_de_instr;
-        rob_de_seq_num_ff <= rob_de_seq_num;
-        de_valid_ff <= de_valid;
-    end    
-end
 
 `endif
 logic [`XLEN-1:0] instr_codeword;
+logic inst_is_mem;
 decode decode_module (
     .rst_n           (rst_n),
     .clk             (clk),
     .is_vector       (is_vector),
-    .rob_instr_i     (rob_de_instr_ff),
     .if_stall        (stall_fetch),
-    .rob_seq_num     (rob_de_seq_num_ff),
-    .is_scalar_store (is_scalar_store),
-    .is_scalar_load  (is_scalar_load),
-    .is_vector_store (is_vector_store),
-    .is_vector_load  (is_vector_load),
     .id2rf_rs1_addr  (id2rf_rs1_addr),
     .id2rf_rs2_addr  (id2rf_rs2_addr),
     .rf2id_rs1_data  (rf2id_rs1_data),
     .rf2id_rs2_data  (rf2id_rs2_data),
     .instr_codeword  (instr_codeword),
+    .inst_is_mem     (inst_is_mem),
+    .flush_valid_i           (flush_valid),
+    .flush_seq_i             (flush_seq),
+    .viq_dispatch_valid_o(viq_dispatch_valid),
+    .viq_dispatch_instr_o(viq_dispatch_instr),
+    .viq_dispatch_seq_num_o(viq_dispatch_seq_num),
+    .viq_dispatch_rs1_data_o(viq_dispatch_rs1_data),
+    .viq_dispatch_rs2_data_o(viq_dispatch_rs2_data),
+    .rob_seq_num_o(id2rob_seq_num),
+
 `ifdef IF2ID_PIPELINE_STAGE
     .if2id_data_i    (if2id_data_pipe_ff),
     .if2id_ctrl_i    (if2id_ctrl_pipe_ff),
@@ -494,7 +541,7 @@ decode decode_module (
     .id2exe_data_o   (id2exe_data),
     .csr2id_fb_i     (csr2id_fb),
     .wrb2id_fb_i     (wrb2id_fb)
-);
+);     
 
 execute execute_module (
     .rst_n                   (rst_n),
@@ -672,7 +719,7 @@ single_cycle_val_ready_controller scalar_valid_ready (
     .scalar_pro_ack  (scalar_pro_ack)
 );
 logic vec_decode;
-rob rob (
+/*rob rob (
     .clk                     (clk),
     .rst_n                   (rst_n),
 
@@ -765,7 +812,64 @@ rob rob (
 
     .flush_valid_i           (flush_valid),
     .flush_seq_i             (flush_seq)
+);*/
+
+reorder_buffer rob (
+    .clk                (clk),
+    .reset              (rst_n),
+    .id2rob_seq_num     (id2rob_seq_num),
+    .id2rob_rs1_addr    (id2rf_rs1_addr),
+    .id2rob_rs2_addr    (id2rf_rs2_addr),
+    .id2rob_valid_i     (1'b1),//(~stall_fetch && (instr_codeword != `INSTR_NOP)),
+    .id2rob_instr_i     (instr_codeword),
+    .id2rob_is_mem_i    (inst_is_mem),
+    .id2rob_is_vector_i (is_vector),
+    .vid2rob_vs1_addr   (vec_read_addr_1),
+    .vid2rob_vs2_addr   (vec_read_addr_2),
+    .vid2rob_vd_addr    (vec_write_addr),
+
+    .flush_valid_i           (flush_valid),
+    .flush_seq_i             (flush_seq),
+
+    .scalar_done_i           (scalar_done),
+    .scalar_seq_num_i        (scalar_seq_to_rob),
+    .scalar_result_i         (scalar_result_to_rob),
+    .scalar_rd_addr_i        (scalar_rd_addr_to_rob),
+    .scalar_mem_addr_i       (exe2lsu_data.alu_result),
+    .scalar_mem_data_i       (exe2lsu_data.rs2_data),
+    .scalar_store_op_i       (exe2lsu_ctrl.st_ops),
+    .scalar_rd_wr_req        (exe2lsu_ctrl.rd_wr_req),
+
+    .vector_done_i          (vector_done),
+    .vector_seq_num_i       (vec_seq_num),
+    .vector_result_i        (vector_result),
+    .vec_decode             (vec_decode),
+
+    .commit_valid_o          (rob_commit_valid),
+    .commit_vector_seq_num_o (rob_commit_vector_seq),
+    .commit_vd_o             (rob_commit_vd),
+    .commit_vector_result_o  (rob_commit_vector_result),
+
+    .commit_scalar_seq_num_o (rob_commit_scalar_seq),
+    .commit_rd_o             (rob_commit_rd),
+    .commit_scalar_result_o  (rob_commit_scalar_result),
+    .commit_scalar_mem_addr_o    (rob_commit_scalar_mem_addr),
+    .commit_scalar_mem_data_o(rob_commit_scalar_mem_data),
+    .commit_scalar_store_op_o    (rob_commit_scalar_store_op),
+    .commit_scalar_rd_wr_req_o     (rob_commit_scalar_rd_wr_req),
+    .commit_is_vec_o        (rob_commit_is_vec),
+
+    .stall_fetch_o              (stall_fetch),
+    .stall_scalar_raw_o         (),
+    .stall_vec_raw_o            (stall_vec_raw),
+
+    .fwd_rs1_data_o          (fwd_rs1_data),
+    .fwd_rs2_data_o          (fwd_rs2_data),
+    .fwd_vs1_data_o          (fwd_vs1_data),
+    .fwd_vs2_data_o          (fwd_vs2_data)
+
 );
+
 
 // ============================================================
 //                VIQ MODULE
@@ -778,8 +882,8 @@ viq viq (
     .instruction_i      (viq_dispatch_instr),
     .operand_rs1_i      (viq_dispatch_rs1_data),
     .operand_rs2_i      (viq_dispatch_rs2_data),
-    .instr_is_vec_i     (viq_dispatch_is_vec),
-    .stall_vec          (viq_stall),
+    .instr_is_vec_i     (is_vector),
+    //.stall_vec          (viq_stall),
     .num_instr          (viq_num_instr),
     .deq_ready          (vec_pro_ready),
     .viq_full           (viq_full),
@@ -825,7 +929,7 @@ vector_processor vector (
 
     .rob_commit_vd              (rob_commit_vd),
     .rob_commit_vector_result   (rob_commit_vector_result),
-    .rob_commit_valid_i         ((rob_commit_valid & rob_commit_is_vec & ~rob_commit_vec_mem_wen) ? 1'b1 : 1'b0),
+    .rob_commit_valid_i         ((rob_commit_valid & rob_commit_is_vec) ? 1'b1 : 1'b0),
 
     .execution_done             (execution_done),
     .csr_done                   (csr_done),
@@ -884,13 +988,12 @@ memory memory (
 
     .ren_a       (vec_mem_ren),
     .rdata_a     (vec_mem_rdata),
-    // FIX #24: Direct vector commit signals use kiye — no undefined aliases
-    .addr_a      ((vec_mem_ren) ? vec_mem_addr : rob_commit_vector_mem_addr),
-    .wdata_a     (rob_commit_vector_mem_data),
-    .wen_a       (rob_commit_vec_mem_wen),
-    .byte_en_a   (rob_commit_vec_mem_byte_en),
-    .elem_mode_a (rob_commit_vec_mem_elem_mode),
-    .sew_a       (rob_commit_vec_mem_sew_enc)
+    .addr_a      (vec_mem_addr ),
+    .wdata_a     (vec_mem_wdata),
+    .wen_a       (vec_mem_wen),
+    .byte_en_a   (vec_mem_byte_en),
+    .elem_mode_a (vec_mem_elem_mode),
+    .sew_a       (vec_mem_sew_enc)
 );
 
 // ============================================================

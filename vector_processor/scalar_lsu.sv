@@ -186,7 +186,7 @@ always_comb begin
         //lsu2wrb_ctrl.rd_wr_req  = //exe2lsu_ctrl.rd_wr_req;
         lsu2dbus.w_data         = rob_commit_scalar_mem_data;
         lsu2wrb_ctrl.rd_wr_req  = rob_commit_scalar_rd_wr_req;
-        st_req                  = rob_commit_scalar_store_op;//|(exe2lsu_ctrl.st_ops);
+        st_req                  = |rob_commit_scalar_store_op;//|(exe2lsu_ctrl.st_ops);
     end
 end
 

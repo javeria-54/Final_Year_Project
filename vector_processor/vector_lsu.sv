@@ -55,6 +55,7 @@ logic [`Tag_Width-1:0] seq_num_held;
     end
 
     always_comb begin
+        seq_num_lsu = '0;
         if (!n_rst)
             seq_num_lsu = 'b0;
         else if (is_loaded | is_stored)        
@@ -198,7 +199,8 @@ logic [`Tag_Width-1:0] seq_num_held;
         comb_valid   = 1'b0;
         comb_ridx    = '0;
         comb_rstride = '0;
-        hint = lfsr_reg[$clog2(`VLEN)-1:0] % vlmax;
+        //hint = lfsr_reg[$clog2(`VLEN)-1:0] % vlmax;
+        hint = 7'(10'(lfsr_reg[$clog2(128)-1:0]) % vlmax);
         for (int i = 0; i < `VLEN; i++) begin
             if (!comb_valid && (hint < vlmax[$clog2(`VLEN)-1:0]) && !index_used[hint]) begin
                 comb_ridx  = hint;
@@ -229,30 +231,31 @@ logic [`Tag_Width-1:0] seq_num_held;
     end
 
     always_ff @(posedge clk or negedge n_rst) begin
-        if (!n_rst) begin
+    if (!n_rst) begin
+        fill_counter <= '0;
+        index_used   <= '0;
+        // Array init — for loop ke bahar individual assignment
+        // YA phir separately initialize karo
+        for (int i = 0; i < `VLEN; i++) begin
+            random_addr_array[i] = '0;   // <= wapas lagao
+            visit_to_logical[i]  = '0;   // <= wapas lagao
+        end
+    end else begin
+        if (is_loaded || is_stored) begin
             fill_counter <= '0;
             index_used   <= '0;
             for (int i = 0; i < `VLEN; i++) begin
-                random_addr_array[i] <= '0;
-                visit_to_logical[i]  <= '0;
+                random_addr_array[i] = '0;   // <= 
+                visit_to_logical[i]  = '0;   // <=
             end
-        end else begin
-            // Clear when instruction completes
-            if (is_loaded || is_stored) begin
-                fill_counter <= '0;
-                index_used   <= '0;
-                for (int i = 0; i < `VLEN; i++) begin
-                    random_addr_array[i] <= '0;
-                    visit_to_logical[i]  <= '0;
-                end
-            end else if ((c_state == ST_UNORD_SETUP) && comb_valid && !all_assigned) begin
-                random_addr_array[fill_counter] <= rs1_data + comb_rstride;
-                visit_to_logical[fill_counter]  <= comb_ridx;
-                index_used[comb_ridx]            <= 1'b1;
-                fill_counter                     <= fill_counter + 1'b1;
-            end
+        end else if ((c_state == ST_UNORD_SETUP) && comb_valid && !all_assigned) begin
+            random_addr_array[fill_counter] <= rs1_data + comb_rstride;  // <=
+            visit_to_logical[fill_counter]  <= comb_ridx;                // <=
+            index_used[comb_ridx]           <= 1'b1;                     // <=
+            fill_counter                    <= fill_counter + 1'b1;      // <=
         end
     end
+end
 
     // =========================================================================
     // Address calculation
@@ -265,7 +268,8 @@ logic [`Tag_Width-1:0] seq_num_held;
             current_addr = rs1_data + ({{(`XLEN-$clog2(`MAX_VLEN)){1'b0}}, count_el} * rs2_data);
         else if (index_str) begin
             if (index_unordered)
-                current_addr = random_addr_array[count_el];
+                //current_addr = random_addr_array[count_el];
+                current_addr = random_addr_array[count_el[6:0]];
             else
                 current_addr = rs1_data + selected_stride;
         end else
@@ -277,13 +281,13 @@ logic [`Tag_Width-1:0] seq_num_held;
     // =========================================================================
     logic [$clog2(`MAX_VLEN)-1:0] wr_logical_idx;
     assign wr_logical_idx = (index_str && index_unordered)
-                            ? {{($clog2(`MAX_VLEN)-$clog2(`VLEN)){1'b0}}, visit_to_logical[count_el]}
+                            ? {{($clog2(`MAX_VLEN)-$clog2(`VLEN)){1'b0}}, visit_to_logical[count_el[6:0]]}
                             : count_el;
 
     // =========================================================================
     // Store data — per-element
     // =========================================================================
-    logic [511:0] el_wdata;
+    logic [`VLEN-1:0] el_wdata;
     logic [63:0]  el_byte_en;
 
     always_comb begin
@@ -364,7 +368,7 @@ logic [`Tag_Width-1:0] seq_num_held;
     always_ff @(posedge clk or negedge n_rst) begin
         if (!n_rst) begin
             for (int i = 0; i < `MAX_VLEN; i++)
-                loaded_data[i] <= '0;
+                loaded_data[i] = '0;
         end else if ((c_state == ST_RD_ISSUE) && mem_ren) begin
             // mem_rdata is combinationally valid right now
             if (unit_stride) begin
@@ -372,28 +376,38 @@ logic [`Tag_Width-1:0] seq_num_held;
                         case (sew)
                             7'd8  : begin
                                 if (i <  `NUM_ELEMENT_SEW8) begin
-                                    loaded_data[i] <= {{(2*`XLEN-8) {1'b0}}, mem_rdata[i*8  +:  8]};
+                                    loaded_data[i] = {{(2*`XLEN-8) {1'b0}}, mem_rdata[i*8  +:  8]};
                                 end
                             end
                             7'd16 : begin 
                                 if (i <  `NUM_ELEMENT_SEW16) begin
-                                    loaded_data[i] <= {{(2*`XLEN-16){1'b0}}, mem_rdata[i*16 +: 16]};
+                                    loaded_data[i] = {{(2*`XLEN-16){1'b0}}, mem_rdata[i*16 +: 16]};
                                 end
                             end
                             7'd32 : begin
                                 if (i <  `NUM_ELEMENT_SEW32) begin
-                                    loaded_data[i] <= {{(2*`XLEN-32){1'b0}}, mem_rdata[i*32 +: 32]};
+                                    loaded_data[i] = {{(2*`XLEN-32){1'b0}}, mem_rdata[i*32 +: 32]};
                                 end
                             end
-                            default: loaded_data[i] <= '0;
+                            default: loaded_data[i] = '0;
                         endcase
                     end
                 end
-            end else begin
+            end else if (const_stride) begin
+            // const_stride: har element alag address pe, ek ek karke aata hai
+            // mem_rdata is cycle mein valid hai (SRAM same cycle respond karta hai)
+            case (sew)
+                7'd8  : loaded_data[count_el] <= {{(2*`XLEN-8) {1'b0}}, mem_rdata[7:0]};
+                7'd16 : loaded_data[count_el] <= {{(2*`XLEN-16){1'b0}}, mem_rdata[15:0]};
+                7'd32 : loaded_data[count_el] <= {{(2*`XLEN-32){1'b0}}, mem_rdata[31:0]};
+                default: loaded_data[count_el] <= '0;
+            endcase
+            end 
+            else begin
                 // capture_idx latched same cycle since we removed rd_wait
                 automatic logic [$clog2(`MAX_VLEN)-1:0] dest;
                 dest = (index_str && index_unordered)
-                    ? {{($clog2(`MAX_VLEN)-$clog2(`VLEN)){1'b0}}, visit_to_logical[count_el]}
+                    ? {{($clog2(`MAX_VLEN)-$clog2(`VLEN)){1'b0}}, visit_to_logical[count_el[6:0]]}
                     : count_el;
                 case (sew)
                     7'd8  : loaded_data[dest] <= {{(2*`XLEN-8) {1'b0}}, mem_rdata[7:0]};

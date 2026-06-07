@@ -82,6 +82,17 @@ logic                                 gpsw_sel;
 logic                                 gpled_sel;
 logic                                 gpio_sel;
 
+// Naya registered signal — module ke local signals section mein add karo (line ~69 ke paas)
+logic dmem_sel_q;
+
+// always_ff block add karo (existing always_comb ke baad):
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        dmem_sel_q <= 1'b0;
+    else
+        dmem_sel_q <= dmem_sel;
+end
+
 // Assign input signals
 assign lsu2dbus = lsu2dbus_i;
 assign ld_req   = lsu2dbus.ld_req;
@@ -214,7 +225,8 @@ assign dbus2peri.w_en = st_req;
 assign dbus2peri_o = dbus2peri;
 
 // Peripheral module selection signals from address decoder 
-assign dmem_sel_o  = dmem_sel;
+assign dmem_sel_o = dmem_sel_q;
+//assign dmem_sel_o  = dmem_sel;
 assign uart0_sel_o = uart0_sel;
 assign uart1_sel_o = uart1_sel;
 assign clint_sel_o = clint_sel;
@@ -231,7 +243,7 @@ assign gpio_sel = gpioA_sel | gpioB_sel | gpioC_sel | gpsw_sel| gpled_sel;
 assign uart_sel = uart0_sel | uart1_sel;
 assign spi_sel  = spi0_sel  | spi1_sel;
 // Mux for the peripheral module read data
-assign dbus2lsu_o = dmem_sel  ? type_dbus2lsu_s'(mem2dbus_i) 
+assign dbus2lsu_o = dmem_sel_q  ? type_dbus2lsu_s'(mem2dbus_i) 
                   : clint_sel ? type_dbus2lsu_s'(clint2dbus_i)
                   : plic_sel  ? type_dbus2lsu_s'(plic2dbus_i)
                   : uart_sel  ? type_dbus2lsu_s'(uart2dbus_i)  

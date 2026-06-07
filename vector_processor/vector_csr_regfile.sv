@@ -23,7 +23,8 @@ module vec_csr_regfile (
     input   logic                   csrwr_en,
 
     // vec_csr_regs ->
-    output  logic   [3:0]           vlmul, emul,
+    output  logic   [3:0]           vlmul, 
+    output  logic   [4:0]           emul,
     output  logic   [6:0]           sew, eew,
     output  logic   [9:0]           vlmax, e_vlmax,
     output  logic                   tail_agnostic,    // vector tail agnostic
@@ -65,6 +66,7 @@ always_ff @(posedge clk ) begin
 end
 
 always_comb begin
+    seq_num_csr = '0;
     if (!n_rst)
         seq_num_csr = 'b0;
     else if (csr_done)        
@@ -156,12 +158,15 @@ always_ff @(posedge clk, negedge n_rst) begin
         endcase
 
         // **Step 3: Compute AVL using updated vlmax**
-        vlen_compare = (scalar1 > vlmax) ? vlmax : scalar1;
+        //vlen_compare = (scalar1 > vlmax) ? vlmax : scalar1;
+        vlen_compare = (scalar1 > 32'(vlmax)) ? 32'(vlmax) : scalar1;
+
 
         case (rs1rd_de)
-            1'b0: vl = vlmax;         // rs1 == x0
+            //1'b0: vl = vlmax;         // rs1 == x0
+            1'b0: vl = 32'(vlmax);
             1'b1: vl = vlen_compare;  // rs1 != x0
-            default: vl = vlmax;
+            default: vl = 32'(vlmax); //vl = vlmax;
         endcase
 
         // **Step 4: Update VL register after vtype is set**
@@ -202,12 +207,12 @@ end
 
 // sew decoding 
 always_comb begin
-    case(vew_e'(csr_vtype_q.vsew))
+    casez(vew_e'(csr_vtype_q.vsew))
         EW8:    sew = 8;
         EW16:   sew = 16;
         EW32:   sew = 32;
         EW64:   sew = 64;
-        EWRSVD: sew = 32;
+        //EWRSVD: sew = 32;
         default: sew = 32;
     endcase
 end
@@ -216,19 +221,19 @@ end
 always_comb begin : eew_emul_evlmax_decoding
     // eew decoding
     case (width)
-        4'b0000:eew = 8;
-        4'b0101:eew = 16;
-        4'b0110:eew = 32;
-        4'b0111:eew = 64;
+        3'b000:eew = 8;
+        3'b101:eew = 16;
+        3'b110:eew = 32;
+        3'b111:eew = 64;
         default:eew = 32;
     endcase
 
     // emul = eew/sew * lmul
     case (width)
-        4'b0000: begin // eew=8
+        3'b000: begin // eew=8
             case (vlmul_e'(csr_vtype_q.vlmul))
                 LMUL_1: begin // vlmul=1
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 1;   // sew=8
                         // EW16:   emul = 1/2; // sew=16
                         // EW32:   emul = 1/4; // sew=32
@@ -238,7 +243,7 @@ always_comb begin : eew_emul_evlmax_decoding
                     endcase
                 end
                 LMUL_2: begin // vlmul=2
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 2;   // sew=8
                         EW16:   emul = 1;   // sew=16
                         // EW32:   emul = 1/2; // sew=32
@@ -248,22 +253,22 @@ always_comb begin : eew_emul_evlmax_decoding
                     endcase
                 end
                 LMUL_4: begin // vlmul=4
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 4;   // sew=8
                         EW16:   emul = 2; // sew=16
                         EW32:   emul = 1; // sew=32
                         // EW64:   emul = 1/2; // sew=64
-                        EWRSVD: emul = 1; // sew=32
+                        //EWRSVD: emul = 1; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_8: begin // vlmul=8
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 8;   // sew=8
                         EW16:   emul = 4; // sew=16
                         EW32:   emul = 2; // sew=32
                         EW64:   emul = 1; // sew=64
-                        EWRSVD: emul = 2; // sew=32
+                        //EWRSVD: emul = 2; // sew=32
                         default: emul = 1; 
                     endcase
                 end
@@ -272,10 +277,10 @@ always_comb begin : eew_emul_evlmax_decoding
                 end
             endcase
         end
-        4'b0101: begin // eew=16
+        3'b101: begin // eew=16
             case (vlmul_e'(csr_vtype_q.vlmul))
                 LMUL_1: begin // vlmul=1
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 2;   // sew=8
                         EW16:   emul = 1; // sew=16
                         // EW32:   emul = 1/2; // sew=32
@@ -285,32 +290,32 @@ always_comb begin : eew_emul_evlmax_decoding
                     endcase
                 end
                 LMUL_2: begin // vlmul=2
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 4;   // sew=8
                         EW16:   emul = 2; // sew=16
                         EW32:   emul = 1; // sew=32
                         // EW64:   emul = 1/2; // sew=64
-                        EWRSVD: emul = 1; // sew=32
+                        //EWRSVD: emul = 1; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_4: begin // vlmul=4
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 8;   // sew=8
                         EW16:   emul = 4; // sew=16
                         EW32:   emul = 2; // sew=32
                         EW64:   emul = 1; // sew=64
-                        EWRSVD: emul = 2; // sew=32
+                        //EWRSVD: emul = 2; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_8: begin // vlmul=8
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         // EW8:    emul = 16;   // sew=8
                         EW16:   emul = 8; // sew=16
                         EW32:   emul = 4; // sew=32
                         EW64:   emul = 2; // sew=64
-                        EWRSVD: emul = 4; // sew=32
+                        //EWRSVD: emul = 4; // sew=32
                         default: emul = 1; 
                     endcase
                 end
@@ -319,45 +324,45 @@ always_comb begin : eew_emul_evlmax_decoding
                 end
             endcase
         end
-        4'b0110: begin // eew=32
+        3'b110: begin // eew=32
             case (vlmul_e'(csr_vtype_q.vlmul))
                 LMUL_1: begin // vlmul=1
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 4;   // sew=8
                         EW16:   emul = 2; // sew=16
                         EW32:   emul = 1; // sew=32
                         //EW64:   emul = 1/2; // sew=64
-                        EWRSVD: emul = 1; // sew=32
+                        //EWRSVD: emul = 1; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_2: begin // vlmul=2
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 8;   // sew=8
                         EW16:   emul = 4; // sew=16
                         EW32:   emul = 2; // sew=32
                         EW64:   emul = 1; // sew=64
-                        EWRSVD: emul = 2; // sew=32
+                        //EWRSVD: emul = 2; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_4: begin // vlmul=4
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         // EW8:    emul = 16;   // sew=8
                         EW16:   emul = 8; // sew=16
                         EW32:   emul = 4; // sew=32
                         EW64:   emul = 2; // sew=64
-                        EWRSVD: emul = 4; // sew=32
+                        //EWRSVD: emul = 4; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_8: begin // vlmul=8
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         // EW8:    emul = 32;   // sew=8
                         // ?\EW16:   emul = 16; // sew=16 
                         EW32:   emul = 8; // sew=32
                         EW64:   emul = 4; // sew=64
-                        EWRSVD: emul = 8; // sew=32
+                        //EWRSVD: emul = 8; // sew=32
                         default: emul = 1; 
                     endcase
                 end
@@ -366,45 +371,45 @@ always_comb begin : eew_emul_evlmax_decoding
                 end
             endcase
         end
-        4'b0111: begin // eew=64
+        3'b111: begin // eew=64
             case (vlmul_e'(csr_vtype_q.vlmul))
                 LMUL_1: begin // vlmul=1
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         EW8:    emul = 8;   // sew=8
                         EW16:   emul = 4; // sew=16
                         EW32:   emul = 2; // sew=32
                         EW64:   emul = 1; // sew=64
-                        EWRSVD: emul = 2; // sew=32
+                        //EWRSVD: emul = 2; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_2: begin // vlmul=2
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         // EW8:    emul = 16;   // sew=8
                         EW16:   emul = 8; // sew=16
                         EW32:   emul = 4; // sew=32
                         EW64:   emul = 2; // sew=64
-                        EWRSVD: emul = 4; // sew=32
+                        //EWRSVD: emul = 4; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_4: begin // vlmul=4
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         // EW8:    emul = 32;   // sew=8
                         // EW16:   emul = 16; // sew=16
                         EW32:   emul = 8; // sew=32
                         EW64:   emul = 4; // sew=64
-                        EWRSVD: emul = 8; // sew=32
+                        //EWRSVD: emul = 8; // sew=32
                         default: emul = 1; 
                     endcase
                 end
                 LMUL_8: begin // vlmul=8
-                    case (vew_e'(csr_vtype_q.vsew))
+                    casez (vew_e'(csr_vtype_q.vsew))
                         // EW8:    emul = 64;   // sew=8
                         // EW16:   emul = 32;   // sew=16
                         // EW32:   emul = 16;   // sew=32
                         EW64:   emul = 8;    // sew=64
-                        EWRSVD: emul = 16;   // sew=32
+                        //EWRSVD: emul = 16;   // sew=32
                         default: emul = 1; 
                     endcase
                 end
@@ -412,12 +417,18 @@ always_comb begin : eew_emul_evlmax_decoding
                     emul = 1;
                 end
             endcase
+        end
+        default: begin    // <-- YAHAN ADD KARO
+            eew  = 32;
+            emul = 1;
         end
     endcase
 
     // e_vlmax calculation
     if (eew != 0) begin
-        e_vlmax = (`VLEN / eew) * emul;
+        //e_vlmax = (128 / 32'(eew)) * 32'(emul);
+        e_vlmax = 10'((128 / 32'(eew)) * 32'(emul));
+        //e_vlmax = (`VLEN / eew) * emul;
     end else begin
         e_vlmax = 0;
     end

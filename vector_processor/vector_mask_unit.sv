@@ -67,6 +67,7 @@ module vector_mask_unit(
     end
 
     always_comb begin
+        seq_num_mask = '0;
         if (!reset)
             seq_num_mask = 'b0;
         else if (mask_done)        
@@ -86,8 +87,8 @@ module vector_mask_unit(
 
     always_ff @(posedge clk) begin
         if (!reset) begin
-            mask_unit_output <= 1'b0;
-            mask_register_v0 <= 1'b0;
+            mask_unit_output <= 'b0;
+            mask_register_v0 <= 'b0;
         end else begin
             mask_unit_output <= mask_unit;
             mask_register_v0 <= mask_reg_updated;
@@ -153,7 +154,7 @@ module vector_mask_unit(
         .sew_sel         (sew_sel),
         .carry_out       (carry_out),
         .mask_reg_updated(mask_reg_updated),
-        .vl(vl),
+        .vl              (vl),
         .destination_data(destination_data)
     );
 
@@ -222,10 +223,11 @@ module comb_mask_operations (
 // In comb_mask_operations module (or add post-processing):
 always_comb begin
     // Start with current destination value (for tail bits)
-    mask_reg_updated = destination_data[`MAX_VLEN-1:0];
+    mask_reg_updated = destination_data[`VLEN-1:0];
     
     // Only update first 'vl' bits with operation result
-    for (int i = 0; i < vl; i++) begin
+    //for (int i = 0; i < vl; i++) begin
+    for (int i = 0; i < `NUM_ELEMENT_SEW8 ; i++) begin
         case (mask_op)
             4'b0000: mask_reg_updated[i] = vs2[i] & vs1[i];
             4'b0001: mask_reg_updated[i] = ~(vs2[i] & vs1[i]);
@@ -274,7 +276,7 @@ module check_generator (
     output logic [`VLEN-1:0] tail_check
 );
 
-    always_comb begin
+    /*always_comb begin
         mask_reg = v0_updated;
 
         if (vstart == '0)
@@ -288,7 +290,25 @@ module check_generator (
             body_check = (~({512{1'b1}} << vl)) & ({512{1'b1}} << vstart);
 
         tail_check = {512{1'b1}} << vl;
-    end
+    end*/
+
+    // AFTER
+    always_comb begin
+        mask_reg = v0_updated;
+
+        if (vstart == '0)
+            prestart_check = '0;
+        else
+            prestart_check = (`VLEN'('1) << vstart) ^ `VLEN'('1);
+            // Ya: ~({`VLEN{1'b1}} << vstart)  ← yeh bhi kaam karta hai
+
+        if (vl == '0)
+            body_check = '0;
+        else
+            body_check = (~(`VLEN'('1) << vl)) & (`VLEN'('1) << vstart);
+
+        tail_check = `VLEN'('1) << vl;
+end
 
 endmodule
 

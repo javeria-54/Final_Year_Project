@@ -351,6 +351,7 @@ always_comb begin
                         execution_op = 3'b010;
                         mask_reg_en = 1'b1;
                     end
+                    default: begin /* no operation */ end  // ← add this
 
                 endcase
             end
@@ -518,6 +519,7 @@ always_comb begin
                         execution_op = 3'b010;
                         mask_reg_en = 1'b1;
                     end
+                    default: begin /* no operation */ end  // ← add this
 
                 endcase
             end
@@ -644,6 +646,7 @@ always_comb begin
                         execution_op = 3'b010;
                         mask_reg_en = 1'b1;
                     end
+                    default: begin /* no operation */ end  // ← add this
                 endcase
             end
             
@@ -723,45 +726,45 @@ always_comb begin
                     end
                     VMAND: begin
                         mask_and_inst = 1'b1;
-                        mask_op = 3'b000;
+                        mask_op = 4'b000;
                         mask_reg_en = 1'b1;
                     end
                     VMNAND: begin
                         mask_nand_inst = 1'b1;
-                        mask_op = 3'b001;  
+                        mask_op = 4'b001;  
                         mask_reg_en = 1'b1;
                     end
                     VMANDNOT: begin
                         mask_and_not_inst = 1'b1;
-                        mask_op = 3'b010;
+                        mask_op = 4'b010;
                         mask_reg_en = 1'b1;
                     end
                     VMXOR: begin
                         mask_xor_inst = 1'b1;
-                        mask_op = 3'b011; 
+                        mask_op = 4'b011; 
                         mask_reg_en = 1'b1;   
                     end
                     VMOR: begin
                         mask_or_inst = 1'b1;
-                        mask_op = 3'b100; 
+                        mask_op = 4'b100; 
                         mask_reg_en = 1'b1; 
                     end
                     VMNOR: begin
                         mask_nor_inst = 1'b1;
-                        mask_op = 3'b101; 
+                        mask_op = 4'b101; 
                         mask_reg_en = 1'b1;   
                     end
                     VMORNOT: begin
                         mask_or_not_inst = 1'b1;
-                        mask_op = 3'b110; 
+                        mask_op = 4'b110; 
                         mask_reg_en = 1'b1;
                     end
                     VMXNOR: begin
                         mask_xnor_inst = 1'b1;
-                        mask_op = 3'b111; 
+                        mask_op = 4'b111; 
                         mask_reg_en = 1'b1;  
                     end 
-
+                    default: begin /* no operation */ end  // ← add this
                 endcase 
             end
 
@@ -840,7 +843,7 @@ always_comb begin
                         Ctrl = 1'b1;
                         mul_low = 1'b1;
                     end
-                
+                    default: begin /* no operation */ end  // ← add this
                 endcase 
             end
 

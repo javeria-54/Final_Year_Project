@@ -7,7 +7,6 @@
 // Author: Muhammad Tahir, UET Lahore
 // Date: 11.8.2022
 
-
 `include "scalar_pcore_interface_defs.svh"
 `include "vector_processor_defs.svh"
 
@@ -20,13 +19,18 @@ module decode (
     input  var type_if2id_data_s              if2id_data_i,
     input  var type_if2id_ctrl_s              if2id_ctrl_i,
 
-    input  logic     [`XLEN-1:0]              rob_instr_i,
-    input  logic    [`Tag_Width-1:0]          rob_seq_num,
+    // VIQ dispatch outputs (decode se direct)
+    output logic                              viq_dispatch_valid_o,
+    output logic [`XLEN-1:0]                  viq_dispatch_instr_o,
+    output logic [`Tag_Width-1:0]             viq_dispatch_seq_num_o,
+    output logic [`XLEN-1:0]                  viq_dispatch_rs1_data_o,
+    output logic [`XLEN-1:0]                  viq_dispatch_rs2_data_o,
+    output logic [`Tag_Width-1:0]             rob_seq_num_o,     // decode-generated seq num
     // Decode-stage flags driven into ROB
-    output logic                              is_scalar_store,
-    output logic                              is_vector_store,
-    output logic                              is_scalar_load,
-    output logic                              is_vector_load,
+
+    output logic                              inst_is_mem,
+    input logic  flush_valid_i,           
+    input logic [`Tag_Width-1:0]  flush_seq_i,        
 
     output logic [`RF_AWIDTH-1:0]               id2rf_rs1_addr,            // RF rs1 address
     output logic [`RF_AWIDTH-1:0]               id2rf_rs2_addr,            // RF rs2 address
@@ -36,7 +40,7 @@ module decode (
     // Decode <---> Execute interface
     output var type_id2exe_data_s                 id2exe_data_o,
     output var type_id2exe_ctrl_s                 id2exe_ctrl_o,          // Structure for control signals  
-    output logic [`XLEN-1:0]                    instr_codeword,
+    output logic [`XLEN-1:0]                      instr_codeword,
 
     // Decode <---> Vector_processor
     output logic                              is_vector,
@@ -60,11 +64,17 @@ module decode (
 // 
 logic                                illegal_instr;
 
+// Seq num counter — decode mein generate hota hai
+logic [`Tag_Width-1:0]   seq_num_counter;
+logic                    instr_is_valid;   // NOP nahi hai, valid instruction hai
 
 logic [2:0]                          funct3_opcode;
 logic [6:0]                          funct7_opcode;
 logic [4:0]                          funct5_opcode;
 logic [4:0]                          shift_amt;
+
+logic                                is_vector_load , is_vector_store , 
+                                     is_scalar_load ,is_scalar_store ;
 
 // Control and data signal structures
 type_if2id_ctrl_s                    if2id_ctrl;
@@ -80,18 +90,7 @@ assign if2id_ctrl = if2id_ctrl_i;
 assign if2id_data = if2id_data_i;
 assign csr2id_fb  = csr2id_fb_i;
 
-assign instr_codeword = rob_instr_i;
-
-// Instruction opcodes
-/*always_comb begin
-    if (!rst_n)
-        instr_codeword = 'b0;
-    else if (if_stall)
-        instr_codeword = rob_instr_i;
-    else 
-        instr_codeword = if2id_data.instr;
-end
-*/
+assign instr_codeword = if2id_data.instr;
 assign instr_opcode   = type_rv_opcode_e'(instr_codeword[6:2]); 
 assign funct7_opcode  = instr_codeword[31:25];
 assign funct3_opcode  = instr_codeword[14:12];
@@ -597,8 +596,8 @@ always_comb begin
             end
         endcase // instr_opcode (Instruction opcode) 
   //  end // no instruction memory fault
+
     if (is_vector) begin
-        // Default values for datapath signals
         id2exe_data.imm      = 'b0;
         id2exe_data.rs1_data = 'b0;   // These operands need to be updated in case of forwarding
         id2exe_data.rs2_data = 'b0;   // These operands need to be updated in case of forwarding
@@ -607,27 +606,6 @@ always_comb begin
         id2exe_data.pc_next  = if2id_data.pc_next;
         id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
         id2exe_data.instr_flushed = 'b0;
-    end
-    /*if (~is_vector) begin 
-        // Default values for datapath signals
-        id2exe_data.rs1_data = rf2id_rs1_data;   // These operands need to be updated in case of forwarding
-        id2exe_data.rs2_data = rf2id_rs2_data;   // These operands need to be updated in case of forwarding
-        id2exe_data.instr    = instr_codeword;
-        id2exe_data.pc       = if2id_data.pc;
-        id2exe_data.pc_next  = if2id_data.pc_next;
-        id2exe_data.exc_code = EXC_CODE_NO_EXCEPTION;
-        id2exe_data.instr_flushed = if2id_data.instr_flushed;
-        if (is_scalar_store)
-            id2exe_data.imm = 'b0;
-        else 
-            id2exe_data.imm      = {{21{instr_codeword[31]}}, instr_codeword[30:20]};    
-    end
-    */
-    if (instr_codeword == `INSTR_NOP) begin
-        id2exe_data.seq_num      = 'b0;
-    end 
-    else begin
-        id2exe_data.seq_num      = rob_seq_num;
     end
 
    // Handle the illegal instruction
@@ -655,10 +633,47 @@ always_comb begin
      id2exe_data.exc_code    = EXC_CODE_ILLEGAL_INSTR;
      end
    end
-
-    
 end // Decoder logic
 
+// ── Seq num counter ───────────────────────────────────────────
+// Local signal add karo upar signals section mein
+logic [`Tag_Width-1:0]   seq_num_next_val;
+
+// ── Seq num next value compute + VIQ dispatch ────────────────
+always_comb begin
+    instr_is_valid = (instr_codeword != `INSTR_NOP) && !illegal_instr;
+
+    // Next counter value compute karo
+    if (seq_num_counter == {`Tag_Width{1'b1}})
+        seq_num_next_val = `Tag_Width'd1;
+    else if (seq_num_counter + `Tag_Width'd1 == '0)
+        seq_num_next_val = `Tag_Width'd1;
+    else
+        seq_num_next_val = seq_num_counter + `Tag_Width'd1;
+
+    // Current instruction ko current counter value do — same cycle
+    if (instr_is_valid)
+        id2exe_data.seq_num = seq_num_counter;
+    else
+        id2exe_data.seq_num = '0;
+
+    viq_dispatch_valid_o    = is_vector && instr_is_valid;
+    viq_dispatch_instr_o    = is_vector ? instr_codeword : '0;
+    viq_dispatch_seq_num_o  = is_vector ? seq_num_counter : '0;
+    viq_dispatch_rs1_data_o = is_vector ? rf2id_rs1_data  : '0;
+    viq_dispatch_rs2_data_o = is_vector ? rf2id_rs2_data  : '0;
+    rob_seq_num_o           = instr_is_valid ? seq_num_counter : '0;
+end
+
+always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        seq_num_counter <= `Tag_Width'd1;
+    end else if (flush_valid_i) begin
+        seq_num_counter <= flush_seq_i;
+    end else if (instr_is_valid && !if_stall) begin
+        seq_num_counter <= seq_num_next_val;
+    end
+end
 //=================================== Output signals update ====================================//
 
 // MT TODO: Feedforward (pipeline) signals should be made configurable for enabling/disabling 
@@ -667,6 +682,8 @@ assign id2exe_ctrl.irq_req = if2id_ctrl.irq_req;
   
 assign id2exe_ctrl_o = id2exe_ctrl;
 assign id2exe_data_o = id2exe_data; 
+
+assign inst_is_mem  = is_vector_load | is_vector_store | is_scalar_load |is_scalar_store ;
 
 //================================ Instantiation of submodules =================================//
 // Instantiation of register file

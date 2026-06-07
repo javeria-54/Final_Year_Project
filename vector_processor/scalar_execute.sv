@@ -264,6 +264,7 @@ end
 //============================ Signal evaluations for Bit Manipulation operations ===============================// 
 type_alu_b_ops_e        alu_b_ops;
 logic [`XLEN-1:0]       alu_b_result;
+logic bitmanip_cmd;
 
 assign alu_b_ops    = type_alu_b_ops_e'(id2exe_ctrl_i.alu_b_ops);
 
@@ -311,7 +312,8 @@ always_comb begin
    clmul_result = '0;
    exe_clmul_done = 1'b0;
    for (int i = 0; i <= `XLEN; i++) begin
-      clmul_result = ((clmul_operand_2 >> i) & 1) ? clmul_result ^ (clmul_operand_1 << i) : clmul_result;
+      //clmul_result = ((clmul_operand_2 >> i) & 1) ? clmul_result ^ (clmul_operand_1 << i) : clmul_result;
+      clmul_result = ((clmul_operand_2 >> i) & 32'd1) == 32'd1 ? clmul_result ^ (clmul_operand_1 << i) : clmul_result;
       exe_clmul_done = 1'b1;
    end
 end
@@ -372,7 +374,8 @@ always_comb begin
       ALU_ZBB_OPS_CLZ,
       ALU_ZBB_OPS_CTZ,
       ALU_ZBB_OPS_CPOP : begin
-         alu_b_result = cnt_result;
+         //alu_b_result = cnt_result;
+         alu_b_result = {26'b0, cnt_result};
          alu_b_done = 1'b1;
       end
       ALU_ZBB_OPS_MAX : begin
@@ -432,7 +435,8 @@ always_comb begin
       end
       ALU_ZBS_OPS_BEXT,
       ALU_ZBS_OPS_BEXTI : begin
-         alu_b_result = |(alu_operand_1 & zbs_index);
+         //alu_b_result = |(alu_operand_1 & zbs_index);
+         alu_b_result = {31'b0, |(alu_operand_1 & zbs_index)};
          alu_b_done = 1'b1;
       end
       ALU_ZBS_OPS_BINV,

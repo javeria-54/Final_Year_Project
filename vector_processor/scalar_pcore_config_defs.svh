@@ -90,8 +90,8 @@ typedef enum logic [`CLINT_ADDR_WIDTH-1:0] {
 
 `define MEM_BANK_SIZE        32'h00040000
 `define IMEM_BASE_ADDR       32'h00000000
-`define IMEM_SIZE            32'h00000088       //32'h000001a0 
-`define DMEM_BASE_ADDR       32'h0000008c  
+`define IMEM_SIZE            32'h00000070       //32'h000001a0 
+`define DMEM_BASE_ADDR       32'h00000074  
 `define DMEM_SIZE            32'h00020000
 `define PC_RESET             32'h00000000
 

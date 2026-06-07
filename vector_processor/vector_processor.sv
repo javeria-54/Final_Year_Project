@@ -34,8 +34,6 @@ module vector_processor(
     output logic [`MAX_VLEN-1:0] execution_result,mask_unit_output,
     output logic data_written,
 
-    // valready_controller  --> scaler_processor 
-    input  logic                           vec_pro_ack,            // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
     
     output logic [31:0]                     mem_addr,
     output logic [`VLEN-1:0]                    mem_wdata,
@@ -55,7 +53,8 @@ module vector_processor(
     output logic [`VLEN-1:0] mask_reg_updated,
     output logic mask_done,
     
-
+    // valready_controller  --> scaler_processor 
+    input  logic                           vec_pro_ack,            // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
     // val_ready_controller --> scaler_processor
     input   logic                           vec_pro_ready          // tells that vector processor is ready to take the instruction
 );
@@ -279,33 +278,6 @@ logic mask_reg_en ;
         .accum_op                    (accum_op)
 
     );
-
-    //==========================================================================//
-    //                  VAL READY INTERFACE INSTANTIATION                       //
-    //==========================================================================//
-
-
-    val_ready_controller VAL_READY_INTERFACE(
         
-        .clk                (clk                ),
-        .reset              (reset              ),
-
-        // scaler_procssor  --> val_ready_controller
-        .inst_valid         (inst_valid         ),             // tells data comming from the saler processor is valid
-        .scalar_pro_ready   (scalar_pro_ready   ),       // tells that scaler processor is ready to take output
-        
-        // val_ready_controller --> scaler_processor
-        .vec_pro_ready      (vec_pro_ready      ),          // tells that vector processor is ready to take the instruction
-        .vec_pro_ack        (vec_pro_ack        ),             // tells that the data comming from the vec_procssor is valid and done with the implementation of instruction 
-
-        // datapath -->   val_ready_controller 
-        .inst_done       (inst_done),
-        .exe_done(execution_done),
-        .csr_done(csr_done),
-        .is_stored(is_stored),
-        .mask_done(mask_done),
-        .is_loaded(is_loaded)
-        
-    );
    
 endmodule

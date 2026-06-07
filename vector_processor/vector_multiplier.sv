@@ -416,16 +416,12 @@ module dadda_8(A,B,y);
     input [7:0] B;
     output wire [15:0] y;
     wire  gen_pp [0:7][7:0];
-// stage-1 sum and carry
-    wire [0:5]s1,c1;
-// stage-2 sum and carry
-    wire [0:13]s2,c2;   
-// stage-3 sum and carry
-    wire [0:9]s3,c3;
-// stage-4 sum and carry
-    wire [0:11]s4,c4;
-// stage-5 sum and carry
-    wire [0:13]s5,c5;
+
+    wire [5:0]  s1, c1;
+    wire [13:0] s2, c2;
+    wire [9:0]  s3, c3;
+    wire [11:0] s4, c4;
+    wire [13:0] s5, c5;
 
 // generating partial products 
 genvar i;
@@ -578,7 +574,7 @@ logic   signed [7:0]    PP32_1A,  PP32_1B, PP32_2A, PP32_2B, PP32_3A, PP32_3B, P
                         PP32_5A,  PP32_5B, PP32_6A, PP32_6B, PP32_7A, PP32_7B, PP32_8A, PP32_8B;
 logic   signed [7:0]    PP32_9A,  PP32_9B, PP32_10A, PP32_10B, PP32_11A, PP32_11B, PP32_12A, PP32_12B, 
                         PP32_13A,  PP32_13B, PP32_14A, PP32_14B, PP32_15A, PP32_15B, PP32_16A, PP32_16B; 
-logic   signed [8:0]    carry_0, carry_1, carry_2, carry_3, carry_4;
+logic   signed [15:0]    carry_0, carry_1, carry_2, carry_3, carry_4;
 logic   signed [16:0]   sum_accum_0, sum_accum_1, sum_accum_2, sum_accum_3;
 logic   signed [9:0]    result_0, result_1, result_2, result_3;
 logic   signed [9:0]    result_4, result_5, result_6, result_7;
@@ -611,18 +607,32 @@ endfunction
 function automatic [9:0] add_sum_carry(input [7:0] sum, carry);
 
     begin
-        add_sum_carry = sum + {carry[7:0], 1'b0};  // carry left shift by 1
+        //add_sum_carry = sum + {carry[7:0], 1'b0};  // carry left shift by 1
+        add_sum_carry = {2'b0, sum} + {1'b0, carry[7:0], 1'b0};
     end
 endfunction
 
-function automatic [8:0] add_carry_8bit(
+/*function automatic [15:0] add_carry_8bit(
     input logic [7:0] value,
     input logic [1:0] carry_in1, carry_in2, carry_in3
 );
     logic [8:0] carry_out;
     begin
-        carry_out = value + carry_in1 + carry_in2 + carry_in3;  // add carry to 8-bit value
+        //carry_out = value + carry_in1 + carry_in2 + carry_in3;  // add carry to 8-bit value
+        carry_out = {1'b0, value} + {7'b0, carry_in1} + {7'b0, carry_in2} + {7'b0, carry_in3};
+
         return carry_out;  // result[8] = carry_out, result[7:0] = sum
+    end
+endfunction*/
+
+function automatic [15:0] add_carry_8bit(
+    input logic [7:0] value,
+    input logic [1:0] carry_in1, carry_in2, carry_in3
+);
+    logic [15:0] carry_out;
+    begin
+        carry_out = 16'(value) + 16'(carry_in1) + 16'(carry_in2) + 16'(carry_in3);
+        return carry_out;
     end
 endfunction
 
@@ -717,6 +727,7 @@ always_comb begin
             sum16_6 = csa_3to2(PP16_2_2B, PP16_2_3B, PP16_2_4A);
             sum16_7 = {8'b0, PP16_2_4B};  // No CSA, so carry = 0
 
+           
             // Add sum + carry (9-bit results for overflow handling)
             result_0 = add_sum_carry(sum16_0[7:0],  sum16_0[15:8]);
             result_1 = add_sum_carry(sum16_1[7:0],  sum16_1[15:8]);
@@ -728,13 +739,22 @@ always_comb begin
             result_6 = add_sum_carry(sum16_6[7:0],  sum16_6[15:8]);
             result_7 = add_sum_carry(sum16_7[7:0],  sum16_7[15:8]);
 
-            sum16_8 = add_carry_8bit(result_1[7:0], result_0[9:8], 1'b0, 1'b0);
+            /*sum16_8 = add_carry_8bit(result_1[7:0], result_0[9:8], 1'b0, 1'b0);
             sum16_9 = add_carry_8bit(result_2[7:0], result_1[9:8], sum16_8[8], 1'b0);
             sum16_10 = add_carry_8bit(result_3[7:0],result_2[9:8], sum16_9[8], 1'b0);
 
             sum16_11 = add_carry_8bit(result_5[7:0], result_4[9:8], 1'b0, 1'b0);
             sum16_12 = add_carry_8bit(result_6[7:0], result_5[9:8], sum16_11[8], 1'b0);
-            sum16_13 = add_carry_8bit(result_7[7:0], result_6[9:8], sum16_12[8], 1'b0);
+            sum16_13 = add_carry_8bit(result_7[7:0], result_6[9:8], sum16_12[8], 1'b0);*/
+
+            // AFTER
+            sum16_8  = add_carry_8bit(result_1[7:0], result_0[9:8],          2'b0,          2'b0);
+            sum16_9  = add_carry_8bit(result_2[7:0], result_1[9:8], {1'b0, sum16_8[8]},    2'b0);
+            sum16_10 = add_carry_8bit(result_3[7:0], result_2[9:8], {1'b0, sum16_9[8]},    2'b0);
+            sum16_11 = add_carry_8bit(result_5[7:0], result_4[9:8],          2'b0,          2'b0);
+            sum16_12 = add_carry_8bit(result_6[7:0], result_5[9:8], {1'b0, sum16_11[8]},   2'b0);
+            sum16_13 = add_carry_8bit(result_7[7:0], result_6[9:8], {1'b0, sum16_12[8]},   2'b0);
+
  
             next_accum_0 =  {sum16_8[7:0], result_0[7:0]};
             next_accum_1 =  {sum16_10[7:0], sum16_9[7:0]};
@@ -778,10 +798,16 @@ always_comb begin
             result_7 = add_sum_carry(sum32_7[7:0], sum32_7[15:8]);
 
             carry_0 = add_carry_8bit(result_1[7:0], result_0[9:8], 2'b0, 2'b0);
-            carry_1 = add_carry_8bit(result_6[7:0], result_1[9:8], carry_0[8], 2'b0);
+            /*carry_1 = add_carry_8bit(result_6[7:0], result_1[9:8], carry_0[8], 2'b0);
             carry_2 = add_carry_8bit(result_7[7:0], result_6[9:8], result_2[9:8], carry_1[8]);
             carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], carry_2[8], result_3[9:8]);
-            carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);
+            carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);*/
+
+            // AFTER — single-bit selects ko {1'b0, ...} se 2-bit banao
+            carry_1 = add_carry_8bit(result_6[7:0], result_1[9:8], {1'b0, carry_0[8]},    2'b0);
+            carry_2 = add_carry_8bit(result_7[7:0], result_6[9:8], result_2[9:8],          {1'b0, carry_1[8]});
+            carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], {1'b0, carry_2[8]},    result_3[9:8]);
+            carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], {1'b0, carry_3[8]},    2'b0);
 
             next_accum_0 =  {carry_0[7:0], result_0[7:0]};
             next_accum_1 =  {carry_2[7:0], carry_1[7:0]};
@@ -825,15 +851,27 @@ always_comb begin
             result_7 = add_sum_carry(sum32_7[7:0], sum32_7[15:8]);
 
             carry_0 = add_carry_8bit(result_1[7:0], result_0[9:8], 2'b0, 2'b0);
-            carry_1 = add_carry_8bit(result_6[7:0], result_1[9:8], carry_0[8], 2'b0);
+            /*carry_1 = add_carry_8bit(result_6[7:0], result_1[9:8], carry_0[8], 2'b0);
             carry_2 = add_carry_8bit(result_7[7:0], result_6[9:8], result_2[9:8], carry_1[8]);
             carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], carry_2[8], result_3[9:8]);
-            carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);
+            carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], carry_3[8], 2'b0);*/
+
+
+            // AFTER — single-bit selects ko {1'b0, ...} se 2-bit banao
+            carry_1 = add_carry_8bit(result_6[7:0], result_1[9:8], {1'b0, carry_0[8]},    2'b0);
+            carry_2 = add_carry_8bit(result_7[7:0], result_6[9:8], result_2[9:8],          {1'b0, carry_1[8]});
+            carry_3 = add_carry_8bit(result_4[7:0], result_7[9:8], {1'b0, carry_2[8]},    result_3[9:8]);
+            carry_4 = add_carry_8bit(result_5[7:0], result_4[9:8], {1'b0, carry_3[8]},    2'b0);
 
             sum_accum_0 = accum_0[15:0] + accum_carry_0; 
-            sum_accum_1 = accum_1[15:0] + result_0[7:0] + {carry_0[7:0], 8'b0} + accum_carry_1 + sum_accum_0[16];
+            /*sum_accum_1 = accum_1[15:0] + result_0[7:0] + {carry_0[7:0], 8'b0} + accum_carry_1 + sum_accum_0[16];
             sum_accum_2 = accum_2[15:0] + carry_1[7:0]  + {carry_2[7:0], 8'b0} + accum_carry_2 + sum_accum_1[16];
-            sum_accum_3 = accum_3[15:0] + carry_3[7:0]  + {carry_4[7:0], 8'b0} + accum_carry_3 + sum_accum_2[16];
+            sum_accum_3 = accum_3[15:0] + carry_3[7:0]  + {carry_4[7:0], 8'b0} + accum_carry_3 + sum_accum_2[16];*/
+
+            // AFTER — 8-bit slices ko 17-bit extend karo
+            sum_accum_1 = accum_1[15:0] + 17'(result_0[7:0]) + {carry_0[7:0], 8'b0} + 17'(accum_carry_1) + {16'b0, sum_accum_0[16]};
+            sum_accum_2 = accum_2[15:0] + 17'(carry_1[7:0])  + {carry_2[7:0], 8'b0} + 17'(accum_carry_2) + {16'b0, sum_accum_1[16]};
+            sum_accum_3 = accum_3[15:0] + 17'(carry_3[7:0])  + {carry_4[7:0], 8'b0} + 17'(accum_carry_3) + {16'b0, sum_accum_2[16]};
 
             next_accum_0 = sum_accum_0[15:0];
             next_accum_1 = sum_accum_1[15:0];
@@ -847,8 +885,8 @@ always_comb begin
         DONE: begin
             mult_done = 1;
             next_state = IDLE;
-        
         end
+        default: next_state = IDLE;
     endcase
 end
     always_ff @(posedge clk ) begin
@@ -1023,10 +1061,10 @@ always_comb begin
     case (sew)
         2'b00: begin // 8-bit: individual two's complement
             if (signed_mode) begin
-                product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 8'd1) : product_1[15:0];
-                product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 8'd1) : product_1[31:16];
-                product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 8'd1) : product_2[15:0];
-                product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 8'd1) : product_2[31:16];
+                product_8sew_1 = (sign_A0 ^ sign_B0) ? (~product_1[15:0] + 16'd1) : product_1[15:0];
+                product_8sew_2 = (sign_A1 ^ sign_B1) ? (~product_1[31:16] + 16'd1) : product_1[31:16];
+                product_8sew_3 = (sign_A2 ^ sign_B2) ? (~product_2[15:0] + 16'd1) : product_2[15:0];
+                product_8sew_4 = (sign_A3 ^ sign_B3) ? (~product_2[31:16] + 16'd1) : product_2[31:16];
                 product        = {product_8sew_4, product_8sew_3, product_8sew_2, product_8sew_1};
                 product_16sew_1 = 32'h0;
                 product_16sew_2 = 32'h0;
@@ -1046,8 +1084,8 @@ always_comb begin
             end
         2'b01: begin // 16-bit: two's complement on 16-bit pairs
             if (signed_mode) begin
-                product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 8'd1) : product_1;
-                product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 8'd1) : product_2;
+                product_16sew_1 = (sign_A1 ^ sign_B1) ? (~product_1 + 32'd1) : product_1;
+                product_16sew_2 = (sign_A3 ^ sign_B3) ? (~product_2 + 32'd1) : product_2;
                 product = {product_16sew_2, product_16sew_1};
                 product_8sew_1 = 16'h0;
                 product_8sew_2 = 16'h0;
@@ -1069,7 +1107,7 @@ always_comb begin
             end
         2'b10: begin // 32-bit: two's complement on full 32-bit
             if (signed_mode) begin    
-                product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 8'd1) : {product_2, product_1};
+                product_32sew = (sign_A3 ^ sign_B3) ? (~{product_2 , product_1} + 64'd1) : {product_2, product_1};
                 product = product_32sew;
                 product_8sew_1 = 16'h0;
                 product_8sew_2 = 16'h0;

@@ -2,104 +2,63 @@
 import pcore_types_pkg::*;
 `include "vector_processor_defs.svh"
 `include "scalar_pcore_interface_defs.svh"
+`include "scalar_pcore_config_defs.svh"
 
-module rob (
-    input  logic clk,
-    input  logic rst_n,
+module reorder_buffer(
+    input  logic                                clk,
+    input  logic                                reset,
 
-    // ---- Fetch stage ----------------------------------------
-    input  logic                           fetch_valid_i,
-    input  logic [`XLEN-1:0]               fetch_instr_i,
+    input  logic [`Tag_Width-1:0]               id2rob_seq_num,
+    input  logic [`REG_ADDR_W-1:0]              id2rob_rs1_addr,
+    input  logic [`REG_ADDR_W-1:0]              id2rob_rs2_addr,
+    input  logic                                id2rob_valid_i,
+    input  logic [`XLEN-1:0]                    id2rob_instr_i,
 
-    // ---- To Decode ------------------------------------------
-    output logic [`XLEN-1:0]               rob_de_instr_o,
-    output logic [`Tag_Width-1:0]          rob_de_seq_num_o,
+    input  logic                                id2rob_is_mem_i,
+    input  logic                                id2rob_is_vector_i,
 
-    // ---- From Decode ----------------------------------------
-    input  logic                           de_valid_i,
-    input  logic [`Tag_Width-1:0]          de_seq_num_i,
-    input  logic                           de_is_vector_i,
-    input  logic                           de_scalar_store_i,
-    input  logic                           de_vector_store_i,
-    input  logic                           de_scalar_load_i,
-    input  logic                           de_vector_load_i,
-    input  logic [`REG_ADDR_W-1:0]         de_scalar_rd_addr_i,
-    input  logic [`VREG_ADDR_W-1:0]        de_vector_vd_addr_i,
-    input  logic [`RF_AWIDTH-1:0]          de_rs1_addr_i,
-    input  logic [`RF_AWIDTH-1:0]          de_rs2_addr_i,
-    input  logic [`VREG_ADDR_W-1:0]        de_vs1_addr_i,
-    input  logic [`VREG_ADDR_W-1:0]        de_vs2_addr_i,
+    input  logic [`VREG_ADDR_W-1:0]             vid2rob_vs1_addr,
+    input  logic [`VREG_ADDR_W-1:0]             vid2rob_vs2_addr,
+    input  logic [`VREG_ADDR_W-1:0]             vid2rob_vd_addr,
 
-    input  type_st_ops_e                   scalar_store_op_i,
-    input  logic                           scalar_rd_wr_req,
+    input  logic                                flush_valid_i,
+    input  logic [`Tag_Width-1:0]               flush_seq_i,
 
-    // ---- Register-file read data ----------------------------
-    input  logic [`XLEN-1:0]               rf2rob_rs1_data_i,
-    input  logic [`XLEN-1:0]               rf2rob_rs2_data_i,
-    input  logic [`XLEN-1:0]               rf2rob_vs1_scalar_data_i,
+    input  logic                                scalar_done_i,
+    input  logic [`Tag_Width-1:0]               scalar_seq_num_i,
+    input  logic [`VREG_ADDR_W-1:0]             scalar_rd_addr_i,
+    input  logic [`XLEN-1:0]                    scalar_result_i,
+    input  logic [`XLEN-1:0]                    scalar_mem_addr_i,
+    input  logic [`XLEN-1:0]                    scalar_mem_data_i,
+    input  type_st_ops_e                        scalar_store_op_i,
+    input  logic                                scalar_rd_wr_req,
 
-    // ---- Forwarding outputs ---------------------------------
-    output logic [`XLEN-1:0]               fwd_rs1_data_o,
-    output logic [`XLEN-1:0]               fwd_rs2_data_o,
-    output logic [`VLEN-1:0]               fwd_vs1_data_o,
-    output logic [`VLEN-1:0]               fwd_vs2_data_o,
+    input  logic                                vector_done_i,
+    input  logic [`Tag_Width-1:0]               vector_seq_num_i,
+    input  logic [`MAX_VLEN-1:0]                vector_result_i,
+    input  logic                                vec_decode,
 
-    // ---- Stalls ---------------------------------------------
-    output logic                           stall_scalar_raw_o,
-    output logic                           stall_viq_full_o,
-    output logic                           stall_vec_raw_o,
-    output logic                           stall_fetch_o,
+    output logic                                commit_valid_o, 
+    output logic [`Tag_Width-1:0]               commit_scalar_seq_num_o,
+    output logic [`Tag_Width-1:0]               commit_vector_seq_num_o,
+    output logic [`REG_ADDR_W-1:0]              commit_rd_o,
+    output logic [`VREG_ADDR_W-1:0]             commit_vd_o,
+    output logic [`XLEN-1:0]                    commit_scalar_result_o,
+    output logic [`MAX_VLEN-1:0]                commit_vector_result_o,
+    output logic [`XLEN-1:0]                    commit_scalar_mem_addr_o,
+    output logic [`XLEN-1:0]                    commit_scalar_mem_data_o,
+    output type_st_ops_e                        commit_scalar_store_op_o,
+    output logic                                commit_scalar_rd_wr_req_o,
+    output logic                                commit_is_vec_o,
 
-    // ---- VIQ dispatch ---------------------------------------
-    output logic                           viq_dispatch_valid_o,
-    output logic [`XLEN-1:0]               viq_dispatch_instr_o,
-    output logic [`Tag_Width-1:0]          viq_dispatch_seq_num_o,
-    output logic [`XLEN-1:0]              viq_dispatch_rs1_data_o,
-    output logic [`XLEN-1:0]              viq_dispatch_rs2_data_o,
-    output logic                           viq_dispatch_is_vec_o,
-    input  logic                           viq_full_i,
+    output logic                                stall_fetch_o,
+    output logic                                stall_scalar_raw_o,
+    output logic                                stall_vec_raw_o,
 
-    // ---- Scalar writeback -----------------------------------
-    input  logic                           scalar_done_i,
-    input  logic [`Tag_Width-1:0]          scalar_seq_num_i,
-    input  logic [`VREG_ADDR_W-1:0]        scalar_rd_addr_i,
-    input  logic [`XLEN-1:0]               scalar_result_i,
-    input  logic [`XLEN-1:0]               scalar_mem_addr_i,
-    input  logic [`XLEN-1:0]               scalar_mem_data_i,
-
-    // ---- Vector writeback -----------------------------------
-    input  logic                           vector_done_i,
-    input  logic [`Tag_Width-1:0]          vector_seq_num_i,
-    input  logic [`VREG_ADDR_W-1:0]        vector_vd_addr_i,
-    input  logic [`MAX_VLEN-1:0]           vector_result_i,
-    input  logic [`XLEN-1:0]              vector_mem_addr_i,
-    input  logic [`VLEN-1:0]              vector_mem_data_i,
-    input  logic [63:0]                    mem_byte_en,
-    input  logic                           mem_wen,
-    input  logic                           mem_elem_mode,
-    input  logic [1:0]                     mem_sew_enc,
-
-    // ---- Commit ---------------------------------------------
-    output logic                           commit_valid_o,rob_commit_is_vec_o,
-    output logic [`Tag_Width-1:0]          commit_scalar_seq_num_o,
-    output logic [`Tag_Width-1:0]          commit_vector_seq_num_o,
-    output logic [`REG_ADDR_W-1:0]         commit_rd_o,
-    output logic [`VREG_ADDR_W-1:0]        commit_vd_o,
-    output logic [`XLEN-1:0]              commit_scalar_result_o,
-    output logic [`MAX_VLEN-1:0]           commit_vector_result_o,
-    output logic [`XLEN-1:0]              commit_scalar_mem_addr_o,
-    output logic [`XLEN-1:0]              commit_vec_mem_addr_o,
-    output logic [`XLEN-1:0]              commit_scalar_mem_data_o,
-    output logic [`VLEN-1:0]              commit_vector_mem_data_o,
-    output logic [63:0]                    commit_vector_mem_byte_en,
-    output logic                           commit_vector_mem_wen,
-    output logic                           commit_vector_mem_elem_mode,
-    output logic [1:0]                     commit_vector_mem_sew_enc,
-    output type_st_ops_e                   commit_scalar_store_op_o,
-    output logic                           commit_scalar_rd_wr_req_o,
-
-    input  logic                           flush_valid_i,
-    input  logic [`Tag_Width-1:0]          flush_seq_i
+    output logic [`XLEN-1:0]                    fwd_rs1_data_o,
+    output logic [`XLEN-1:0]                    fwd_rs2_data_o,
+    output logic [`VLEN-1:0]                    fwd_vs1_data_o,
+    output logic [`VLEN-1:0]                    fwd_vs2_data_o
 );
 
     // =========================================================
@@ -110,12 +69,7 @@ module rob (
         logic                        filled;
         logic                        done;
         logic                        is_vector;
-        logic                        is_scalar_store;
-        logic                        is_vector_store;
-        logic                        is_scalar_load;
-        logic                        is_vector_load;
         logic                        is_mem;
-        logic                        viq_dispatched;
         logic [`XLEN-1:0]            instr;
         logic [`REG_ADDR_W-1:0]      rd;
         logic [`VREG_ADDR_W-1:0]     vd;
@@ -123,53 +77,31 @@ module rob (
         logic [`VREG_ADDR_W-1:0]     vs2;
         logic [`VREG_ADDR_W-1:0]     rs1;
         logic [`VREG_ADDR_W-1:0]     rs2;
-        logic [`XLEN-1:0]            rs1_data;
-        logic [`XLEN-1:0]            rs2_data;
-        // FIX: split result into scalar and vector fields (were missing before)
         logic [`XLEN-1:0]            scalar_result;
         logic [`MAX_VLEN-1:0]        vector_result;
         logic [`XLEN-1:0]            mem_addr;
-        // FIX: split mem_data into scalar and vector fields (were missing before)
         logic [`XLEN-1:0]            scalar_mem_data;
-        logic [`VLEN-1:0]            vector_mem_data;
-        logic [63:0]                 mem_byte_en;
-        logic                        mem_wen;
-        logic                        mem_elem_mode;
-        logic [1:0]                  mem_sew_enc;
         type_st_ops_e                scalar_store_op;
         logic                        scalar_rd_wr_req;
     } rob_entry_t;
 
     // =========================================================
-    // FIX: Declare all missing internal signals
+    // Parameters
     // =========================================================
     localparam int PTR_W = $clog2(`ROB_DEPTH);
-    localparam logic [`XLEN-1:0] NOP_INSTR = `XLEN'h0000_0013;
 
-    // ROB array and head entry
+    // =========================================================
+    // Internal signals
+    // =========================================================
     rob_entry_t                  rob [`ROB_DEPTH];
     rob_entry_t                  head_entry;
 
-    // Head/tail pointers and count
     logic [PTR_W-1:0]            head;
     logic [PTR_W-1:0]            tail;
     logic [PTR_W:0]              count;
 
-    // Status flags
     logic                        rob_full;
-    logic                        is_nop;
-    logic                        do_fetch;
     logic                        do_commit;
-    logic                        do_viq_dispatch;
-
-    // FIX: VIQ dispatch - scan result signals (were completely missing)
-    logic                        found_vec_to_dispatch;
-    logic [PTR_W-1:0]            viq_seq_num;
-    logic [`VREG_ADDR_W-1:0]     viq_dispatch_vd;
-    logic [`VREG_ADDR_W-1:0]     viq_dispatch_vs1;
-    logic [`VREG_ADDR_W-1:0]     viq_dispatch_vs2;
-    logic                        viq_dispatch_is_load;
-    logic                        viq_dispatch_is_store;
 
     // Forwarding
     logic                        fwd_rs1_hit;
@@ -181,142 +113,38 @@ module rob (
     logic                        fwd_vs2_hit;
     logic [`VLEN-1:0]            fwd_vs2_val;
 
-    // FIX: RAW in-flight checks for VIQ dispatch (were missing)
-    logic                        rs1_in_flight;
-    logic                        rs2_in_flight;
-
-    // Memory stall tracking
+    // Memory stall
     logic                        any_unretired_vec_mem;
     logic                        any_unretired_scalar_mem;
-    logic                        stall_scalar_mem;
-    logic                        stall_vec_mem;
 
-    // Flush
+    // Flush helpers
     logic [PTR_W-1:0]            flush_dist_comb;
     logic [PTR_W-1:0]            entry_dist_comb [`ROB_DEPTH];
     logic [PTR_W:0]              flush_count;
 
     // =========================================================
+    // Pointer helper function
+    // =========================================================
+    function automatic logic [PTR_W-1:0] next_ptr(logic [PTR_W-1:0] p);
+        logic [PTR_W-1:0] n;
+        n = p + PTR_W'(1);
+        return (n == '0) ? PTR_W'(1) : n;   // skip 0, wrap to 1
+    endfunction
+
+    // =========================================================
     // Basic status
     // =========================================================
     assign rob_full    = (count == (PTR_W+1)'(`ROB_DEPTH));
-    assign is_nop      = (fetch_instr_i == NOP_INSTR);
     assign head_entry  = rob[head];
-    
+    assign do_commit   = commit_valid_o;
 
-    // FIX: stall_viq_full_o was never driven
-    assign stall_viq_full_o = viq_full_i;
-
-    logic [`XLEN-1:0] last_instr;
-
-    // ── Sequential: pichli instruction store karo ─────────────
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            last_instr <= '0;
-        end else if (de_valid_i & ~is_nop) begin
-            last_instr <= rob_de_instr_o;  // sirf valid non-NOP store karo
-        end
-    end
+    // Stalls
+    assign stall_fetch_o    = rob_full | any_unretired_vec_mem | any_unretired_scalar_mem;
+    assign stall_scalar_raw_o = 1'b0;
+    assign stall_vec_raw_o    = 1'b0;
 
     // =========================================================
-    // FIX: VIQ scan - find oldest undispatched vector instruction
-    // (viq_seq_num was used but never computed before)
-    // =========================================================
-    always_comb begin
-        found_vec_to_dispatch = 1'b0;
-        viq_seq_num           = '0;
-        for (int i = 0; i < `ROB_DEPTH; i++) begin
-            automatic logic [PTR_W-1:0] idx;
-            idx = PTR_W'(head + PTR_W'(i));   // walk in-order from head
-            if (rob[idx].valid      &&
-                rob[idx].filled     &&
-                rob[idx].is_vector  &&
-                !rob[idx].viq_dispatched &&
-                !found_vec_to_dispatch) begin
-                found_vec_to_dispatch = 1'b1;
-                viq_seq_num           = idx;
-            end
-        end
-    end
-
-    always_comb begin
-        rs1_in_flight = 1'b0;
-        rs2_in_flight = 1'b0;
-        for (int i = 0; i < `ROB_DEPTH; i++) begin
-            if (rob[i].valid && rob[i].filled && !rob[i].done) begin
-                
-                // FIX: sirf older entries check karo
-                automatic logic [PTR_W-1:0] entry_age, cand_age;
-                entry_age = PTR_W'(i)        - head;
-                cand_age  = viq_seq_num      - head;
-                
-                if (entry_age < cand_age) begin  // ← yeh check missing tha
-                    if (!rob[i].is_vector && rob[i].rd != '0) begin
-                        if (`VREG_ADDR_W'(rob[i].rd) == rob[viq_seq_num].vs1)
-                            rs1_in_flight = 1'b1;
-                        if (`VREG_ADDR_W'(rob[i].rd) == rob[viq_seq_num].vs2)
-                            rs2_in_flight = 1'b1;
-                    end
-                    if (rob[i].is_vector) begin
-                        if (rob[i].vd == rob[viq_seq_num].vs1)
-                            rs1_in_flight = 1'b1;
-                        if (rob[i].vd == rob[viq_seq_num].vs2)
-                            rs2_in_flight = 1'b1;
-                    end
-                end
-            end
-        end
-    end
-    
-logic is_repeat;
-assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
-    // =========================================================
-    // Control signals
-    // =========================================================
-    always_comb begin
-        do_fetch  = fetch_valid_i & ~rob_full  & ~is_nop  & ~is_repeat;
-        do_commit = commit_valid_o;
-        do_viq_dispatch = found_vec_to_dispatch   // FIX: use scan result
-                           & ~viq_full_i
-                           & ~flush_valid_i
-                           & ~rs1_in_flight
-                           & ~rs2_in_flight
-                           & ~stall_vec_raw_o;
-    end
-
-    // =========================================================
-    // VIQ dispatch output
-    // =========================================================
-    always_comb begin
-        if (do_viq_dispatch) begin
-            viq_dispatch_valid_o    = 1'b1;
-            viq_dispatch_instr_o    = rob[viq_seq_num].instr;
-            viq_dispatch_seq_num_o  = (`Tag_Width)'(viq_seq_num);
-            viq_dispatch_vd         = rob[viq_seq_num].vd;
-            viq_dispatch_vs1        = rob[viq_seq_num].vs1;
-            viq_dispatch_vs2        = rob[viq_seq_num].vs2;
-            viq_dispatch_rs1_data_o = rob[viq_seq_num].rs1_data;
-            viq_dispatch_rs2_data_o = rob[viq_seq_num].rs2_data;
-            viq_dispatch_is_load    = rob[viq_seq_num].is_vector_load;
-            viq_dispatch_is_store   = rob[viq_seq_num].is_vector_store;
-            viq_dispatch_is_vec_o   = 1'b1;
-        end else begin
-            viq_dispatch_valid_o    = 1'b0;
-            viq_dispatch_instr_o    = '0;
-            viq_dispatch_seq_num_o  = '0;
-            viq_dispatch_vd         = '0;
-            viq_dispatch_vs1        = '0;
-            viq_dispatch_vs2        = '0;
-            viq_dispatch_rs1_data_o = '0;
-            viq_dispatch_rs2_data_o = '0;
-            viq_dispatch_is_load    = 1'b0;
-            viq_dispatch_is_store   = 1'b0;
-            viq_dispatch_is_vec_o   = 1'b0;
-        end
-    end
-
-    // =========================================================
-    // Scalar forwarding (rs1 / rs2)
+    // Scalar forwarding (decode time, using id2rob ports)
     // =========================================================
     always_comb begin
         fwd_rs1_hit = 1'b0;
@@ -326,12 +154,11 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
         for (int i = 0; i < `ROB_DEPTH; i++) begin
             if (rob[i].valid && rob[i].filled &&
                 rob[i].done  && !rob[i].is_vector) begin
-                if (rob[i].rd == de_rs1_addr_i && de_rs1_addr_i != '0) begin
+                if (rob[i].rd == id2rob_rs1_addr && id2rob_rs1_addr != '0) begin
                     fwd_rs1_hit = 1'b1;
-                    // FIX: use scalar_result field (result field did not exist)
                     fwd_rs1_val = rob[i].scalar_result;
                 end
-                if (rob[i].rd == de_rs2_addr_i && de_rs2_addr_i != '0) begin
+                if (rob[i].rd == id2rob_rs2_addr && id2rob_rs2_addr != '0) begin
                     fwd_rs2_hit = 1'b1;
                     fwd_rs2_val = rob[i].scalar_result;
                 end
@@ -339,8 +166,11 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
         end
     end
 
-    assign fwd_rs1_data_o = fwd_rs1_hit ? fwd_rs1_val : rf2rob_rs1_data_i;
-    assign fwd_rs2_data_o = fwd_rs2_hit ? fwd_rs2_val : rf2rob_rs2_data_i;
+    // No register-file read data input in this module's ports,
+    // so forwarding outputs are ROB hits only (or zero if no hit).
+    // If RF data is available upstream, connect there.
+    assign fwd_rs1_data_o = fwd_rs1_hit ? fwd_rs1_val : '0;
+    assign fwd_rs2_data_o = fwd_rs2_hit ? fwd_rs2_val : '0;
 
     // =========================================================
     // Vector forwarding (vs1 / vs2)
@@ -353,22 +183,21 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
         for (int i = 0; i < `ROB_DEPTH; i++) begin
             if (rob[i].valid && rob[i].filled && rob[i].done) begin
                 if (rob[i].is_vector) begin
-                    if (rob[i].vd == de_vs1_addr_i) begin
+                    if (rob[i].vd == vid2rob_vs1_addr) begin
                         fwd_vs1_hit = 1'b1;
-                        // FIX: use vector_result field
                         fwd_vs1_val = rob[i].vector_result[`VLEN-1:0];
                     end
-                    if (rob[i].vd == de_vs2_addr_i) begin
+                    if (rob[i].vd == vid2rob_vs2_addr) begin
                         fwd_vs2_hit = 1'b1;
                         fwd_vs2_val = rob[i].vector_result[`VLEN-1:0];
                     end
                 end
                 if (!rob[i].is_vector && rob[i].rd != '0) begin
-                    if (`VREG_ADDR_W'(rob[i].rd) == de_vs1_addr_i) begin
+                    if (`VREG_ADDR_W'(rob[i].rd) == vid2rob_vs1_addr) begin
                         fwd_vs1_hit = 1'b1;
                         fwd_vs1_val = {(`VLEN-`XLEN)'(0), rob[i].scalar_result};
                     end
-                    if (`VREG_ADDR_W'(rob[i].rd) == de_vs2_addr_i) begin
+                    if (`VREG_ADDR_W'(rob[i].rd) == vid2rob_vs2_addr) begin
                         fwd_vs2_hit = 1'b1;
                         fwd_vs2_val = {(`VLEN-`XLEN)'(0), rob[i].scalar_result};
                     end
@@ -377,203 +206,36 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
         end
     end
 
-    assign fwd_vs1_data_o = fwd_vs1_hit ? fwd_vs1_val : {(`VLEN-`XLEN)'(0), rf2rob_vs1_scalar_data_i};
+    assign fwd_vs1_data_o = fwd_vs1_hit ? fwd_vs1_val : '0;
     assign fwd_vs2_data_o = fwd_vs2_hit ? fwd_vs2_val : '0;
 
-    // =========================================================
-    // Vector RAW stall
-    // =========================================================
-    /*always_comb begin
-        stall_vec_raw_o = 1'b0;
-        for (int i = 0; i < `ROB_DEPTH; i++) begin
-            if (rob[i].valid && rob[i].filled && !rob[i].done) begin
-                if (rob[i].is_vector) begin
-                    if (rob[i].vd == de_vs1_addr_i || rob[i].vd == de_vs2_addr_i)
-                        stall_vec_raw_o = 1'b1;
-                end
-                if (!rob[i].is_vector && rob[i].rd != '0) begin
-                    if (`VREG_ADDR_W'(rob[i].rd) == de_vs1_addr_i ||
-                        `VREG_ADDR_W'(rob[i].rd) == de_vs2_addr_i)
-                        stall_vec_raw_o = 1'b1;
-                end
-            end
-        end
-    end*/
 
     // =========================================================
-    // Memory stall
+    // Memory stall logic
     // =========================================================
     always_comb begin
         any_unretired_vec_mem    = 1'b0;
         any_unretired_scalar_mem = 1'b0;
+
+        // ── ROB mein already existing mem entries check karo ──
         for (int i = 0; i < `ROB_DEPTH; i++) begin
-            if (rob[i].valid && rob[i].filled && rob[i].is_mem) begin
+            if (rob[i].valid && rob[i].filled && !rob[i].done  && rob[i].is_mem
+                && !(commit_valid_o && (PTR_W'(i) == head))) begin
                 if ( rob[i].is_vector) any_unretired_vec_mem    = 1'b1;
                 if (!rob[i].is_vector) any_unretired_scalar_mem = 1'b1;
             end
         end
-    end
 
-    assign stall_scalar_mem = any_unretired_vec_mem;
-    // FIX: name was stall_vector_mem before (mismatch) - now consistent
-    assign stall_vec_mem    = any_unretired_scalar_mem;
-
-    assign stall_fetch_o = stall_scalar_mem     | stall_vec_mem     | rob_full   ; 
-
-    logic [`XLEN-1:0]      rob_de_instr_q;
-    logic [`Tag_Width-1:0] rob_de_seq_num_q;
-
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            rob_de_instr_q   <= '0;
-            rob_de_seq_num_q <= '0;
-        end else if (do_fetch && !is_nop ) begin
-            rob_de_instr_q   <= fetch_instr_i;
-            rob_de_seq_num_q <= (`Tag_Width)'(tail);
-        end
-    end
-
-    assign rob_de_instr_o   = (do_fetch && !is_nop) ? fetch_instr_i       : rob_de_instr_q;
-    assign rob_de_seq_num_o = (do_fetch && !is_nop && ~is_nop && ~is_repeat) ? (`Tag_Width)'(tail) : rob_de_seq_num_q;
-
-    // =========================================================
-    // Sequential logic - reset, fetch, decode, writeback, commit
-    // =========================================================
-    always_ff @(posedge clk or negedge rst_n) begin
-        // FIX: rst_n is active-low so reset on !rst_n (was if(rst_n) before)
-        if (!rst_n) begin
-            head  <= 'd1;
-            tail  <= 'd1;
-            count <= '0;
-            for (int i = 0; i < `ROB_DEPTH; i++) begin
-                 rob[i] <= '0; 
-            end
-        end else begin
-
-            if (do_fetch && do_commit && ~is_nop) begin
-                // dono same cycle — count same rahega
-                rob[tail].valid <= 1'b1;
-                rob[tail].instr <= fetch_instr_i;
-                tail  <= tail + PTR_W'(1);
-                rob[head].valid <= 1'b0;
-                head  <= head + PTR_W'(1);
-                // count change nahi
-            end 
-            else if (do_fetch && ~is_nop) begin
-                rob[tail].valid <= 1'b1;
-                rob[tail].instr <= fetch_instr_i;
-                tail  <= tail + PTR_W'(1);
-                count <= count + (PTR_W+1)'(1); // ✅ increment
-            end 
-            else if (do_commit) begin
-                rob[head].valid <= 1'b0;
-                head  <= head + PTR_W'(1);
-                count <= count - (PTR_W+1)'(1);
-            end
-
-            // ── Decode: fill entry metadata ───────────────────────
-            if (de_valid_i) begin
-                rob[de_seq_num_i].filled          <= 1'b1;
-                rob[de_seq_num_i].is_vector       <= de_is_vector_i;
-                rob[de_seq_num_i].is_scalar_store <= de_scalar_store_i;
-                rob[de_seq_num_i].is_scalar_load  <= de_scalar_load_i;
-                rob[de_seq_num_i].rd              <= de_scalar_rd_addr_i;
-                rob[de_seq_num_i].rs1             <= (`VREG_ADDR_W)'(de_rs1_addr_i);
-                rob[de_seq_num_i].rs2             <= (`VREG_ADDR_W)'(de_rs2_addr_i);
-                rob[de_seq_num_i].scalar_store_op <= scalar_store_op_i;
-                rob[de_seq_num_i].scalar_rd_wr_req<= scalar_rd_wr_req;
-                rob[de_seq_num_i].is_vector_store <= de_vector_store_i;
-                rob[de_seq_num_i].is_vector_load  <= de_vector_load_i;
-                rob[de_seq_num_i].is_mem          <= de_scalar_store_i | de_vector_store_i | de_scalar_load_i  | de_vector_load_i;
-                rob[de_seq_num_i].vd              <= de_vector_vd_addr_i;
-                rob[de_seq_num_i].vs1             <= de_vs1_addr_i;
-                rob[de_seq_num_i].vs2             <= de_vs2_addr_i;
-                // store forwarded data at decode time
-                rob[de_seq_num_i].rs1_data        <= fwd_rs1_data_o;
-                rob[de_seq_num_i].rs2_data        <= fwd_rs2_data_o;
-                if (do_viq_dispatch)
-                    rob[de_seq_num_i].viq_dispatched <= 1'b1;
-            end
-
-            // ── Scalar writeback ──────────────────────────────────
-            if (scalar_done_i) begin
-                rob[scalar_seq_num_i].done            <= 1'b1;
-                rob[scalar_seq_num_i].rd              <= scalar_rd_addr_i;
-                // FIX: use scalar_result field (was .result before - did not exist)
-                rob[scalar_seq_num_i].scalar_result   <= scalar_result_i;
-                rob[scalar_seq_num_i].mem_addr        <= scalar_mem_addr_i;
-                // FIX: use scalar_mem_data field (was .scalar_mem_data but no dot + comma)
-                rob[scalar_seq_num_i].scalar_mem_data <= scalar_mem_data_i;
-                // FIX: added missing dot and changed comma to semicolon
-                rob[scalar_seq_num_i].scalar_store_op <= scalar_store_op_i;
-                rob[scalar_seq_num_i].scalar_rd_wr_req<= scalar_rd_wr_req;
-            end
-
-            // ── Vector writeback ──────────────────────────────────
-            if (vector_done_i) begin
-                rob[vector_seq_num_i].done          <= 1'b1;
-                rob[vector_seq_num_i].vd            <= vector_vd_addr_i;
-                // FIX: use vector_result field
-                rob[vector_seq_num_i].vector_result <= vector_result_i;
-                rob[vector_seq_num_i].mem_addr      <= vector_mem_addr_i;
-                // FIX: use vector_mem_data field
-                rob[vector_seq_num_i].vector_mem_data <= vector_mem_data_i;
-                rob[vector_seq_num_i].mem_byte_en   <= mem_byte_en;
-                rob[vector_seq_num_i].mem_wen       <= mem_wen;
-                rob[vector_seq_num_i].mem_elem_mode <= mem_elem_mode;
-                rob[vector_seq_num_i].mem_sew_enc   <= mem_sew_enc;
-            end
-
-            // ── Flush ─────────────────────────────────────────────
-            // FIX: flush was computed but entries were never invalidated
-            if (flush_valid_i) begin
-                for (int i = 0; i < `ROB_DEPTH; i++) begin
-                    automatic logic [PTR_W-1:0] entry_dist;
-                    automatic logic [PTR_W-1:0] f_dist;
-                    entry_dist = PTR_W'(i)              - head;
-                    f_dist     = flush_seq_i[PTR_W-1:0] - head;
-                    // invalidate entries newer than flush_seq_i
-                    if (rob[i].valid && (entry_dist > f_dist)) begin
-                        rob[i].valid <= 1'b0;
-                        rob[i].filled<= 1'b0;
-                        rob[i].done  <= 1'b0;
-                    end
-                end
-                // reset tail to one past flush point
-                tail  <= flush_seq_i[PTR_W-1:0] + PTR_W'(1);
-                count <= (PTR_W+1)'(flush_seq_i[PTR_W-1:0] - head + 1);
-            end
-
+        // ── SAME-CYCLE: decode se aa rahi mem instruction bhi count karo ──
+        // Ye combinational hai — FF write hone se pehle stall assert ho jata hai
+        if (id2rob_valid_i && id2rob_is_mem_i && (id2rob_seq_num != '0)) begin
+            if ( id2rob_is_vector_i) any_unretired_vec_mem    = 1'b1;
+            if (!id2rob_is_vector_i) any_unretired_scalar_mem = 1'b1;
         end
     end
 
     // =========================================================
-    // Commit outputs
-    // FIX: use scalar_result / vector_result / scalar_mem_data /
-    //      vector_mem_data instead of the nonexistent .result / .mem_data
-    // =========================================================
-    assign commit_valid_o              = head_entry.valid && head_entry.filled && head_entry.done;
-    assign commit_scalar_seq_num_o     = (!head_entry.is_vector & commit_valid_o) ? (`Tag_Width)'(head) : '0;
-    assign commit_vector_seq_num_o     = ( head_entry.is_vector & commit_valid_o) ? (`Tag_Width)'(head) : '0;
-    assign commit_rd_o                 = (!head_entry.is_vector & commit_valid_o) ? head_entry.rd  : '0;
-    assign commit_vd_o                 = ( head_entry.is_vector & commit_valid_o) ? head_entry.vd  : '0;
-    assign commit_scalar_result_o      = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_result              : '0;
-    assign commit_vector_result_o      = ( head_entry.is_vector & commit_valid_o) ? head_entry.vector_result              : '0;
-    assign commit_scalar_mem_addr_o    = (!head_entry.is_vector & commit_valid_o) ? head_entry.mem_addr                   : '0;
-    assign commit_vec_mem_addr_o       = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_addr                   : '0;
-    assign commit_scalar_mem_data_o    = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_mem_data            : '0;
-    assign commit_vector_mem_data_o    = ( head_entry.is_vector & commit_valid_o) ? head_entry.vector_mem_data            : '0;
-    assign commit_vector_mem_byte_en   = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_byte_en                : '0;
-    assign commit_vector_mem_wen       = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_wen                    : 1'b0;
-    assign commit_vector_mem_elem_mode = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_elem_mode              : '0;
-    assign commit_vector_mem_sew_enc   = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_sew_enc                : '0;
-    //assign commit_scalar_store_op_o    = (!head_entry.is_vector & commit_valid_o) ? type_st_ops_e'(head_entry.scalar_store_op) : '0;
-    assign commit_scalar_store_op_o = (!head_entry.is_vector & commit_valid_o)   ? head_entry.scalar_store_op : ST_OPS_NONE;
-    assign commit_scalar_rd_wr_req_o   = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_rd_wr_req           : 1'b0;
-    assign rob_commit_is_vec_o         = commit_valid_o && head_entry.is_vector;
-
-    // =========================================================
-    // Flush distance (combinational helper - kept from original)
+    // Flush distance helper (combinational)
     // =========================================================
     always_comb begin
         flush_dist_comb = flush_seq_i[PTR_W-1:0] - head;
@@ -585,7 +247,96 @@ assign is_repeat = (fetch_instr_i == last_instr) & ~is_nop;
         end
     end
 
-    // stall_scalar_raw_o - placeholder (decode-stage RAW logic feeds this)
-    assign stall_scalar_raw_o = 1'b0;
+    // =========================================================
+    // Sequential logic
+    // =========================================================
+    always_ff @(posedge clk or posedge reset) begin
+        if (!reset) begin
+            head  <= 'd1;
+            tail  <= 'd1;
+            count <= '0;
+            for (int i = 0; i < `ROB_DEPTH; i++)
+                rob[i] <= '0;
+        end else begin
+
+            // ── Commit: retire head entry ─────────────────────────
+            if (do_commit) begin
+                rob[head].valid  <= 1'b0;
+                rob[head].filled <= 1'b0;
+                rob[head].done   <= 1'b0;
+                head  <= next_ptr(head);
+                count <= count - (PTR_W+1)'(1);
+            end
+
+            // ── Decode: allocate entry (seq_num comes from decode) 
+            if (id2rob_valid_i && (id2rob_seq_num != '0)) begin
+                rob[id2rob_seq_num].valid          <= 1'b1;
+                rob[id2rob_seq_num].filled         <= 1'b1;
+                rob[id2rob_seq_num].done           <= 1'b0;
+                rob[id2rob_seq_num].is_vector      <= id2rob_is_vector_i;
+                rob[id2rob_seq_num].is_mem         <= id2rob_is_mem_i;
+                rob[id2rob_seq_num].instr          <= id2rob_instr_i;
+                rob[id2rob_seq_num].rs1            <= (`VREG_ADDR_W)'(id2rob_rs1_addr);
+                rob[id2rob_seq_num].rs2            <= (`VREG_ADDR_W)'(id2rob_rs2_addr);
+                rob[id2rob_seq_num].scalar_store_op<= scalar_store_op_i;
+                rob[id2rob_seq_num].scalar_rd_wr_req <= scalar_rd_wr_req;
+                // Advance tail to next slot
+                tail  <= next_ptr(id2rob_seq_num[PTR_W-1:0]);
+                count <= count + (PTR_W+1)'(1);
+            end
+
+            // ── Vector decode: fill vd/vs1/vs2 fields ────────────
+            if (vec_decode) begin
+                rob[vector_seq_num_i].vd  <= vid2rob_vd_addr;
+                rob[vector_seq_num_i].vs1 <= vid2rob_vs1_addr;
+                rob[vector_seq_num_i].vs2 <= vid2rob_vs2_addr;
+            end
+
+            // ── Scalar writeback ──────────────────────────────────
+            if (scalar_done_i) begin
+                rob[scalar_seq_num_i].done             <= 1'b1;
+                rob[scalar_seq_num_i].rd               <= scalar_rd_addr_i;
+                rob[scalar_seq_num_i].scalar_result    <= scalar_result_i;
+                rob[scalar_seq_num_i].mem_addr         <= scalar_mem_addr_i;
+                rob[scalar_seq_num_i].scalar_mem_data  <= scalar_mem_data_i;
+                rob[scalar_seq_num_i].scalar_store_op  <= scalar_store_op_i;
+                rob[scalar_seq_num_i].scalar_rd_wr_req <= scalar_rd_wr_req;
+            end
+
+            // ── Vector writeback ──────────────────────────────────
+            if (vector_done_i) begin
+                rob[vector_seq_num_i].done          <= 1'b1;
+                rob[vector_seq_num_i].vector_result <= vector_result_i;
+            end
+
+            // ── Flush ─────────────────────────────────────────────
+            if (flush_valid_i) begin
+                rob[flush_seq_i[PTR_W-1:0]].valid   <= 1'b0;
+                rob[flush_seq_i[PTR_W-1:0]].filled  <= 1'b0;
+                rob[flush_seq_i[PTR_W-1:0]].done    <= 1'b0;
+                tail                                <= flush_seq_i[PTR_W-1:0];
+                count                               <= (PTR_W+1)'(flush_seq_i[PTR_W-1:0] - head);
+            end
+
+        end
+    end
+
+    // =========================================================
+    // Commit outputs (combinational)
+    // =========================================================
+    assign commit_valid_o            = head_entry.valid && head_entry.filled && head_entry.done;
+    assign commit_scalar_seq_num_o   = (!head_entry.is_vector & commit_valid_o) ? (`Tag_Width)'(head) : '0;
+    assign commit_vector_seq_num_o   = ( head_entry.is_vector & commit_valid_o) ? (`Tag_Width)'(head) : '0;
+    assign commit_rd_o               = (!head_entry.is_vector & commit_valid_o) ? head_entry.rd               : '0;
+    assign commit_vd_o               = ( head_entry.is_vector & commit_valid_o) ? head_entry.vd               : '0;
+    assign commit_scalar_result_o    = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_result    : '0;
+    assign commit_vector_result_o    = ( head_entry.is_vector & commit_valid_o) ? head_entry.vector_result    : '0;
+    assign commit_scalar_mem_addr_o  = (!head_entry.is_vector & commit_valid_o) ? head_entry.mem_addr         : '0;
+    assign commit_vec_mem_addr_o     = ( head_entry.is_vector & commit_valid_o) ? head_entry.mem_addr         : '0;
+    assign commit_scalar_mem_data_o  = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_mem_data  : '0;
+    assign commit_scalar_store_op_o  = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_store_op  : ST_OPS_NONE;
+    assign commit_scalar_rd_wr_req_o = (!head_entry.is_vector & commit_valid_o) ? head_entry.scalar_rd_wr_req : 1'b0;
+    assign commit_is_vec_o           = commit_valid_o && head_entry.is_vector;
+
 
 endmodule

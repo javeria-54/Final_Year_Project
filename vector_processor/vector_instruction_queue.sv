@@ -19,11 +19,11 @@ module viq (
     output logic [`INSTR_W-1:0]         instruction_o,
     output logic [`OPERAND_W-1:0]       operand_rs1_o,
     output logic [`OPERAND_W-1:0]       operand_rs2_o,
-    output logic                        instr_is_vec_o,do_deq,
+    output logic                        instr_is_vec_o, do_deq,
 
-    output logic                        stall_vec,     
+   // output logic                        stall_vec,     
     output logic                        viq_full,
-    output logic [`VIQ_tag_width-1:0]   num_instr
+    output logic [$clog2(`VIQ_DEPTH):0]   num_instr
 );
 
     localparam PTR_W = $clog2(`VIQ_DEPTH);
@@ -36,7 +36,6 @@ module viq (
 
     assign write_idx = write_ptr[PTR_W-1:0];
     assign read_idx  = read_ptr [PTR_W-1:0];
-
   
     logic full, empty;
     assign full  = (write_ptr[PTR_W]     != read_ptr[PTR_W]) &&
@@ -47,8 +46,7 @@ module viq (
     logic seq_is_new;
 
     assign seq_is_new = (instr_seq_i != last_enqueued_seq);
-
-  
+ 
     logic do_enq;
 
     assign do_enq = vector_instr_valid && !full && seq_is_new;
@@ -56,7 +54,7 @@ module viq (
     assign do_deq = deq_ready && !empty;
 
     assign deq_valid = !empty;
-    assign stall_vec = full;
+   // assign stall_vec = full;
     assign viq_full  = full;
     assign num_instr = write_ptr - read_ptr;   
     always_comb begin
@@ -81,7 +79,7 @@ module viq (
             read_ptr          <= '0;
             last_enqueued_seq <= '0;
             for (int i = 0; i < `VIQ_DEPTH; i++) begin
-                fifo[i] <= '0;
+                fifo[i] = '0;
             end
 
         end else begin
