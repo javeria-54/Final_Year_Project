@@ -506,7 +506,6 @@ always_comb begin
     end
 end
 
-
 `endif
 logic [`XLEN-1:0] instr_codeword;
 logic inst_is_mem;
@@ -719,100 +718,6 @@ single_cycle_val_ready_controller scalar_valid_ready (
     .scalar_pro_ack  (scalar_pro_ack)
 );
 logic vec_decode;
-/*rob rob (
-    .clk                     (clk),
-    .rst_n                   (rst_n),
-
-    .fetch_instr_i           (if2rob_instr),
-    .fetch_valid_i           (mem2if.ack),
-
-    .rob_de_instr_o          (rob_de_instr),
-    .rob_de_seq_num_o        (rob_de_seq_num),
-
-    .de_valid_i              (1'b1),
-    .de_seq_num_i            (id2exe_data.seq_num),
-    .de_instr_i              (instr_codeword),
-    .de_is_vector_i          (is_vector),
-    .de_scalar_store_i       (is_scalar_store),
-    .de_vector_store_i       (is_vector_store),
-    .de_scalar_load_i        (is_scalar_load),
-    .de_vector_load_i        (is_vector_load),
-
-    .de_scalar_rd_addr_i     (exe2rob_rd_addr),
-    .de_vector_vd_addr_i     (vec_write_addr),
-    .de_rs1_addr_i           (id2rf_rs1_addr),
-    .de_rs2_addr_i           (id2rf_rs2_addr),
-    .de_vs1_addr_i           (vec_read_addr_1),
-    .de_vs2_addr_i           (vec_read_addr_2),
-
-    .fwd_rs1_data_o          (fwd_rs1_data),
-    .fwd_rs2_data_o          (fwd_rs2_data),
-    .fwd_vs1_data_o          (fwd_vs1_data),
-    .fwd_vs2_data_o          (fwd_vs2_data),
-
-    .scalar_done_i           (scalar_done),
-    .scalar_seq_num_i        (scalar_seq_to_rob),
-    .scalar_rd_addr_i        (scalar_rd_addr_to_rob),
-    .scalar_result_i         (scalar_result_to_rob),
-    .scalar_mem_addr_i       (exe2lsu_data.alu_result),
-    .scalar_mem_data_i       (exe2lsu_data.rs2_data),
-    .scalar_store_op_i       (exe2lsu_ctrl.st_ops),
-    .scalar_rd_wr_req        (exe2lsu_ctrl.rd_wr_req),
-
-    .vector_done_i           (vector_done),
-    .vector_seq_num_i        (vec_seq_num),
-    .vector_vd_addr_i        (vec_write_addr),
-    .vector_result_i         (vector_result),
-    .vector_mem_addr_i       (vec_mem_addr),
-    .vector_mem_data_i       (vec_mem_wdata),
-    .mem_byte_en             (vec_mem_byte_en),
-    .mem_wen                 (vec_mem_wen),
-    .mem_elem_mode           (vec_mem_elem_mode),
-    .mem_sew_enc             (vec_mem_sew_enc),
-
-    .stall_vec_raw_o         (stall_vec_raw),
-    .stall_fetch_o           (stall_fetch),
-
-    .commit_valid_o          (rob_commit_valid),
-    .commit_vector_seq_num_o (rob_commit_vector_seq),
-    .commit_vd_o             (rob_commit_vd),
-    .commit_vector_result_o  (rob_commit_vector_result),
-    .commit_vec_mem_addr_o       (rob_commit_vector_mem_addr),
-    .commit_vector_mem_data_o(rob_commit_vector_mem_data),
-    // FIX #17: Newly declared signals connected
-    .commit_vector_mem_byte_en   (rob_commit_vec_mem_byte_en),
-    .commit_vector_mem_wen       (rob_commit_vec_mem_wen),
-    .commit_vector_mem_elem_mode (rob_commit_vec_mem_elem_mode),
-    .commit_vector_mem_sew_enc   (rob_commit_vec_mem_sew_enc),
-
-    .commit_scalar_seq_num_o (rob_commit_scalar_seq),
-    .commit_rd_o             (rob_commit_rd),
-    .commit_scalar_result_o  (rob_commit_scalar_result),
-    .commit_scalar_mem_addr_o    (rob_commit_scalar_mem_addr),
-    .commit_scalar_mem_data_o(rob_commit_scalar_mem_data),
-    // FIX #18: Scalar store signals connected
-    .commit_scalar_store_op_o    (rob_commit_scalar_store_op),
-    .commit_scalar_rd_wr_req_o     (rob_commit_scalar_rd_wr_req),
-    .rob_commit_is_vec_o        (rob_commit_is_vec),
-    .vec_decode             (vec_decode),
-
-    .viq_dispatch_valid_o    (viq_dispatch_valid),
-    .viq_dispatch_instr_o    (viq_dispatch_instr),
-    .viq_dispatch_seq_num_o  (viq_dispatch_seq_num),
-    .viq_full_i              (viq_full),
-    .stall_viq_full_o        (stall_viq_full),
-    .viq_dispatch_rs1_data_o (viq_dispatch_rs1_data),
-    .viq_dispatch_rs2_data_o (viq_dispatch_rs2_data),
-    .stall_scalar_raw_o      (stall_scalar_raw),
-    .viq_dispatch_is_vec_o   (viq_dispatch_is_vec),
-    .rf2rob_vs1_scalar_data_i(rf2id_rs1_data),
-
-    .rf2rob_rs1_data_i       (rf2id_rs1_data),
-    .rf2rob_rs2_data_i       (rf2id_rs2_data),
-
-    .flush_valid_i           (flush_valid),
-    .flush_seq_i             (flush_seq)
-);*/
 
 reorder_buffer rob (
     .clk                (clk),
@@ -985,6 +890,7 @@ memory memory (
     .dmem_sel    (dmem_sel),
     .exe2mem_i   (dbus2peri),
     .mem2wrb_o   (mem2dbus),
+    .stall_fetch (stall_fetch),
 
     .ren_a       (vec_mem_ren),
     .rdata_a     (vec_mem_rdata),

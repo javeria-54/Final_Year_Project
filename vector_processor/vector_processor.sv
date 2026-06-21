@@ -22,8 +22,8 @@ module vector_processor(
     input  logic                            is_vec,                 // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
     output  logic                           error,                  // error has occure due to invalid configurations
     output  logic   [4:0]                   vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
-    output  logic   [`MAX_VLEN-1:0]             vec_wr_data,
-    output logic execution_inst,
+    output  logic   [`MAX_VLEN-1:0]         vec_wr_data,
+    output logic                            execution_inst,
     
     // csr_regfile -> scalar_processor
     output  logic   [`XLEN-1:0]             csr_out,                // read data from the csr registers
@@ -106,7 +106,19 @@ logic   [2:0] accum_op;
 logic   [1:0]                       op_type; 
 logic mask_reg_en ;
 
+logic is_stored_prev;
 
+// Register is_stored from previous cycle
+always_ff @(posedge clk or posedge reset) begin
+    if (!reset)
+        is_stored_prev <= 1'b0;
+    else
+        is_stored_prev <= is_stored;
+end
+
+// Gate the commit signal
+logic rob_commit_valid_gated;
+assign rob_commit_valid_gated = rob_commit_valid_i & ~is_stored_prev;
 
     //==========================================================================//
     //                      MAIN DATAPTH INSTANTIATION                          //
@@ -138,7 +150,7 @@ logic mask_reg_en ;
 
         .vec_commit_vd_i             (rob_commit_vd),
         .vec_commit_vector_result_i  (rob_commit_vector_result),
-        .rob_commit_valid_i          (rob_commit_valid_i),
+        .rob_commit_valid_i          (rob_commit_valid_gated),
         .is_loaded(is_loaded),
         .is_stored(is_stored),
         .csr_done(csr_done),

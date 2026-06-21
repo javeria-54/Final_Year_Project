@@ -17,7 +17,7 @@ module memory(
     input  logic [1:0]         sew_a,
 
     // ---------- PORT B : Scalar ----------
-    input  logic               vec_pro_ack,
+    input  logic               vec_pro_ack,stall_fetch,
     input   var type_if2imem_s      if2mem_i,
     output  var type_imem2if_s      mem2if_o,
     input  logic               dmem_sel,
@@ -57,8 +57,7 @@ module memory(
     assign dmem_addr_valid = (exe2mem.addr < `DMEM_SIZE)  && (exe2mem.addr <  `DMEM_BASE_ADDR + `DMEM_SIZE) ;
     //assign vec_addr_valid  = (addr_a       >= `DMEM_BASE_ADDR)  && (addr_a       <  `DMEM_BASE_ADDR + `DMEM_SIZE);
     assign vec_addr_valid = (addr_a < `DMEM_SIZE) && (addr_a       <  `DMEM_BASE_ADDR + `DMEM_SIZE);
-    //assign imem_addr_valid = (if2mem.addr  >= `IMEM_BASE_ADDR)  && (if2mem.addr  <  `IMEM_BASE_ADDR + `IMEM_SIZE);
-    assign imem_addr_valid = (if2mem.addr < (`IMEM_BASE_ADDR + `IMEM_SIZE));
+    assign imem_addr_valid = (if2mem.addr  >= `IMEM_BASE_ADDR)  && (if2mem.addr  <  `IMEM_BASE_ADDR + `IMEM_SIZE);
 
     // =====================================================
     // Local addresses — base subtract
@@ -132,30 +131,54 @@ module memory(
     // =====================================================
     // Memory Banks (4 x 32-bit)
     // =====================================================
-    `ifdef FPGA
-        (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_0 [`MEM_BANK_SIZE];
-        (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_1 [`MEM_BANK_SIZE];
-        (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_2 [`MEM_BANK_SIZE];
-        (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_3 [`MEM_BANK_SIZE];
-    `else
+    //`ifdef FPGA
+      //  (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_0 [`MEM_BANK_SIZE];
+      //  (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_1 [`MEM_BANK_SIZE];
+      //  (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_2 [`MEM_BANK_SIZE];
+      //  (* ram_style = "block" *) logic [`MEM_BANK_WIDTH-1:0] mem_bank_3 [`MEM_BANK_SIZE];
+    //`else
         logic [`MEM_BANK_WIDTH-1:0] mem_bank_0 [`MEM_BANK_SIZE];
         logic [`MEM_BANK_WIDTH-1:0] mem_bank_1 [`MEM_BANK_SIZE];
         logic [`MEM_BANK_WIDTH-1:0] mem_bank_2 [`MEM_BANK_SIZE];
         logic [`MEM_BANK_WIDTH-1:0] mem_bank_3 [`MEM_BANK_SIZE];
-    `endif
+    //`endif
 
-    `ifdef COMPLIANCE
-    initial begin
+    //`ifdef COMPLIANCE
+    //initial begin
         // Not required for COMPLIANCE Tests
-    end
-    `else
+    //end
+    //`else
     initial begin
         $readmemh("MEM_BANK_0.txt", mem_bank_0);
         $readmemh("MEM_BANK_1.txt", mem_bank_1);
         $readmemh("MEM_BANK_2.txt", mem_bank_2);
         $readmemh("MEM_BANK_3.txt", mem_bank_3);
     end
-    `endif
+    //`endif
+
+    // Stall fetch latch — PC aur instruction cache karo
+    logic [`XLEN-1:0]  cached_pc;
+    logic [`XLEN-1:0]  cached_instr;
+    logic              cached_valid;
+
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            cached_pc    <= '0;
+            cached_instr <= `INSTR_NOP;
+            cached_valid <= 1'b0;
+        end else begin
+            // Jab pehli baar valid instruction di — cache karo
+            if (instr_ack && imem_addr_valid) begin
+                cached_pc    <= if2mem.addr;
+                cached_instr <= instr_read;  // jo abhi di thi
+                cached_valid <= 1'b1;
+            end
+            // Stall hat gaya — cache clear karo
+            if (!stall_fetch) begin
+                cached_valid <= 1'b0;
+            end
+        end
+    end
 
     // =====================================================
     // Address Alignment Check — Port A (Vector)
@@ -194,11 +217,8 @@ module memory(
                 for (int i = 0; i < 4; i++) begin
                     automatic logic [1:0] bank_idx;
                     automatic logic [ROW_W-1:0] row_idx;
-                    //bank_idx = (bank_sel_a_elem + i) % 4;
-                    bank_idx = 2'((int'(bank_sel_a_elem) + i) % 4);
-                    
-                    //row_idx = ((bank_sel_a_elem + i) > 3) ? (row_a + 1) : row_a;
-                    row_idx = ((int'(bank_sel_a_elem) + i) > 3) ? (row_a + 1) : row_a;
+                    bank_idx = (bank_sel_a_elem + i) % 4;
+                    row_idx = ((bank_sel_a_elem + i) > 3) ? (row_a + 1) : row_a;
                     case (bank_idx)
                         2'd0: rdata_a[i*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = mem_bank_0[row_idx];
                         2'd1: rdata_a[i*`MEM_BANK_WIDTH +: `MEM_BANK_WIDTH] = mem_bank_1[row_idx];
@@ -237,16 +257,12 @@ module memory(
                     automatic logic [1:0]       bank_idx;
                     automatic logic [ROW_W-1:0] row_idx;
                     
-                    //bank_idx = (bank_sel_a_elem + i) % 4;
-                    //row_idx  = ((bank_sel_a_elem + i) > 3) ? (row_a + 1) : row_a;
-
-                    bank_idx = 2'(({30'b0, bank_sel_a_elem} + i) % 4);
-                    row_idx  = (({30'b0, bank_sel_a_elem} + i) > 3) ? (row_a + 1) : row_a;
+                    bank_idx = (bank_sel_a_elem + i) % 4;
+                    row_idx  = ((bank_sel_a_elem + i) > 3) ? (row_a + 1) : row_a;
                     
                     for (int j = 0; j < `MEM_WIDTH_ELEM; j++) begin
                         automatic logic [5:0] byte_pos;
-                        //byte_pos = i * `MEM_WIDTH_ELEM + j;  // byte_en_a mein position
-                        byte_pos = 6'(i * `MEM_WIDTH_ELEM + j);
+                        byte_pos = i * `MEM_WIDTH_ELEM + j;  // byte_en_a mein position
                         
                         if (byte_en_a[byte_pos]) begin
                             case (bank_idx)
@@ -269,7 +285,6 @@ module memory(
                             2'd1: mem_bank_1[row_a][byte_off_a_elem*8 +:  8] <= wdata_a[ 7:0];
                             2'd2: mem_bank_2[row_a][byte_off_a_elem*8 +:  8] <= wdata_a[ 7:0];
                             2'd3: mem_bank_3[row_a][byte_off_a_elem*8 +:  8] <= wdata_a[ 7:0];
-                            
                         endcase
                     end
                     2'd1: begin
@@ -304,73 +319,60 @@ module memory(
                 case (write_sel_byte)
                     4'b0001: begin  // Byte
                         case (bank_sel_b)
-                            2'd0: mem_bank_0[row_b][3'(byte_off_b)*8 +: 8] <= write_data[7:0];
-                            2'd1: mem_bank_1[row_b][3'(byte_off_b)*8 +: 8] <= write_data[7:0];
-                            2'd2: mem_bank_2[row_b][3'(byte_off_b)*8 +: 8] <= write_data[7:0];
-                            2'd3: mem_bank_3[row_b][3'(byte_off_b)*8 +: 8] <= write_data[7:0];
+                            2'd0: mem_bank_0[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                            2'd1: mem_bank_1[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                            2'd2: mem_bank_2[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
+                            2'd3: mem_bank_3[row_b][byte_off_b*8 +: 8] <= write_data[7:0];
                         endcase
                     end
                     4'b0011: begin  // Halfword
                         case (bank_sel_b)
                             2'd0: begin
-                                mem_bank_0[row_b][ 3'(byte_off_b)   *8 +: 8] <= write_data[ 7:0];
-                                mem_bank_0[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_0[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7:0];
+                                mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
                             end
                             2'd1: begin
-                                mem_bank_1[row_b][ 3'(byte_off_b)   *8 +: 8] <= write_data[ 7:0];
-                                mem_bank_1[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_1[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7:0];
+                                mem_bank_1[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
                             end
                             2'd2: begin
-                                mem_bank_2[row_b][ 3'(byte_off_b)   *8 +: 8] <= write_data[ 7:0];
-                                mem_bank_2[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_2[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7:0];
+                                mem_bank_2[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
                             end
                             2'd3: begin
-                                mem_bank_3[row_b][3'(byte_off_b)   *8 +: 8] <= write_data[ 7:0];
-                                mem_bank_3[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15:8];
+                                mem_bank_3[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7:0];
+                                mem_bank_3[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15:8];
                             end
                         endcase
                     end
                     4'b1111: begin  // Word
                         case (bank_sel_b)
                             2'd0: begin
-                                mem_bank_0[row_b][3'(byte_off_b)   *8 +: 8] <= write_data[ 7: 0];
-                                //mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                //mem_bank_0[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                //mem_bank_0[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
-                                mem_bank_0[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                mem_bank_0[row_b][3'(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                mem_bank_0[row_b][3'(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                                mem_bank_0[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7: 0];
+                                mem_bank_0[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
+                                mem_bank_0[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_0[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
                             end
                             2'd1: begin
-                                mem_bank_1[row_b][3'(byte_off_b)   *8 +: 8] <= write_data[ 7: 0];
-                                //mem_bank_1[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                //mem_bank_1[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                //mem_bank_1[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
-                                mem_bank_1[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                mem_bank_1[row_b][3'(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                mem_bank_1[row_b][3'(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                                mem_bank_1[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7: 0];
+                                mem_bank_1[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
+                                mem_bank_1[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_1[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
                             end
                             2'd2: begin
-                                mem_bank_2[row_b][3'(byte_off_b)   *8 +: 8] <= write_data[ 7: 0];
-                                //mem_bank_2[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                //mem_bank_2[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                //mem_bank_2[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
-                                mem_bank_2[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                mem_bank_2[row_b][3'(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                mem_bank_2[row_b][3'(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                                mem_bank_2[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7: 0];
+                                mem_bank_2[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
+                                mem_bank_2[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_2[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
                             end
                             2'd3: begin
-                                mem_bank_3[row_b][3'(byte_off_b)   *8 +: 8] <= write_data[ 7: 0];
-                                //mem_bank_3[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                //mem_bank_3[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                //mem_bank_3[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
-                                mem_bank_0[row_b][3'(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
-                                mem_bank_0[row_b][3'(byte_off_b+2)*8 +: 8] <= write_data[23:16];
-                                mem_bank_0[row_b][3'(byte_off_b+3)*8 +: 8] <= write_data[31:24];
+                                mem_bank_3[row_b][ byte_off_b   *8 +: 8] <= write_data[ 7: 0];
+                                mem_bank_3[row_b][(byte_off_b+1)*8 +: 8] <= write_data[15: 8];
+                                mem_bank_3[row_b][(byte_off_b+2)*8 +: 8] <= write_data[23:16];
+                                mem_bank_3[row_b][(byte_off_b+3)*8 +: 8] <= write_data[31:24];
                             end
                         endcase
                     end
-                    default: begin end 
                 endcase
                 read_ack <= 1'b1;
             end
@@ -392,7 +394,26 @@ module memory(
 
             // ---- Instruction Fetch ----
             // 32-bit bank — instruction sirf us bank se jo instr_bank_sel bataye
-            if (instr_req & !instr_ack & imem_addr_valid) begin
+            /*if (instr_req & !instr_ack & imem_addr_valid) begin
+                case (instr_bank_sel)
+                    2'd0: instr_read <= mem_bank_0[instr_row];
+                    2'd1: instr_read <= mem_bank_1[instr_row];
+                    2'd2: instr_read <= mem_bank_2[instr_row];
+                    2'd3: instr_read <= mem_bank_3[instr_row];
+                endcase
+                instr_ack <= 1'b1;
+            end else if (instr_req & instr_ack) begin
+                instr_ack <= 1'b0;
+            end else begin
+                instr_read <= `INSTR_NOP;
+                instr_ack  <= 1'b0;
+            end*/
+            // Stall fetch — same PC aa raha hai, cached instruction do
+            if (stall_fetch && cached_valid && (if2mem.addr == cached_pc)) begin
+                instr_read <= cached_instr;
+                instr_ack  <= 1'b1;
+            end else if (instr_req & !instr_ack & imem_addr_valid) begin
+                // normal fetch — existing logic same rahega
                 case (instr_bank_sel)
                     2'd0: instr_read <= mem_bank_0[instr_row];
                     2'd1: instr_read <= mem_bank_1[instr_row];

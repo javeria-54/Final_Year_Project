@@ -1,0 +1,551 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company: NA
+// Engineer: Muhammad Bilal Matloob
+// 
+// Create Date: 09/26/2024 04:39:47 AM
+// Design Name: Mask Unit (Corrected Version)
+// Module Name: vector_mask_unit
+// Project Name: RISC_V VPU (Vector Processing Unit)
+//////////////////////////////////////////////////////////////////////////////////
+
+
+`include "vector_processor_defs.svh"
+`include "vector_regfile_defs.svh"
+`include "vector_execution_unit.svh"
+module vector_mask_unit(
+
+    input logic                     clk,reset,
+    input  logic [`MAX_VLEN-1:0]    lanes_data_out,
+    input  logic [`MAX_VLEN-1:0]    destination_data,
+    input  logic [3:0]              mask_op,
+    input  logic                    mask_en,
+    input  logic                    mask_reg_en,
+    input  logic [`Tag_Width-1:0]   seq_num,
+    input  logic                    vta,
+    input  logic                    vma,
+    input  logic [31:0]             vstart,
+    input  logic [31:0]             vl,
+    input  logic [6:0]              sew,
+    input  logic [`VLEN-1:0]        vs1,
+    input  logic [`VLEN-1:0]        vs2,
+    input  logic [`VLEN-1:0]        v0,
+    input  logic [(`VLEN/8)-1:0]    carry_out,
+    input  logic                    vec_decode,
+    //input logic                     execution_inst, execution_done, ld_inst, st_inst, is_loaded, is_stored,
+
+    output  logic [1:0]             sew_sel,
+    output logic [`MAX_VLEN-1:0]    mask_unit_output,
+    output logic                    mask_done,
+    output logic [`Tag_Width-1:0]   seq_num_mask,
+    output logic [`VLEN-1:0]        mask_register_v0 
+);
+
+    // ----------------------------------------------------------
+    // Internal signals
+    // ----------------------------------------------------------
+    logic [`VLEN-1:0]  mask_reg;          // FIX: single declaration only (removed duplicate)
+    logic [`VLEN-1:0]  prestart_check;
+    logic [`VLEN-1:0]  body_check;
+    logic [`VLEN-1:0]  tail_check;
+    logic [`VLEN-1:0]  v0_updated;
+    logic [`MAX_VLEN-1:0]    mask_unit;
+    logic [`VLEN-1:0]        mask_reg_updated ;
+    logic [`MAX_VLEN-1:0] mask_output_01;
+    logic [`MAX_VLEN-1:0] mask_output_02;
+    logic [`MAX_VLEN-1:0] mask_output_03;
+    logic [`MAX_VLEN-1:0] mask_output_04;
+    logic [`MAX_VLEN-1:0] selected_output;
+        
+    logic [`Tag_Width-1:0] seq_num_held;
+
+    // Holding register - captures seq_num_i when enable is high
+    always_ff @(posedge clk ) begin
+        if (!reset)
+            seq_num_held <= 'b0;
+        else if (mask_reg_en )       
+            seq_num_held <= seq_num;
+    end
+
+    always_comb begin
+        seq_num_mask = '0;
+        if (!reset)
+            seq_num_mask = 'b0;
+        else if (mask_done)        
+            seq_num_mask = seq_num_held;
+    end
+
+    always_ff @(posedge clk) begin
+        if (!reset)
+            mask_done <= 1'b0;
+        else if (mask_reg_en)
+            mask_done <= 1'b1;
+        else if (!mask_en & vec_decode)
+            mask_done <= 1'b0;
+        else 
+            mask_done <= 1'b0;
+    end
+
+    always_ff @(posedge clk) begin
+        if (!reset) begin
+            mask_unit_output <= 'b0;
+            mask_register_v0 <= 'b0;
+        end else begin
+            mask_unit_output <= mask_unit;
+            mask_register_v0 <= mask_reg_updated;
+        end
+    end
+
+    // ----------------------------------------------------------
+    // Submodule Instantiations
+    // ----------------------------------------------------------
+
+    comb_for_vsew_08 UUT01(
+        .lanes_data_out  (lanes_data_out),
+        .destination_data(destination_data),
+        .mask_reg        (mask_reg),
+        .prestart_check  (prestart_check),
+        .body_check      (body_check),
+        .tail_check      (tail_check),
+        .vta             (vta),
+        .vma             (vma),
+        .mask_output_01  (mask_output_01)
+    );
+
+    comb_for_vsew_16 UUT02(
+        .lanes_data_out  (lanes_data_out),
+        .destination_data(destination_data),
+        .mask_reg        (mask_reg),
+        .prestart_check  (prestart_check),
+        .body_check      (body_check),
+        .tail_check      (tail_check),
+        .vta             (vta),
+        .vma             (vma),
+        .mask_output_02  (mask_output_02)
+    );
+
+    comb_for_vsew_32 UUT03(
+        .lanes_data_out  (lanes_data_out),
+        .destination_data(destination_data),
+        .mask_reg        (mask_reg),
+        .prestart_check  (prestart_check),
+        .body_check      (body_check),
+        .tail_check      (tail_check),
+        .vta             (vta),
+        .vma             (vma),
+        .mask_output_03  (mask_output_03)
+    );
+
+    comb_for_vsew_64 UUT04(
+        .lanes_data_out  (lanes_data_out),
+        .destination_data(destination_data),
+        .mask_reg        (mask_reg),
+        .prestart_check  (prestart_check),
+        .body_check      (body_check),
+        .tail_check      (tail_check),
+        .vta             (vta),
+        .vma             (vma),
+        .mask_output_04  (mask_output_04)
+    );
+
+    comb_mask_operations UUT05(
+        .vs1             (vs1),
+        .vs2             (vs2),
+        .mask_op         (mask_op),
+        .sew_sel         (sew_sel),
+        .carry_out       (carry_out),
+        .mask_reg_updated(mask_reg_updated),
+        .vl              (vl),
+        .destination_data(destination_data)
+    );
+
+    sew_encoder UUT06(
+        .sew    (sew),
+        .sew_sel(sew_sel)
+    );
+
+    mux4x1 UUT07(
+        .mask_output_01 (mask_output_01),
+        .mask_output_02 (mask_output_02),
+        .mask_output_03 (mask_output_03),
+        .mask_output_04 (mask_output_04),
+        .sew_sel        (sew_sel),
+        .selected_output(selected_output)
+    );
+
+    mux_output UUT08(
+        .selected_output (selected_output),
+        .lanes_data_out  (lanes_data_out),
+        .mask_en         (mask_en),
+        .vec_decode      (vec_decode),
+        .mask_unit       (mask_unit)
+    );
+
+    mux2x1 UUT09(
+        .v0              (v0),
+        .mask_reg_updated(mask_reg_updated),
+        .mask_reg_en     (mask_reg_en),
+        .v0_updated      (v0_updated)
+    );
+
+    check_generator UUT10(
+        .vl            (vl),
+        .vstart        (vstart),
+        .v0_updated    (v0_updated),
+        .mask_reg      (mask_reg),
+        .prestart_check(prestart_check),
+        .body_check    (body_check),
+        .tail_check    (tail_check)
+    );
+    
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: comb_mask_operations
+//////////////////////////////////////////////////////////////////////////////////
+module comb_mask_operations (
+    input  logic [`VLEN-1:0] vs1,
+    input  logic [`VLEN-1:0] vs2,
+    input  logic [3:0]   mask_op,
+    input logic  [1:0]   sew_sel,   
+    input  logic [31:0]  vl,
+    input  logic [`MAX_VLEN-1:0]    destination_data,  
+
+    input  logic  [(`VLEN/8)-1:0]  carry_out,
+    output logic [`VLEN-1:0] mask_reg_updated
+);
+
+    // FIX: declare loop variable outside always_comb (SV requires this for
+    //      variables used in for-loops inside procedural blocks when automatic
+    //      is not set; use integer declared before the always block)
+    integer i;
+
+// In comb_mask_operations module (or add post-processing):
+always_comb begin
+    // Start with current destination value (for tail bits)
+    mask_reg_updated = destination_data[`VLEN-1:0];
+    
+    // Only update first 'vl' bits with operation result
+    //for (int i = 0; i < vl; i++) begin
+    for (int i = 0; i < `NUM_ELEMENT_SEW8 ; i++) begin
+        case (mask_op)
+            4'b0000: mask_reg_updated[i] = vs2[i] & vs1[i];
+            4'b0001: mask_reg_updated[i] = ~(vs2[i] & vs1[i]);
+            4'b0010: mask_reg_updated[i] = vs2[i] & ~vs1[i];
+            4'b0011: mask_reg_updated[i] = vs2[i] ^ vs1[i];
+            4'b0100: mask_reg_updated[i] = vs2[i] | vs1[i];
+            4'b0101: mask_reg_updated[i] = ~(vs2[i] | vs1[i]);
+            4'b0110: mask_reg_updated[i] = vs2[i] | ~vs1[i];
+            4'b0111: mask_reg_updated[i] = ~(vs2[i] ^ vs1[i]);
+            4'b1000: mask_reg_updated[i] = carry_out[i];  // For VADC/VSBC
+            default: mask_reg_updated[i] = 1'b0;
+        endcase
+    end
+end
+
+endmodule
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: sew_encoder
+//////////////////////////////////////////////////////////////////////////////////
+module sew_encoder (
+    input  logic [6:0] sew,
+    output logic [1:0] sew_sel
+);
+    always_comb begin
+        case (sew)
+            7'b0001000: sew_sel = 2'b00;  // 8  → SEW-8
+            7'b0010000: sew_sel = 2'b01;  // 16 → SEW-16
+            7'b0100000: sew_sel = 2'b10;  // 32 → SEW-32
+            7'b1000000: sew_sel = 2'b11;  // 64 → SEW-64
+            default:    sew_sel = 2'b00;
+        endcase
+    end
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: check_generator
+//////////////////////////////////////////////////////////////////////////////////
+module check_generator (
+    input  logic [31:0]  vl,
+    input  logic [31:0]  vstart,
+    input  logic [`VLEN-1:0] v0_updated,
+    output logic [`VLEN-1:0] mask_reg,
+    output logic [`VLEN-1:0] prestart_check,
+    output logic [`VLEN-1:0] body_check,
+    output logic [`VLEN-1:0] tail_check
+);
+
+    /*always_comb begin
+        mask_reg = v0_updated;
+
+        if (vstart == '0)
+            prestart_check = '0;
+        else
+            prestart_check = ~({512{1'b1}} << vstart);
+
+        if (vl == '0)
+            body_check = '0;
+        else
+            body_check = (~({512{1'b1}} << vl)) & ({512{1'b1}} << vstart);
+
+        tail_check = {512{1'b1}} << vl;
+    end*/
+
+    // AFTER
+    always_comb begin
+        mask_reg = v0_updated;
+
+        if (vstart == '0)
+            prestart_check = '0;
+        else
+            prestart_check = (`VLEN'('1) << vstart) ^ `VLEN'('1);
+            // Ya: ~({`VLEN{1'b1}} << vstart)  ← yeh bhi kaam karta hai
+
+        if (vl == '0)
+            body_check = '0;
+        else
+            body_check = (~(`VLEN'('1) << vl)) & (`VLEN'('1) << vstart);
+
+        tail_check = `VLEN'('1) << vl;
+end
+
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: comb_for_vsew_08
+//////////////////////////////////////////////////////////////////////////////////
+module comb_for_vsew_08 #(
+    parameter SEW = 8,
+    parameter VAR = 16
+)(
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
+    input  logic          vta,
+    input  logic          vma,
+    output logic [`MAX_VLEN-1:0] mask_output_01
+);
+
+    generate
+        genvar i;
+        for (i = 0; i < VAR; i++) begin : gen_sew08
+            always_comb begin
+                if (prestart_check[i])
+                    mask_output_01[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && mask_reg[i])
+                    mask_output_01[i*SEW +: SEW] = lanes_data_out[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && !vma)
+                    mask_output_01[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && vma)
+                    mask_output_01[i*SEW +: SEW] = {SEW{1'b0}};
+                else if (tail_check[i] && !vta)
+                    mask_output_01[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (tail_check[i] && vta)
+                    mask_output_01[i*SEW +: SEW] = {SEW{1'b0}};
+                else
+                    mask_output_01[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+            end
+        end
+    endgenerate
+
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: comb_for_vsew_16
+//////////////////////////////////////////////////////////////////////////////////
+module comb_for_vsew_16 #(
+    parameter SEW = 16,
+    parameter VAR = 8
+)(
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
+    input  logic          vta,
+    input  logic          vma,
+    output logic [`MAX_VLEN-1:0] mask_output_02
+);
+
+    generate
+        genvar i;
+        for (i = 0; i < VAR; i++) begin : gen_sew16
+            always_comb begin
+                if (prestart_check[i])
+                    mask_output_02[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && mask_reg[i])
+                    mask_output_02[i*SEW +: SEW] = lanes_data_out[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && !vma)
+                    mask_output_02[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && vma)
+                    mask_output_02[i*SEW +: SEW] = {SEW{1'b0}};
+                else if (tail_check[i] && !vta)
+                    mask_output_02[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (tail_check[i] && vta)
+                    mask_output_02[i*SEW +: SEW] = {SEW{1'b0}};
+                else
+                    mask_output_02[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+            end
+        end
+    endgenerate
+
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: comb_for_vsew_32
+//////////////////////////////////////////////////////////////////////////////////
+module comb_for_vsew_32 #(
+    parameter SEW = 32,
+    parameter VAR = 4
+)(
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
+    input  logic          vta,
+    input  logic          vma,
+    output logic [`MAX_VLEN-1:0] mask_output_03
+);
+
+    generate
+        genvar i;
+        for (i = 0; i < VAR; i++) begin : gen_sew32
+            always_comb begin
+                if (prestart_check[i])
+                    mask_output_03[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && mask_reg[i])
+                    mask_output_03[i*SEW +: SEW] = lanes_data_out[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && !vma)
+                    mask_output_03[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && vma)
+                    mask_output_03[i*SEW +: SEW] = {SEW{1'b0}};
+                else if (tail_check[i] && !vta)
+                    mask_output_03[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (tail_check[i] && vta)
+                    mask_output_03[i*SEW +: SEW] = {SEW{1'b0}};
+                else
+                    mask_output_03[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+            end
+        end
+    endgenerate
+
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: comb_for_vsew_64
+//////////////////////////////////////////////////////////////////////////////////
+module comb_for_vsew_64 #(
+    parameter SEW = 64,
+    parameter VAR = 2
+)(
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic [`MAX_VLEN-1:0] destination_data,
+    input  logic [`VLEN-1:0]  mask_reg,
+    input  logic [`VLEN-1:0]  prestart_check,
+    input  logic [`VLEN-1:0]  body_check,
+    input  logic [`VLEN-1:0]  tail_check,
+    input  logic          vta,
+    input  logic          vma,
+    output logic [`MAX_VLEN-1:0] mask_output_04
+);
+
+    generate
+        genvar i;
+        for (i = 0; i < VAR; i++) begin : gen_sew64
+            always_comb begin
+                if (prestart_check[i])
+                    mask_output_04[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && mask_reg[i])
+                    mask_output_04[i*SEW +: SEW] = lanes_data_out[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && !vma)
+                    mask_output_04[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (body_check[i] && !mask_reg[i] && vma)
+                    mask_output_04[i*SEW +: SEW] = {SEW{1'b0}};
+                else if (tail_check[i] && !vta)
+                    mask_output_04[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+                else if (tail_check[i] && vta)
+                    mask_output_04[i*SEW +: SEW] = {SEW{1'b0}};
+                else
+                    mask_output_04[i*SEW +: SEW] = destination_data[i*SEW +: SEW];
+            end
+        end
+    endgenerate
+
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: mux2x1
+//////////////////////////////////////////////////////////////////////////////////
+module mux2x1 (
+    input  logic [`VLEN-1:0] v0,
+    input  logic [`VLEN-1:0] mask_reg_updated,
+    input  logic         mask_reg_en,
+    output logic [`VLEN-1:0] v0_updated
+);
+
+    always_comb begin
+        if (!mask_reg_en)
+            v0_updated = v0;
+        else
+            v0_updated = mask_reg_updated;
+    end
+
+endmodule
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: mux4x1
+//////////////////////////////////////////////////////////////////////////////////
+module mux4x1 (
+    input  logic [`MAX_VLEN-1:0] mask_output_01,
+    input  logic [`MAX_VLEN-1:0] mask_output_02,
+    input  logic [`MAX_VLEN-1:0] mask_output_03,
+    input  logic [`MAX_VLEN-1:0] mask_output_04,
+    input  logic [1:0]    sew_sel,
+    output logic [`MAX_VLEN-1:0] selected_output
+);
+
+    always_comb begin
+        case (sew_sel)
+            2'b00:   selected_output = mask_output_01;
+            2'b01:   selected_output = mask_output_02;
+            2'b10:   selected_output = mask_output_03;
+            2'b11:   selected_output = mask_output_04;
+            default: selected_output = mask_output_01;
+        endcase
+    end
+
+endmodule
+
+//////////////////////////////////////////////////////////////////////////////////
+//  MODULE: mux_output
+//////////////////////////////////////////////////////////////////////////////////
+module mux_output (
+    input  logic [`MAX_VLEN-1:0] selected_output,
+    input  logic [`MAX_VLEN-1:0] lanes_data_out,
+    input  logic                 mask_en,
+    input  logic                 vec_decode,
+    output logic [`MAX_VLEN-1:0] mask_unit
+);
+    always_comb begin
+        if (mask_en)
+            mask_unit = lanes_data_out;         // mask_en=1 → v0 filtered
+        else if (!mask_en && vec_decode)
+            mask_unit = selected_output;         // mask_en=0, vec_decode=1 → bhi v0 filtered
+        else
+            mask_unit = lanes_data_out;          // mask_en=0, vec_decode=0 → passthrough
+    end
+    
+endmodule

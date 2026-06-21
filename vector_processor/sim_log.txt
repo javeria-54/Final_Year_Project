@@ -1,0 +1,998 @@
+[   50ns | cycle    1] PC=0x00000000 | PC_next=0x00000004 | instr=0x60000293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[   70ns | cycle    2] PC=0x00000004 | PC_next=0x00000004 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[   90ns | cycle    3] PC=0x00000004 | PC_next=0x00000008 | instr=0x3002a073 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  110ns | cycle    4] PC=0x00000008 | PC_next=0x00000008 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  130ns | cycle    5] PC=0x00000008 | PC_next=0x0000000c | instr=0xc22022f3 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  150ns | cycle    6] PC=0x0000000c | PC_next=0x0000000c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  170ns | cycle    7] PC=0x0000000c | PC_next=0x00000010 | instr=0x01000293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  190ns | cycle    8] PC=0x00000010 | PC_next=0x00000010 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  210ns | cycle    9] PC=0x00000010 | PC_next=0x00000014 | instr=0x80010137 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  230ns | cycle   10] PC=0x00000014 | PC_next=0x00000014 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  250ns | cycle   11] PC=0x00000014 | PC_next=0x00000018 | instr=0xff810113 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  270ns | cycle   12] PC=0x00000018 | PC_next=0x00000018 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  290ns | cycle   13] PC=0x00000018 | PC_next=0x0000001c | instr=0x00000297 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  310ns | cycle   14] PC=0x0000001c | PC_next=0x0000001c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  330ns | cycle   15] PC=0x0000001c | PC_next=0x00000020 | instr=0x1f428293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  350ns | cycle   16] PC=0x00000020 | PC_next=0x00000020 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  370ns | cycle   17] PC=0x00000020 | PC_next=0x00000024 | instr=0x0002a403 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  390ns | cycle   18] PC=0x00000024 | PC_next=0x00000024 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  410ns | cycle   19] PC=0x00000024 | PC_next=0x00000024 | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  430ns | cycle   20] PC=0x00000024 | PC_next=0x00000024 | instr=0x00000013 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  450ns | cycle   21] PC=0x00000024 | PC_next=0x00000024 | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  470ns | cycle   22] PC=0x00000024 | PC_next=0x00000024 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  490ns | cycle   23] PC=0x00000024 | PC_next=0x00000028 | instr=0x00000297 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  510ns | cycle   24] PC=0x00000028 | PC_next=0x00000028 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  530ns | cycle   25] PC=0x00000028 | PC_next=0x0000002c | instr=0x1ec28293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  550ns | cycle   26] PC=0x0000002c | PC_next=0x0000002c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  570ns | cycle   27] PC=0x0000002c | PC_next=0x00000030 | instr=0x0002a483 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  590ns | cycle   28] PC=0x00000030 | PC_next=0x00000030 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  610ns | cycle   29] PC=0x00000030 | PC_next=0x00000030 | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  630ns | cycle   30] PC=0x00000030 | PC_next=0x00000030 | instr=0x00000013 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  650ns | cycle   31] PC=0x00000030 | PC_next=0x00000030 | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  670ns | cycle   32] PC=0x00000030 | PC_next=0x00000030 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  690ns | cycle   33] PC=0x00000030 | PC_next=0x00000034 | instr=0x00000297 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  710ns | cycle   34] PC=0x00000034 | PC_next=0x00000034 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  730ns | cycle   35] PC=0x00000034 | PC_next=0x00000038 | instr=0x1e428293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  750ns | cycle   36] PC=0x00000038 | PC_next=0x00000038 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  770ns | cycle   37] PC=0x00000038 | PC_next=0x0000003c | instr=0x0002a903 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  790ns | cycle   38] PC=0x0000003c | PC_next=0x0000003c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  810ns | cycle   39] PC=0x0000003c | PC_next=0x0000003c | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  830ns | cycle   40] PC=0x0000003c | PC_next=0x0000003c | instr=0x00000013 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  850ns | cycle   41] PC=0x0000003c | PC_next=0x0000003c | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[  870ns | cycle   42] PC=0x0000003c | PC_next=0x0000003c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  890ns | cycle   43] PC=0x0000003c | PC_next=0x00000040 | instr=0x00000297 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  910ns | cycle   44] PC=0x00000040 | PC_next=0x00000040 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  930ns | cycle   45] PC=0x00000040 | PC_next=0x00000044 | instr=0x1dc28293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  950ns | cycle   46] PC=0x00000044 | PC_next=0x00000044 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  970ns | cycle   47] PC=0x00000044 | PC_next=0x00000048 | instr=0x0002a983 | stall_fetch=0 | exc_req=0 | exc_code=14
+[  990ns | cycle   48] PC=0x00000048 | PC_next=0x00000048 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1010ns | cycle   49] PC=0x00000048 | PC_next=0x00000048 | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[ 1030ns | cycle   50] PC=0x00000048 | PC_next=0x00000048 | instr=0x00000013 | stall_fetch=1 | exc_req=0 | exc_code=14
+[ 1050ns | cycle   51] PC=0x00000048 | PC_next=0x00000048 | instr=0x00000297 | stall_fetch=1 | exc_req=0 | exc_code=14
+[ 1070ns | cycle   52] PC=0x00000048 | PC_next=0x00000048 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1090ns | cycle   53] PC=0x00000048 | PC_next=0x0000004c | instr=0x00000297 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1110ns | cycle   54] PC=0x0000004c | PC_next=0x0000004c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1130ns | cycle   55] PC=0x0000004c | PC_next=0x00000050 | instr=0x1d428293 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1150ns | cycle   56] PC=0x00000050 | PC_next=0x00000050 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1170ns | cycle   57] PC=0x00000050 | PC_next=0x00000054 | instr=0x0002aa03 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1190ns | cycle   58] PC=0x00000054 | PC_next=0x00000054 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1210ns | cycle   59] PC=0x00000054 | PC_next=0x00000054 | instr=0x413a0ab3 | stall_fetch=1 | exc_req=0 | exc_code=14
+[ 1230ns | cycle   60] PC=0x00000054 | PC_next=0x00000054 | instr=0x00000013 | stall_fetch=1 | exc_req=0 | exc_code=14
+[ 1250ns | cycle   61] PC=0x00000054 | PC_next=0x00000054 | instr=0x413a0ab3 | stall_fetch=1 | exc_req=0 | exc_code=14
+[ 1270ns | cycle   62] PC=0x00000054 | PC_next=0x00000054 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1290ns | cycle   63] PC=0x00000054 | PC_next=0x00000058 | instr=0x413a0ab3 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1310ns | cycle   64] PC=0x00000058 | PC_next=0x00000058 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1330ns | cycle   65] PC=0x00000058 | PC_next=0x0000005c | instr=0x001a8a93 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1350ns | cycle   66] PC=0x0000005c | PC_next=0x0000005c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1370ns | cycle   67] PC=0x0000005c | PC_next=0x00000060 | instr=0x002a1b13 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1390ns | cycle   68] PC=0x00000060 | PC_next=0x00000060 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1410ns | cycle   69] PC=0x00000060 | PC_next=0x00000064 | instr=0x00299b93 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1430ns | cycle   70] PC=0x00000064 | PC_next=0x00000064 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1450ns | cycle   71] PC=0x00000064 | PC_next=0x00000068 | instr=0x033482b3 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1470ns | cycle   72] PC=0x00000068 | PC_next=0x00000068 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1490ns | cycle   73] PC=0x00000068 | PC_next=0x0000006c | instr=0x00229c13 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1510ns | cycle   74] PC=0x0000006c | PC_next=0x0000006c | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1530ns | cycle   75] PC=0x0000006c | PC_next=0x00000070 | instr=0x002a9c93 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1550ns | cycle   76] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1570ns | cycle   77] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1590ns | cycle   78] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1610ns | cycle   79] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1630ns | cycle   80] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1650ns | cycle   81] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1670ns | cycle   82] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1690ns | cycle   83] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1710ns | cycle   84] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1730ns | cycle   85] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1750ns | cycle   86] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1770ns | cycle   87] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1790ns | cycle   88] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1810ns | cycle   89] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1830ns | cycle   90] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1850ns | cycle   91] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1870ns | cycle   92] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1890ns | cycle   93] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1910ns | cycle   94] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1930ns | cycle   95] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1950ns | cycle   96] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1970ns | cycle   97] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 1990ns | cycle   98] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2010ns | cycle   99] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2030ns | cycle  100] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2050ns | cycle  101] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2070ns | cycle  102] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2090ns | cycle  103] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2110ns | cycle  104] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2130ns | cycle  105] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2150ns | cycle  106] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2170ns | cycle  107] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2190ns | cycle  108] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2210ns | cycle  109] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2230ns | cycle  110] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2250ns | cycle  111] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2270ns | cycle  112] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2290ns | cycle  113] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2310ns | cycle  114] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2330ns | cycle  115] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2350ns | cycle  116] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2370ns | cycle  117] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2390ns | cycle  118] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2410ns | cycle  119] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2430ns | cycle  120] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2450ns | cycle  121] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2470ns | cycle  122] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2490ns | cycle  123] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2510ns | cycle  124] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2530ns | cycle  125] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2550ns | cycle  126] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2570ns | cycle  127] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2590ns | cycle  128] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2610ns | cycle  129] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2630ns | cycle  130] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2650ns | cycle  131] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2670ns | cycle  132] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2690ns | cycle  133] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2710ns | cycle  134] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2730ns | cycle  135] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2750ns | cycle  136] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2770ns | cycle  137] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2790ns | cycle  138] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2810ns | cycle  139] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2830ns | cycle  140] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2850ns | cycle  141] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2870ns | cycle  142] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2890ns | cycle  143] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2910ns | cycle  144] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2930ns | cycle  145] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2950ns | cycle  146] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2970ns | cycle  147] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 2990ns | cycle  148] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3010ns | cycle  149] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3030ns | cycle  150] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3050ns | cycle  151] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3070ns | cycle  152] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3090ns | cycle  153] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3110ns | cycle  154] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3130ns | cycle  155] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3150ns | cycle  156] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3170ns | cycle  157] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3190ns | cycle  158] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3210ns | cycle  159] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3230ns | cycle  160] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3250ns | cycle  161] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3270ns | cycle  162] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3290ns | cycle  163] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3310ns | cycle  164] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3330ns | cycle  165] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3350ns | cycle  166] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3370ns | cycle  167] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3390ns | cycle  168] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3410ns | cycle  169] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3430ns | cycle  170] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3450ns | cycle  171] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3470ns | cycle  172] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3490ns | cycle  173] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3510ns | cycle  174] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3530ns | cycle  175] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3550ns | cycle  176] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3570ns | cycle  177] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3590ns | cycle  178] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3610ns | cycle  179] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3630ns | cycle  180] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3650ns | cycle  181] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3670ns | cycle  182] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3690ns | cycle  183] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3710ns | cycle  184] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3730ns | cycle  185] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3750ns | cycle  186] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3770ns | cycle  187] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3790ns | cycle  188] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3810ns | cycle  189] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3830ns | cycle  190] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3850ns | cycle  191] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3870ns | cycle  192] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3890ns | cycle  193] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3910ns | cycle  194] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3930ns | cycle  195] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3950ns | cycle  196] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3970ns | cycle  197] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 3990ns | cycle  198] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4010ns | cycle  199] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4030ns | cycle  200] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4050ns | cycle  201] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4070ns | cycle  202] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4090ns | cycle  203] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4110ns | cycle  204] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4130ns | cycle  205] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4150ns | cycle  206] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4170ns | cycle  207] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4190ns | cycle  208] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4210ns | cycle  209] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4230ns | cycle  210] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4250ns | cycle  211] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4270ns | cycle  212] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4290ns | cycle  213] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4310ns | cycle  214] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4330ns | cycle  215] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4350ns | cycle  216] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4370ns | cycle  217] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4390ns | cycle  218] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4410ns | cycle  219] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4430ns | cycle  220] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4450ns | cycle  221] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4470ns | cycle  222] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4490ns | cycle  223] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4510ns | cycle  224] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4530ns | cycle  225] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4550ns | cycle  226] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4570ns | cycle  227] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4590ns | cycle  228] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4610ns | cycle  229] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4630ns | cycle  230] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4650ns | cycle  231] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4670ns | cycle  232] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4690ns | cycle  233] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4710ns | cycle  234] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4730ns | cycle  235] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4750ns | cycle  236] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4770ns | cycle  237] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4790ns | cycle  238] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4810ns | cycle  239] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4830ns | cycle  240] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4850ns | cycle  241] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4870ns | cycle  242] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4890ns | cycle  243] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4910ns | cycle  244] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4930ns | cycle  245] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4950ns | cycle  246] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4970ns | cycle  247] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 4990ns | cycle  248] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5010ns | cycle  249] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5030ns | cycle  250] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5050ns | cycle  251] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5070ns | cycle  252] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5090ns | cycle  253] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5110ns | cycle  254] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5130ns | cycle  255] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5150ns | cycle  256] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5170ns | cycle  257] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5190ns | cycle  258] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5210ns | cycle  259] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5230ns | cycle  260] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5250ns | cycle  261] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5270ns | cycle  262] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5290ns | cycle  263] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5310ns | cycle  264] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5330ns | cycle  265] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5350ns | cycle  266] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5370ns | cycle  267] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5390ns | cycle  268] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5410ns | cycle  269] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5430ns | cycle  270] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5450ns | cycle  271] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5470ns | cycle  272] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5490ns | cycle  273] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5510ns | cycle  274] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5530ns | cycle  275] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5550ns | cycle  276] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5570ns | cycle  277] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5590ns | cycle  278] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5610ns | cycle  279] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5630ns | cycle  280] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5650ns | cycle  281] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5670ns | cycle  282] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5690ns | cycle  283] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5710ns | cycle  284] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5730ns | cycle  285] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5750ns | cycle  286] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5770ns | cycle  287] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5790ns | cycle  288] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5810ns | cycle  289] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5830ns | cycle  290] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5850ns | cycle  291] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5870ns | cycle  292] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5890ns | cycle  293] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5910ns | cycle  294] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5930ns | cycle  295] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5950ns | cycle  296] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5970ns | cycle  297] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 5990ns | cycle  298] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6010ns | cycle  299] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6030ns | cycle  300] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6050ns | cycle  301] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6070ns | cycle  302] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6090ns | cycle  303] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6110ns | cycle  304] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6130ns | cycle  305] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6150ns | cycle  306] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6170ns | cycle  307] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6190ns | cycle  308] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6210ns | cycle  309] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6230ns | cycle  310] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6250ns | cycle  311] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6270ns | cycle  312] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6290ns | cycle  313] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6310ns | cycle  314] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6330ns | cycle  315] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6350ns | cycle  316] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6370ns | cycle  317] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6390ns | cycle  318] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6410ns | cycle  319] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6430ns | cycle  320] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6450ns | cycle  321] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6470ns | cycle  322] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6490ns | cycle  323] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6510ns | cycle  324] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6530ns | cycle  325] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6550ns | cycle  326] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6570ns | cycle  327] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6590ns | cycle  328] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6610ns | cycle  329] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6630ns | cycle  330] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6650ns | cycle  331] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6670ns | cycle  332] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6690ns | cycle  333] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6710ns | cycle  334] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6730ns | cycle  335] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6750ns | cycle  336] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6770ns | cycle  337] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6790ns | cycle  338] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6810ns | cycle  339] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6830ns | cycle  340] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6850ns | cycle  341] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6870ns | cycle  342] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6890ns | cycle  343] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6910ns | cycle  344] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6930ns | cycle  345] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6950ns | cycle  346] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6970ns | cycle  347] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 6990ns | cycle  348] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7010ns | cycle  349] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7030ns | cycle  350] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7050ns | cycle  351] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7070ns | cycle  352] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7090ns | cycle  353] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7110ns | cycle  354] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7130ns | cycle  355] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7150ns | cycle  356] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7170ns | cycle  357] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7190ns | cycle  358] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7210ns | cycle  359] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7230ns | cycle  360] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7250ns | cycle  361] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7270ns | cycle  362] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7290ns | cycle  363] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7310ns | cycle  364] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7330ns | cycle  365] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7350ns | cycle  366] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7370ns | cycle  367] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7390ns | cycle  368] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7410ns | cycle  369] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7430ns | cycle  370] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7450ns | cycle  371] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7470ns | cycle  372] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7490ns | cycle  373] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7510ns | cycle  374] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7530ns | cycle  375] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7550ns | cycle  376] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7570ns | cycle  377] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7590ns | cycle  378] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7610ns | cycle  379] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7630ns | cycle  380] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7650ns | cycle  381] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7670ns | cycle  382] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7690ns | cycle  383] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7710ns | cycle  384] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7730ns | cycle  385] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7750ns | cycle  386] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7770ns | cycle  387] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7790ns | cycle  388] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7810ns | cycle  389] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7830ns | cycle  390] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7850ns | cycle  391] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7870ns | cycle  392] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7890ns | cycle  393] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7910ns | cycle  394] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7930ns | cycle  395] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7950ns | cycle  396] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7970ns | cycle  397] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 7990ns | cycle  398] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8010ns | cycle  399] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8030ns | cycle  400] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8050ns | cycle  401] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8070ns | cycle  402] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8090ns | cycle  403] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8110ns | cycle  404] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8130ns | cycle  405] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8150ns | cycle  406] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8170ns | cycle  407] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8190ns | cycle  408] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8210ns | cycle  409] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8230ns | cycle  410] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8250ns | cycle  411] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8270ns | cycle  412] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8290ns | cycle  413] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8310ns | cycle  414] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8330ns | cycle  415] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8350ns | cycle  416] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8370ns | cycle  417] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8390ns | cycle  418] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8410ns | cycle  419] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8430ns | cycle  420] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8450ns | cycle  421] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8470ns | cycle  422] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8490ns | cycle  423] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8510ns | cycle  424] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8530ns | cycle  425] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8550ns | cycle  426] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8570ns | cycle  427] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8590ns | cycle  428] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8610ns | cycle  429] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8630ns | cycle  430] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8650ns | cycle  431] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8670ns | cycle  432] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8690ns | cycle  433] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8710ns | cycle  434] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8730ns | cycle  435] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8750ns | cycle  436] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8770ns | cycle  437] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8790ns | cycle  438] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8810ns | cycle  439] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8830ns | cycle  440] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8850ns | cycle  441] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8870ns | cycle  442] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8890ns | cycle  443] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8910ns | cycle  444] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8930ns | cycle  445] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8950ns | cycle  446] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8970ns | cycle  447] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 8990ns | cycle  448] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9010ns | cycle  449] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9030ns | cycle  450] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9050ns | cycle  451] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9070ns | cycle  452] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9090ns | cycle  453] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9110ns | cycle  454] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9130ns | cycle  455] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9150ns | cycle  456] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9170ns | cycle  457] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9190ns | cycle  458] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9210ns | cycle  459] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9230ns | cycle  460] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9250ns | cycle  461] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9270ns | cycle  462] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9290ns | cycle  463] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9310ns | cycle  464] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9330ns | cycle  465] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9350ns | cycle  466] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9370ns | cycle  467] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9390ns | cycle  468] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9410ns | cycle  469] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9430ns | cycle  470] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9450ns | cycle  471] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9470ns | cycle  472] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9490ns | cycle  473] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9510ns | cycle  474] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9530ns | cycle  475] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9550ns | cycle  476] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9570ns | cycle  477] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9590ns | cycle  478] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9610ns | cycle  479] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9630ns | cycle  480] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9650ns | cycle  481] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9670ns | cycle  482] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9690ns | cycle  483] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9710ns | cycle  484] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9730ns | cycle  485] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9750ns | cycle  486] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9770ns | cycle  487] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9790ns | cycle  488] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9810ns | cycle  489] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9830ns | cycle  490] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9850ns | cycle  491] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9870ns | cycle  492] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9890ns | cycle  493] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9910ns | cycle  494] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9930ns | cycle  495] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9950ns | cycle  496] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9970ns | cycle  497] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[ 9990ns | cycle  498] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10010ns | cycle  499] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10030ns | cycle  500] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10050ns | cycle  501] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10070ns | cycle  502] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10090ns | cycle  503] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10110ns | cycle  504] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10130ns | cycle  505] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10150ns | cycle  506] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10170ns | cycle  507] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10190ns | cycle  508] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10210ns | cycle  509] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10230ns | cycle  510] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10250ns | cycle  511] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10270ns | cycle  512] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10290ns | cycle  513] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10310ns | cycle  514] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10330ns | cycle  515] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10350ns | cycle  516] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10370ns | cycle  517] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10390ns | cycle  518] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10410ns | cycle  519] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10430ns | cycle  520] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10450ns | cycle  521] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10470ns | cycle  522] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10490ns | cycle  523] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10510ns | cycle  524] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10530ns | cycle  525] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10550ns | cycle  526] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10570ns | cycle  527] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10590ns | cycle  528] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10610ns | cycle  529] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10630ns | cycle  530] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10650ns | cycle  531] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10670ns | cycle  532] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10690ns | cycle  533] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10710ns | cycle  534] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10730ns | cycle  535] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10750ns | cycle  536] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10770ns | cycle  537] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10790ns | cycle  538] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10810ns | cycle  539] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10830ns | cycle  540] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10850ns | cycle  541] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10870ns | cycle  542] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10890ns | cycle  543] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10910ns | cycle  544] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10930ns | cycle  545] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10950ns | cycle  546] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10970ns | cycle  547] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[10990ns | cycle  548] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11010ns | cycle  549] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11030ns | cycle  550] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11050ns | cycle  551] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11070ns | cycle  552] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11090ns | cycle  553] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11110ns | cycle  554] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11130ns | cycle  555] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11150ns | cycle  556] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11170ns | cycle  557] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11190ns | cycle  558] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11210ns | cycle  559] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11230ns | cycle  560] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11250ns | cycle  561] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11270ns | cycle  562] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11290ns | cycle  563] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11310ns | cycle  564] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11330ns | cycle  565] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11350ns | cycle  566] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11370ns | cycle  567] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11390ns | cycle  568] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11410ns | cycle  569] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11430ns | cycle  570] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11450ns | cycle  571] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11470ns | cycle  572] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11490ns | cycle  573] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11510ns | cycle  574] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11530ns | cycle  575] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11550ns | cycle  576] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11570ns | cycle  577] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11590ns | cycle  578] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11610ns | cycle  579] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11630ns | cycle  580] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11650ns | cycle  581] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11670ns | cycle  582] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11690ns | cycle  583] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11710ns | cycle  584] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11730ns | cycle  585] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11750ns | cycle  586] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11770ns | cycle  587] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11790ns | cycle  588] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11810ns | cycle  589] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11830ns | cycle  590] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11850ns | cycle  591] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11870ns | cycle  592] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11890ns | cycle  593] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11910ns | cycle  594] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11930ns | cycle  595] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11950ns | cycle  596] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11970ns | cycle  597] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[11990ns | cycle  598] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12010ns | cycle  599] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12030ns | cycle  600] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12050ns | cycle  601] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12070ns | cycle  602] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12090ns | cycle  603] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12110ns | cycle  604] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12130ns | cycle  605] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12150ns | cycle  606] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12170ns | cycle  607] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12190ns | cycle  608] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12210ns | cycle  609] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12230ns | cycle  610] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12250ns | cycle  611] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12270ns | cycle  612] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12290ns | cycle  613] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12310ns | cycle  614] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12330ns | cycle  615] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12350ns | cycle  616] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12370ns | cycle  617] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12390ns | cycle  618] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12410ns | cycle  619] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12430ns | cycle  620] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12450ns | cycle  621] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12470ns | cycle  622] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12490ns | cycle  623] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12510ns | cycle  624] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12530ns | cycle  625] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12550ns | cycle  626] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12570ns | cycle  627] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12590ns | cycle  628] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12610ns | cycle  629] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12630ns | cycle  630] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12650ns | cycle  631] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12670ns | cycle  632] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12690ns | cycle  633] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12710ns | cycle  634] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12730ns | cycle  635] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12750ns | cycle  636] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12770ns | cycle  637] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12790ns | cycle  638] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12810ns | cycle  639] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12830ns | cycle  640] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12850ns | cycle  641] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12870ns | cycle  642] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12890ns | cycle  643] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12910ns | cycle  644] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12930ns | cycle  645] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12950ns | cycle  646] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12970ns | cycle  647] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[12990ns | cycle  648] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13010ns | cycle  649] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13030ns | cycle  650] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13050ns | cycle  651] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13070ns | cycle  652] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13090ns | cycle  653] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13110ns | cycle  654] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13130ns | cycle  655] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13150ns | cycle  656] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13170ns | cycle  657] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13190ns | cycle  658] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13210ns | cycle  659] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13230ns | cycle  660] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13250ns | cycle  661] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13270ns | cycle  662] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13290ns | cycle  663] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13310ns | cycle  664] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13330ns | cycle  665] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13350ns | cycle  666] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13370ns | cycle  667] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13390ns | cycle  668] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13410ns | cycle  669] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13430ns | cycle  670] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13450ns | cycle  671] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13470ns | cycle  672] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13490ns | cycle  673] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13510ns | cycle  674] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13530ns | cycle  675] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13550ns | cycle  676] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13570ns | cycle  677] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13590ns | cycle  678] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13610ns | cycle  679] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13630ns | cycle  680] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13650ns | cycle  681] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13670ns | cycle  682] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13690ns | cycle  683] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13710ns | cycle  684] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13730ns | cycle  685] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13750ns | cycle  686] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13770ns | cycle  687] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13790ns | cycle  688] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13810ns | cycle  689] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13830ns | cycle  690] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13850ns | cycle  691] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13870ns | cycle  692] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13890ns | cycle  693] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13910ns | cycle  694] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13930ns | cycle  695] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13950ns | cycle  696] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13970ns | cycle  697] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[13990ns | cycle  698] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14010ns | cycle  699] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14030ns | cycle  700] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14050ns | cycle  701] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14070ns | cycle  702] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14090ns | cycle  703] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14110ns | cycle  704] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14130ns | cycle  705] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14150ns | cycle  706] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14170ns | cycle  707] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14190ns | cycle  708] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14210ns | cycle  709] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14230ns | cycle  710] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14250ns | cycle  711] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14270ns | cycle  712] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14290ns | cycle  713] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14310ns | cycle  714] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14330ns | cycle  715] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14350ns | cycle  716] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14370ns | cycle  717] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14390ns | cycle  718] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14410ns | cycle  719] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14430ns | cycle  720] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14450ns | cycle  721] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14470ns | cycle  722] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14490ns | cycle  723] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14510ns | cycle  724] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14530ns | cycle  725] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14550ns | cycle  726] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14570ns | cycle  727] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14590ns | cycle  728] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14610ns | cycle  729] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14630ns | cycle  730] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14650ns | cycle  731] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14670ns | cycle  732] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14690ns | cycle  733] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14710ns | cycle  734] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14730ns | cycle  735] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14750ns | cycle  736] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14770ns | cycle  737] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14790ns | cycle  738] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14810ns | cycle  739] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14830ns | cycle  740] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14850ns | cycle  741] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14870ns | cycle  742] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14890ns | cycle  743] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14910ns | cycle  744] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14930ns | cycle  745] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14950ns | cycle  746] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14970ns | cycle  747] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[14990ns | cycle  748] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15010ns | cycle  749] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15030ns | cycle  750] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15050ns | cycle  751] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15070ns | cycle  752] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15090ns | cycle  753] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15110ns | cycle  754] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15130ns | cycle  755] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15150ns | cycle  756] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15170ns | cycle  757] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15190ns | cycle  758] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15210ns | cycle  759] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15230ns | cycle  760] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15250ns | cycle  761] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15270ns | cycle  762] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15290ns | cycle  763] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15310ns | cycle  764] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15330ns | cycle  765] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15350ns | cycle  766] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15370ns | cycle  767] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15390ns | cycle  768] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15410ns | cycle  769] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15430ns | cycle  770] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15450ns | cycle  771] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15470ns | cycle  772] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15490ns | cycle  773] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15510ns | cycle  774] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15530ns | cycle  775] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15550ns | cycle  776] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15570ns | cycle  777] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15590ns | cycle  778] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15610ns | cycle  779] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15630ns | cycle  780] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15650ns | cycle  781] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15670ns | cycle  782] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15690ns | cycle  783] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15710ns | cycle  784] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15730ns | cycle  785] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15750ns | cycle  786] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15770ns | cycle  787] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15790ns | cycle  788] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15810ns | cycle  789] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15830ns | cycle  790] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15850ns | cycle  791] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15870ns | cycle  792] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15890ns | cycle  793] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15910ns | cycle  794] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15930ns | cycle  795] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15950ns | cycle  796] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15970ns | cycle  797] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[15990ns | cycle  798] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16010ns | cycle  799] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16030ns | cycle  800] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16050ns | cycle  801] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16070ns | cycle  802] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16090ns | cycle  803] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16110ns | cycle  804] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16130ns | cycle  805] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16150ns | cycle  806] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16170ns | cycle  807] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16190ns | cycle  808] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16210ns | cycle  809] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16230ns | cycle  810] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16250ns | cycle  811] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16270ns | cycle  812] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16290ns | cycle  813] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16310ns | cycle  814] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16330ns | cycle  815] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16350ns | cycle  816] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16370ns | cycle  817] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16390ns | cycle  818] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16410ns | cycle  819] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16430ns | cycle  820] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16450ns | cycle  821] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16470ns | cycle  822] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16490ns | cycle  823] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16510ns | cycle  824] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16530ns | cycle  825] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16550ns | cycle  826] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16570ns | cycle  827] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16590ns | cycle  828] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16610ns | cycle  829] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16630ns | cycle  830] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16650ns | cycle  831] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16670ns | cycle  832] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16690ns | cycle  833] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16710ns | cycle  834] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16730ns | cycle  835] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16750ns | cycle  836] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16770ns | cycle  837] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16790ns | cycle  838] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16810ns | cycle  839] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16830ns | cycle  840] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16850ns | cycle  841] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16870ns | cycle  842] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16890ns | cycle  843] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16910ns | cycle  844] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16930ns | cycle  845] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16950ns | cycle  846] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16970ns | cycle  847] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[16990ns | cycle  848] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17010ns | cycle  849] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17030ns | cycle  850] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17050ns | cycle  851] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17070ns | cycle  852] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17090ns | cycle  853] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17110ns | cycle  854] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17130ns | cycle  855] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17150ns | cycle  856] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17170ns | cycle  857] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17190ns | cycle  858] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17210ns | cycle  859] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17230ns | cycle  860] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17250ns | cycle  861] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17270ns | cycle  862] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17290ns | cycle  863] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17310ns | cycle  864] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17330ns | cycle  865] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17350ns | cycle  866] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17370ns | cycle  867] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17390ns | cycle  868] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17410ns | cycle  869] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17430ns | cycle  870] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17450ns | cycle  871] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17470ns | cycle  872] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17490ns | cycle  873] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17510ns | cycle  874] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17530ns | cycle  875] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17550ns | cycle  876] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17570ns | cycle  877] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17590ns | cycle  878] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17610ns | cycle  879] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17630ns | cycle  880] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17650ns | cycle  881] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17670ns | cycle  882] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17690ns | cycle  883] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17710ns | cycle  884] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17730ns | cycle  885] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17750ns | cycle  886] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17770ns | cycle  887] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17790ns | cycle  888] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17810ns | cycle  889] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17830ns | cycle  890] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17850ns | cycle  891] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17870ns | cycle  892] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17890ns | cycle  893] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17910ns | cycle  894] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17930ns | cycle  895] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17950ns | cycle  896] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17970ns | cycle  897] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[17990ns | cycle  898] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18010ns | cycle  899] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18030ns | cycle  900] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18050ns | cycle  901] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18070ns | cycle  902] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18090ns | cycle  903] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18110ns | cycle  904] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18130ns | cycle  905] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18150ns | cycle  906] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18170ns | cycle  907] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18190ns | cycle  908] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18210ns | cycle  909] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18230ns | cycle  910] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18250ns | cycle  911] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18270ns | cycle  912] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18290ns | cycle  913] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18310ns | cycle  914] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18330ns | cycle  915] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18350ns | cycle  916] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18370ns | cycle  917] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18390ns | cycle  918] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18410ns | cycle  919] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18430ns | cycle  920] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18450ns | cycle  921] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18470ns | cycle  922] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18490ns | cycle  923] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18510ns | cycle  924] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18530ns | cycle  925] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18550ns | cycle  926] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18570ns | cycle  927] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18590ns | cycle  928] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18610ns | cycle  929] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18630ns | cycle  930] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18650ns | cycle  931] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18670ns | cycle  932] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18690ns | cycle  933] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18710ns | cycle  934] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18730ns | cycle  935] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18750ns | cycle  936] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18770ns | cycle  937] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18790ns | cycle  938] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18810ns | cycle  939] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18830ns | cycle  940] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18850ns | cycle  941] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18870ns | cycle  942] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18890ns | cycle  943] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18910ns | cycle  944] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18930ns | cycle  945] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18950ns | cycle  946] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18970ns | cycle  947] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[18990ns | cycle  948] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19010ns | cycle  949] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19030ns | cycle  950] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19050ns | cycle  951] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19070ns | cycle  952] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19090ns | cycle  953] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19110ns | cycle  954] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19130ns | cycle  955] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19150ns | cycle  956] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19170ns | cycle  957] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19190ns | cycle  958] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19210ns | cycle  959] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19230ns | cycle  960] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19250ns | cycle  961] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19270ns | cycle  962] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19290ns | cycle  963] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19310ns | cycle  964] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19330ns | cycle  965] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19350ns | cycle  966] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19370ns | cycle  967] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19390ns | cycle  968] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19410ns | cycle  969] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19430ns | cycle  970] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19450ns | cycle  971] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19470ns | cycle  972] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19490ns | cycle  973] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19510ns | cycle  974] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19530ns | cycle  975] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19550ns | cycle  976] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19570ns | cycle  977] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19590ns | cycle  978] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19610ns | cycle  979] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19630ns | cycle  980] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19650ns | cycle  981] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19670ns | cycle  982] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19690ns | cycle  983] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19710ns | cycle  984] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19730ns | cycle  985] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19750ns | cycle  986] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19770ns | cycle  987] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19790ns | cycle  988] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19810ns | cycle  989] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19830ns | cycle  990] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19850ns | cycle  991] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19870ns | cycle  992] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19890ns | cycle  993] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19910ns | cycle  994] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19930ns | cycle  995] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19950ns | cycle  996] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19970ns | cycle  997] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14
+[19990ns | cycle  998] PC=0x00000070 | PC_next=0x00000070 | instr=0x00000013 | stall_fetch=0 | exc_req=0 | exc_code=14

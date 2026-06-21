@@ -1,0 +1,659 @@
+// Author       : Zawaher Bin Asim , UET Lahore  <zawaherbinasim.333@gmail.com>
+// Date         : 23 Sep 2024
+// Description  : This file contains the  datapath of the vector_processor where different units are connnected together 
+
+`include "vector_processor_defs.svh"
+`include "vector_regfile_defs.svh"
+`include "axi_4_defs.svh"
+
+module vector_processor_datapth (
+    
+    input   logic   clk,reset,
+    
+    // Inputs from the scaler processor  --> vector processor
+    input   logic   [`XLEN-1:0]                 instruction,        // The instruction that is to be executed by the vector processor
+    input   logic   [`XLEN-1:0]                 rs1_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs1 address
+    input   logic   [`XLEN-1:0]                 rs2_data,           // The scaler input from the scaler processor for the instructon that needs data from the  scaler register file across the rs2 address
+
+    output logic [31:0]             mem_addr,
+    output logic [`VLEN-1:0]            mem_wdata,
+    output logic [`VLEN-1:0]            mem_wdata_unit,
+    output logic [63:0]             mem_byte_en,
+    output logic                    mem_wen,
+    output logic                    mem_ren,
+    output logic                    mem_elem_mode,
+    output logic [1:0]              mem_sew_enc,
+    input  logic [`VLEN-1:0]            mem_rdata,
+
+    // Outputs from vector rocessor --> scaler processor
+    input  logic                                is_vec,             // This tells the instruction is a vector instruction or not mean a legal insrtruction or not
+    output  logic                               error,              // error has occure due to invalid configurations
+    
+    // csr_regfile -> scalar_processor
+    output  logic   [`XLEN-1:0]                 csr_out,            
+
+    // datapth  --> scaler_processor 
+    output  logic                               inst_done,          // signal that tells that successfully implemented the previous instruction and ready to  take next iinstruction
+
+    // Inputs from the controller --> datapath
+    
+    input  logic                                sew_eew_sel,        // selection for sew_eew mux
+    input  logic                                vlmax_evlmax_sel,   // selection for vlmax_evlmax mux
+    input  logic                                emul_vlmul_sel,     // selection for vlmul_emul mux
+    // vec_control_signals -> vec_decode
+    input   logic                               vl_sel,             // selection for rs1_data or uimm
+    input   logic                               vtype_sel,          // selection for rs2_data or zimm
+    input   logic                               lumop_sel,          // selection lumop
+    
+    // vec_control_signals -> vec_csr_regs
+    input   logic                               csrwr_en,
+    input   logic                               rs1rd_de,           // selection for VLMAX or comparator
+    
+    // vec_control_signals -> vec_register_file
+    input   logic                               vec_reg_wr_en,     // The enable signal to write in the vector register
+    input   logic                               mask_operation,    // This signal tell this instruction is going to perform mask register update
+    input   logic                               mask_wr_en,        // This the enable signal for updating the mask value
+    input   logic                               offset_vec_en,     // Tells the rdata2 vector is offset vector and will be chosen on base of emul
+    input   logic   [1:0]                       data_mux1_sel,     // This the selsction of the mux to select between vec_imm , scaler1 , and vec_data1
+    input   logic                               data_mux2_sel,     // This the selsction of the mux to select between scaler2 , and vec_data2
+    input   logic                               data_mux3_sel,
+
+    // vec_control_signals -> vec_lsu
+    input   logic                               stride_sel,         // tells that  it is a unit stride or the indexed
+    input   logic                               ld_inst,            // tells that it is load insruction or store one
+    input   logic                               st_inst,            // Store instruction
+    input   logic                               index_str,          // tells about index stride
+    input   logic                               index_unordered,     // tells about index unordered stride
+
+    output  logic   [`MAX_VLEN-1:0]             vec_wr_data,
+    input   logic   [`Tag_Width-1:0]            seq_num_i,
+    output  logic   [`Tag_Width-1:0]            seq_num_o, 
+    output  logic                               execution_done,
+    output  logic                               data_written,           // tells that data is written to the register file
+    // Output from csr_reg--> datapath (done signal)
+    output  logic                               csr_done,               // This signal tells that csr instruction has been implemented successfully
+    output logic                                is_stored,              // It tells that data is stored to the memory
+    output logic    [`MAX_VLEN-1:0]     execution_result,
+    output logic   [`MAX_VLEN-1:0]            mask_unit_output,
+    output logic               is_loaded,              // It tells that data is loaded from the memory and ready to be written in register file
+
+    input logic [4:0] vec_commit_vd_i, //            (rob_commit_vd),
+    input logic [`MAX_VLEN-1:0] vec_commit_vector_result_i,
+    input logic rob_commit_valid_i,
+    output logic   [`MAX_VLEN-1:0]     vd_data,
+    input logic rob_commit_is_vec_o,
+    input logic mask_reg_en ,
+    output logic   [`VLEN-1:0]             mask_reg_updated,
+    output logic mask_done,
+
+    output  logic   [4:0]                 vec_read_addr_1  , vec_read_addr_2 , vec_write_addr,
+    input   logic vec_decode,
+
+    input   logic                               Ctrl,start,
+    input   logic   [2:0]                       execution_op,
+    input   logic                               mul_high, mul_low, execution_inst,reverse_sub_inst,add_inst, sub_inst,
+    input   logic                               signed_mode,
+    input   logic   [4:0]                       bitwise_op, 
+    input   logic   [3:0]                       mask_op,
+    input   logic   [2:0]                       cmp_op, accum_op,shift_op,
+    input   logic accum_inst,
+    input   logic   [1:0]                       op_type
+);
+
+// Vector Immediate from the decode 
+logic   [`MAX_VLEN-1:0] vec_imm;
+
+// signal that tells that if the masking is  enabled or not
+logic  vec_mask;
+
+// The enable  signal for the vec_register file after the load of the data from the memory
+logic   vec_wr_en;
+
+// The width of the memory element that has to be loaded from the memory
+logic   [2:0] width;
+
+// it tells the selection between  the floating point  and the integer
+logic   mew;
+
+// number of fields in case of the load
+logic   [2:0] nf;
+
+// vec-csr-dec -> vec-csr / vec-regfile
+// The scaler output from the decode that could be imm ,rs1_data ,rs2_data and address in case of the load based on the instruction 
+logic   [`XLEN-1:0] scalar1;
+logic   [`XLEN-1:0] scalar2;
+
+// Output from vector processor lsu --> lsu mux
+
+
+logic               error_flag;             // It tells that wrong configurations has occure   
+
+// The extended scaler 1 and scaler 2 upto MAX_VLEN
+logic   [`MAX_VLEN-1:0] scaler1_extended ,scaler2_extended; 
+
+// The vector data that is to be written\
+
+
+// vec_csr_regs ->
+logic   [3:0]                   vlmul;
+logic   [4:0]  emul;             // Gives the value of the lmul that is to used  in the procesor
+logic   [6:0]                   sew,eew;                // Gives the standard element width 
+logic   [9:0]                   vlmax,e_vlmax;          // the maximum number of elements vector will contain based on the lmul and sew and vlen
+logic                           tail_agnostic;          // vector tail agnostic
+logic                           mask_agnostic;          // vector mask agnostic
+logic   [`XLEN-1:0]             vec_length;             // Gives the length of the vector onwhich maskng operation is to performed
+logic   [`XLEN-1:0]             start_element;          // Gives the start elemnet of the vector from where the masking is to be started
+
+ 
+
+// vec_registerfile --> next moduels and data selection muxes
+logic   [`MAX_VLEN-1:0]         vec_data_1, vec_data_2, vec_data_3; // The read data from the vector register file
+logic   [`MAX_VLEN-1:0]         dst_vec_data;           // The data of the destination register that is to be replaced with the data after the opertaion and masking
+logic   [VECTOR_LENGTH-1:0]     vector_length;          // Width of the vector depending on LMUL
+logic                           wrong_addr;             // Signal to indicate an invalid address
+logic   [`VLEN-1:0]             v0_mask_data;           // The data of the mask register that is v0 in register file 
+
+
+// Outputs of the data selection muxes after register file
+logic   [`MAX_VLEN-1:0]         data_mux1_out;          // selection between the vec_reg_data_1 , vec_imm , scalar1
+logic   [`MAX_VLEN-1:0]         data_mux2_out;          // selection between the vec_reg_data_2 , scaler2
+logic   [`MAX_VLEN-1:0]         data_mux3_out;          // selection between the vec_reg_data_2 , scaler2
+
+// Outputs of the sew eew mux after the decode and csr
+logic   [6:0]                  sew_eew_mux_out;         // selection between sew and eew
+
+// Outputs of the lmul emul mux after the decode and csr
+logic   [3:0]                  vlmul_emul_mux_out;      // selection between lmul and emul
+
+// Outputs of the sew eew mux after the decode and csr
+logic   [9:0]                  vlmax_evlmax_mux_out;    // selection between vlmax and e_vlmax
+logic [`Tag_Width-1:0] seq_num_lsu, seq_num_exe,seq_num_csr;
+
+logic   [1:0]               sew_execution;    
+
+logic   [`VLEN-1:0]         vs1,vs2;
+logic [4:0] vector_write_address; 
+
+
+logic    [(`VLEN/8)-1:0]              adder_carry_out;
+logic [1:0] sew_sel;
+logic  [(`VLEN/8)-1:0] carry_out_mask;
+logic [`Tag_Width-1:0] seq_num_mask;
+logic [`MAX_VLEN-1:0] lanes_data;
+logic mult_done;
+logic [4:0] vec_imm_selected;
+logic [`MAX_VLEN-1:0] vec_imm_extended;
+
+assign inst_done =  rob_commit_valid_i;//data_written || csr_done || is_stored || error || execution_done;
+assign error     = error_flag || wrong_addr;
+
+always_comb begin
+    if (execution_done ) begin
+        seq_num_o = seq_num_exe;
+    end
+    else if (is_loaded | is_stored) begin
+        seq_num_o = seq_num_lsu;
+    end
+    else  if (csr_done) begin
+        seq_num_o = seq_num_csr; 
+    end 
+    else if (mask_done) begin
+        seq_num_o = seq_num_mask;
+    end
+    else begin
+        seq_num_o = seq_num_i;
+    end
+end
+
+    assign vs1 = vec_mask ? vec_data_1[`VLEN-1:0] : 'b0; 
+    assign vs2 = vec_mask ? vec_data_2[`VLEN-1:0] : 'b0;
+    assign vec_imm_selected = vec_imm[4:0];
+    assign vec_wr_data = (execution_inst | mult_done) ? lanes_data : vd_data ;
+    
+    always_comb begin
+        if (execution_inst) begin
+            case (sew_execution)
+                2'b00: vec_imm_extended = {(`MAX_VLEN/8) {{{3{vec_imm_selected[4]}}, vec_imm_selected}}};
+                2'b01: vec_imm_extended = {(`MAX_VLEN/16){{{11{vec_imm_selected[4]}}, vec_imm_selected}}};
+                2'b10: vec_imm_extended = {(`MAX_VLEN/32){{{27{vec_imm_selected[4]}}, vec_imm_selected}}};            
+                default: vec_imm_extended = '0;
+            endcase
+        end else begin
+            vec_imm_extended = '0;
+        end
+    end
+
+    always_comb begin
+    // ?? Scalar 1 extend ??
+    if (execution_inst) begin
+        // VX form: har element mein same scalar replicate karo
+        case (sew_execution)
+            2'b00: scaler1_extended = {(`MAX_VLEN/8 ){rs1_data[7:0 ]}};  // 8-bit replicate
+            2'b01: scaler1_extended = {(`MAX_VLEN/16){rs1_data[15:0]}};  // 16-bit replicate
+            2'b10: scaler1_extended = {(`MAX_VLEN/32){rs1_data[31:0]}};  // 32-bit replicate
+            default: scaler1_extended = {(`MAX_VLEN/32){rs1_data[31:0]}};
+        endcase
+    end
+    else begin
+        scaler1_extended = {{`MAX_VLEN-32{1'b0}}, rs1_data[31:0]};
+    end
+
+    // ?? Scalar 2 extend ??
+    if (execution_inst) begin
+        case (sew_execution)
+            2'b00: scaler2_extended = {(`MAX_VLEN/8 ){rs2_data[7:0 ]}};
+            2'b01: scaler2_extended = {(`MAX_VLEN/16){rs2_data[15:0]}};
+            2'b10: scaler2_extended = {(`MAX_VLEN/32){rs2_data[31:0]}};
+            default: scaler2_extended = {(`MAX_VLEN/32){rs2_data[31:0]}};
+        endcase
+    end
+    else begin
+        scaler2_extended = {{`MAX_VLEN-32{1'b0}}, rs2_data[31:0]};
+    end
+
+end
+
+             //////////////////////
+            //      DECODE      //
+           //////////////////////   
+      
+
+(* keep_hierarchy = "yes" *)     vec_decode DECODER(
+        // scalar_processor -> vec_decode
+        .vec_inst           (instruction    ),
+        .rs1_data           (rs1_data       ), 
+        .rs2_data           (rs2_data       ),
+
+        // vec_decode -> scalar_processor
+        .is_vec             (is_vec         ),
+        
+        // vec_decode -> vec_regfile
+        .vec_read_addr_1    (vec_read_addr_1),      
+        .vec_read_addr_2    (vec_read_addr_2),   
+        .vec_read_addr_3    (vector_write_address),
+        .vec_write_addr     (vec_write_addr ),      
+        .vec_imm            (vec_imm        ),
+        .vec_mask           (vec_mask       ),
+
+        // vec_decode -> vector load
+        .width              (width          ),             
+        .mew                (mew            ),             
+        .nf                 (nf             ),                       
+
+        // vec_decode -> csr 
+        .scalar2            (scalar2        ),             
+        .scalar1            (scalar1        ),             
+
+        // vec_control_signals -> vec_decode
+        .vl_sel             (vl_sel         ),             
+        .vtype_sel          (vtype_sel      ),             
+        .lumop_sel          (lumop_sel      )             
+    );
+
+             /////////////////////
+            //   CSR REGFILE   //
+           /////////////////////
+
+(* keep_hierarchy = "yes" *)     vec_csr_regfile CSR_REGFILE(
+        .clk                    (clk            ),
+        .n_rst                  (reset          ),
+
+        // scalar_processor -> csr_regfile
+        .inst                   (instruction    ),
+
+        // csr_regfile -> scalar_processor
+        .csr_out                (csr_out        ),
+        .seq_num_i              (seq_num_i),
+        .seq_num_csr             (seq_num_csr),
+
+        // vec_controller -> csr_regfile
+        .rs1rd_de               (rs1rd_de       ),
+        
+        // vec_decode -> vec_csr_regs
+        .scalar2                (scalar2        ), 
+        .scalar1                (scalar1        ),
+        .width                  (width          ),
+     
+
+        // vec_control_signals -> vec_csr_regs
+        .csrwr_en               (csrwr_en       ),
+
+        // vec_csr_regs ->
+        .vlmul                  (vlmul          ),
+        .sew                    (sew            ),
+        .vlmax                  (vlmax          ),
+        .emul                   (emul           ),
+        .eew                    (eew            ),
+        .e_vlmax                (e_vlmax        ),
+
+        .tail_agnostic          (tail_agnostic  ), 
+        .mask_agnostic          (mask_agnostic  ), 
+
+        .vec_length             (vec_length     ),
+        .start_element          (start_element  ),
+
+        .csr_done               (csr_done       )
+    );
+
+             /////////////////////
+            //   SEW/EEW MUX   //
+           /////////////////////
+
+(* keep_hierarchy = "yes" *)     data_mux_2x1 #(.width(7)) SEW_EEW_MUX( 
+        
+        .operand1       (sew                ),
+        .operand2       (eew                ),
+        .sel            (sew_eew_sel        ),
+        .mux_out        (sew_eew_mux_out    )     
+    );
+
+             /////////////////////
+            // LMUL/EMUL MUX   //
+           /////////////////////
+
+    /*data_mux_2x1 #(.width(5)) LMUL_EMUL_MUX( 
+        
+        .operand1       (5'(vlmul)          ),
+        .operand2       (emul               ),
+        .sel            (emul_vlmul_sel     ),
+        .mux_out        (vlmul_emul_mux_out )      
+    );*/
+
+(* keep_hierarchy = "yes" *)     data_mux_2x1_asymm #(
+        .IN1_WIDTH(4),
+        .IN2_WIDTH(5),
+        .OUT_WIDTH(4)
+    ) LMUL_EMUL_MUX (
+        .operand1    (vlmul              ),
+        .operand2    (emul               ),
+        .sel         (emul_vlmul_sel     ),
+        .mux_out     (vlmul_emul_mux_out )
+    );
+
+             ///////////////////////////
+            //  VLMAX/ E_VLMAX MUX   //
+           ///////////////////////////
+
+(* keep_hierarchy = "yes" *)     data_mux_2x1 #(.width(10)) VLMAX_EVLMAX_MUX( 
+        
+        .operand1       (vlmax               ),
+        .operand2       (e_vlmax             ),
+        .sel            (vlmax_evlmax_sel    ),
+        .mux_out        (vlmax_evlmax_mux_out)     
+    );
+
+             /////////////////////
+            //   VEC REGFILE   //
+           /////////////////////
+
+
+
+(* keep_hierarchy = "yes" *)     vec_regfile VEC_REGFILE(
+        // Inputs
+        .clk            (clk                ), 
+        .reset          (reset              ),
+        .raddr_1        (vec_read_addr_1    ), 
+        .raddr_2        (vec_read_addr_2    ),  
+        .wdata          (vec_commit_vector_result_i      ),          
+        .waddr          (vec_commit_vd_i     ),
+        .wr_en          (rob_commit_is_vec_o && rob_commit_valid_i ), 
+        .lmul           (vlmul_emul_mux_out ),
+        .emul           (emul               ),
+        .offset_vec_en  (offset_vec_en      ),
+        .mask_operation (mask_operation     ), 
+        .mask_wr_en     (mask_wr_en         ), 
+
+        // Outputs 
+        .rdata_1        (vec_data_1         ),
+        .rdata_2        (vec_data_2         ),
+        .rdata_3        (vec_data_3         ),
+        .dst_data       (dst_vec_data       ),
+        .vec_write_addr (vec_write_addr     ),
+        .vector_length  (vector_length      ),
+        .wrong_addr     (wrong_addr         ),
+        .v0_mask_data   (v0_mask_data       ),
+        .data_written   (data_written       )  
+    );
+
+    
+             /////////////////////
+            //    DATA_1 MUX   //
+           /////////////////////
+
+(* keep_hierarchy = "yes" *)     data_mux_3x1 #(.width(`MAX_VLEN)) DATA1_MUX( 
+        
+        .operand1       (vec_data_1         ),
+        .operand2       (scaler1_extended   ),
+        .operand3       (vec_imm_extended  ),
+        .sel            (data_mux1_sel      ),
+        .mux_out        (data_mux1_out      )     
+    );
+
+             /////////////////////
+            //    DATA_2 MUX   //
+           /////////////////////
+
+(* keep_hierarchy = "yes" *)     data_mux_2x1 #(.width(`MAX_VLEN)) DATA2_MUX( 
+        
+        .operand1       (vec_data_2         ),
+        .operand2       (scaler2_extended   ),
+        .sel            (data_mux2_sel      ),
+        .mux_out        (data_mux2_out      )     
+    );
+
+(* keep_hierarchy = "yes" *)     data_mux_2x1 #(.width(`MAX_VLEN)) DATA3_MUX( 
+        
+        .operand1       (`MAX_VLEN'b0            ),
+        .operand2       (vec_data_3         ),
+        .sel            (data_mux3_sel      ),
+        .mux_out        (data_mux3_out      )     
+    );
+
+             //////////////////////
+            //      VLSU        //
+           //////////////////////          
+
+    logic elem_mode;
+    logic [`MAX_VLEN-1:0]        data_mux1_out_held;
+    logic [`MAX_VLEN-1:0]       data_mux2_out_held;
+    logic [`MAX_VLEN-1:0]    dst_vec_data_held;
+
+    always_ff @(posedge clk or negedge reset) begin
+        if (!reset) begin
+            data_mux1_out_held <= '0;
+            data_mux2_out_held<= '0;
+             dst_vec_data_held <= '0;
+        end else if (ld_inst || st_inst) begin
+            dst_vec_data_held  <= dst_vec_data;      // data_mux1_out capture
+            data_mux1_out_held <=  data_mux1_out;      // data_mux2_out scalar slice capture  
+            data_mux2_out_held <=  data_mux2_out;      // data_mux2_out full vector capture
+        end
+    end
+
+(* keep_hierarchy = "yes" *)     vec_lsu VLSU(
+        .clk                (clk                        ),
+        .n_rst              (reset                      ),
+
+        // scalar-processor -> vec_lsu
+        .rs1_data           (data_mux1_out_held[`XLEN-1:0]   ),  
+        .rs2_data           (data_mux2_out_held[`XLEN-1:0]   ),
+
+        // vector_processor_controller -> vec_lsu
+        .stride_sel         (stride_sel                 ), 
+        .ld_inst            (ld_inst                    ),      
+        .st_inst            (st_inst                    ),
+        .index_str          (index_str                  ),
+        .index_unordered    (index_unordered            ),
+
+        // vec_decode -> vec_lsu
+        .mew                (mew                        ),          
+        .width              (width                      ),
+
+        // vec_csr --> vec_lsu
+        .sew                (sew_eew_mux_out            ),
+        .vlmax              (vlmax_evlmax_mux_out       ),      
+
+        // vec_register_file -> vec_lsu
+        .vs2_data           (data_mux2_out_held              ),       
+        .vs3_data           (dst_vec_data_held               ),      
+        
+        // datapath -->  vec_lsu        
+        .inst_done          (inst_done                  ),
+
+        .mem_addr           (mem_addr                   ),
+        .mem_wdata          (mem_wdata                  ),
+        .mem_wdata_unit     (mem_wdata_unit             ),
+        .mem_byte_en        (mem_byte_en                ),
+        .mem_wen            (mem_wen                    ),
+        .mem_ren            (mem_ren                    ),
+        .mem_elem_mode      (mem_elem_mode              ),
+        .mem_sew_enc        (mem_sew_enc                ),
+        .mem_rdata          (mem_rdata                  ),
+ 
+        .seq_num            (seq_num_i),
+        .seq_num_lsu        (seq_num_lsu),
+        // vec_lsu  -> vec_register_file
+        .vd_data            (vd_data                    ), 
+        .is_loaded          (is_loaded                  ),
+        .is_stored          (is_stored                  ),
+        .error_flag         (error_flag                 )  
+    );
+
+
+(* keep_hierarchy = "yes" *)     data_mux_2x1 #(.width(1'b1)) VLSU_DATA_MUX(
+        
+        .operand1       (1'b0                     ),
+        .operand2       (vec_reg_wr_en            ),
+        .sel            (is_loaded && !error_flag ),
+        .mux_out        (vec_wr_en                )     
+    
+    );
+
+(* keep_hierarchy = "yes" *)     vector_execution_unit EXECUTION_UNIT(
+
+        .clk                (clk),
+        .reset              (reset),
+
+        .data_1             (data_mux1_out[`MAX_VLEN-1:0]),
+        .data_2             (data_mux2_out[`MAX_VLEN-1:0]), 
+        .data_3             (vec_data_3),
+
+        .seq_num            (seq_num_i),
+        .seq_num_exe        (seq_num_exe),
+        .Ctrl_add               (Ctrl),
+        .sew_eew_mux_out    (sew_eew_mux_out),
+        .execution_inst     (execution_inst),
+        .accum_inst         (accum_inst),
+
+        .execution_op       (execution_op),
+        .signed_mode_mult   (signed_mode),
+        .mul_high           (mul_high),
+        .mul_low            (mul_low), 
+        .reverse_sub_inst   (reverse_sub_inst),
+        .add_inst           (add_inst),
+        .sub_inst           (sub_inst),
+        .bitwise_op         (bitwise_op),
+        .cmp_op             (cmp_op),
+        .accum_op           (accum_op),
+        .shift_op           (shift_op),
+        .execution_result_reg   (execution_result),
+        .mult_done          (mult_done),
+        .execution_result   (lanes_data),
+        .sew                (sew_execution),  
+        .carry_out          (adder_carry_out),                 
+        .mult_start              (start),
+        .mask_reg_updated   (mask_reg_updated),
+        .carry_out_mask     (carry_out_mask),
+        .execution_done     (execution_done)
+);
+
+    
+
+(* keep_hierarchy = "yes" *)     vector_mask_unit MASK_UNIT(
+        .clk                (clk),
+        .reset              (reset),
+        .lanes_data_out     (vec_wr_data),
+        .destination_data   (dst_vec_data),
+        .mask_op            (mask_op),
+        .mask_en            (vec_mask),
+        .vec_decode         (vec_decode),
+        .mask_reg_en        (mask_reg_en),
+        .vta                (tail_agnostic),
+        .vma                (mask_agnostic),
+        .vstart             (start_element),
+        .vl                 (vec_length),
+        .sew                (sew_eew_mux_out),
+        .vs1                (vs1),  
+        .vs2                (vs2),   
+        .v0                 (v0_mask_data),
+        .sew_sel            (sew_sel),
+        .carry_out          (carry_out_mask),
+        .mask_unit_output   (mask_unit_output),
+        .mask_done          (mask_done),
+        .seq_num            (seq_num_i),
+        .seq_num_mask       (seq_num_mask),
+        .mask_register_v0   (mask_reg_updated)     
+    );
+
+endmodule
+
+module data_mux_2x1 #(
+   parameter width = `MAX_VLEN
+) ( 
+    
+    input   logic   [width-1:0] operand1,
+    input   logic   [width-1:0] operand2,
+    input   logic               sel,
+    output  logic   [width-1:0] mux_out     
+);
+    always_comb begin 
+        case (sel)
+           1'b0 : mux_out = operand1;
+           1'b1 : mux_out = operand2;
+            default: mux_out = 'h0;
+        endcase        
+    end
+    
+endmodule
+
+
+module data_mux_3x1 #(
+   parameter width = `MAX_VLEN
+) ( 
+    
+    input   logic   [width-1:0] operand1,
+    input   logic   [width-1:0] operand2,
+    input   logic   [width-1:0] operand3,
+    input   logic   [1:0]       sel,
+    output  logic   [width-1:0] mux_out     
+);
+    always_comb begin 
+        case (sel)
+           2'b00 : mux_out = operand1;
+           2'b01 : mux_out = operand2;
+           2'b10 : mux_out = operand3;
+            default: mux_out = 'h0;
+        endcase        
+    end
+    
+endmodule
+
+module data_mux_2x1_asymm #(
+    parameter IN1_WIDTH = 4,
+    parameter IN2_WIDTH = 5,
+    parameter OUT_WIDTH = 4
+) (
+    input  logic [IN1_WIDTH-1:0]  operand1,
+    input  logic [IN2_WIDTH-1:0]  operand2,
+    input  logic                  sel,
+    output logic [OUT_WIDTH-1:0]  mux_out
+);
+    always_comb begin 
+        case (sel)
+           1'b0 : mux_out = operand1;
+           1'b1 : mux_out = operand2[OUT_WIDTH-1:0];
+            default: mux_out = 'h0;
+        endcase        
+    end
+    
+endmodule

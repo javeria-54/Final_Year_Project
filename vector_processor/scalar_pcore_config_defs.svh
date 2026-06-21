@@ -12,13 +12,9 @@
 `ifndef PCORE_CONFIG_DEFS
 `define PCORE_CONFIG_DEFS
 
-`ifndef COMPLIANCE
-//`define RTL_SIMULATION               1 
-`endif
-
-`ifndef COMPLIANCE
+`define COMPLIANCE                     0
 `define FPGA                           0
-`endif
+
 
 //============================= CORE PARAMETERS ========================//
 
@@ -88,11 +84,27 @@ typedef enum logic [`CLINT_ADDR_WIDTH-1:0] {
     MTIMECMP_HIGH_R = 16'h4004
 } type_mtime_regs_e;
 
-`define MEM_BANK_SIZE        32'h00040000
+`define MEM_BANK_SIZE        32'h000001bc
 `define IMEM_BASE_ADDR       32'h00000000
-`define IMEM_SIZE            32'h00000070       //32'h000001a0 
-`define DMEM_BASE_ADDR       32'h00000074  
-`define DMEM_SIZE            32'h00020000
+`define IMEM_SIZE            32'h0000016c       //32'h000001a0 
+`define DMEM_BASE_ADDR       32'h00000170  
+`define DMEM_SIZE            32'h000001b8
 `define PC_RESET             32'h00000000
+
+/*`ifdef FPGA
+    `define MEM_BANK_SIZE        32'h00000100
+    `define IMEM_BASE_ADDR       32'h00000000
+    `define IMEM_SIZE            32'h00000070       //32'h000001a0 
+    `define DMEM_BASE_ADDR       32'h00000074  
+    `define DMEM_SIZE            32'h00000100
+    `define PC_RESET             32'h00000000
+`else
+    `define MEM_BANK_SIZE        32'h00000100
+    `define IMEM_BASE_ADDR       32'h00000000
+    `define IMEM_SIZE            32'h00000088       //32'h000001a0 
+    `define DMEM_BASE_ADDR       32'h0000008c  
+    `define DMEM_SIZE            32'h000000d8
+    `define PC_RESET             32'h00000000
+`endif*/
 
 `endif // PCORE_CONFIG_DEFS
